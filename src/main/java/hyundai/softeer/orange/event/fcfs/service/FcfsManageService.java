@@ -116,14 +116,15 @@ public class FcfsManageService {
     }
 
     private void prepareEventInfo(FcfsEvent event) {
-        numberRedisTemplate.opsForValue().set(FcfsUtil.keyFormatting(event.getId().toString()), event.getParticipantCount().intValue());
-        booleanRedisTemplate.opsForValue().set(FcfsUtil.endFlagFormatting(event.getId().toString()), false);
-        stringRedisTemplate.opsForValue().set(FcfsUtil.startTimeFormatting(event.getId().toString()), event.getStartTime().toString());
+        String key = event.getId().toString();
+        numberRedisTemplate.opsForValue().set(FcfsUtil.keyFormatting(key), event.getParticipantCount().intValue());
+        booleanRedisTemplate.opsForValue().set(FcfsUtil.endFlagFormatting(key), false);
+        stringRedisTemplate.opsForValue().set(FcfsUtil.startTimeFormatting(key), event.getStartTime().toString());
 
         // FIXME: 선착순 정답 생성 과정을 별도로 관리하는 것이 좋을 듯
         // 현재 정책 상 1~4 중 하나의 숫자를 선정하여 현재 선착순 이벤트의 정답에 저장
         int answer = new Random().nextInt(4) + 1;
-        stringRedisTemplate.opsForValue().set(FcfsUtil.answerFormatting(event.getId().toString()), String.valueOf(answer));
+        stringRedisTemplate.opsForValue().set(FcfsUtil.answerFormatting(key), String.valueOf(answer));
     }
 
     public void deleteEventInfo(String eventId) {
