@@ -71,14 +71,12 @@ class DrawEventFieldMapperTest {
 
         mapper.fetchToEventEntity(metadata, dto);
 
-        var drawEvents = metadata.getDrawEventList();
-        var drawEvent = drawEvents.get(0);
+        var drawEvent = metadata.getDrawEvent();
         var drawEventMetadata = drawEvent.getMetadataList();
         var oneDrawMetadata = drawEventMetadata.get(0);
         var drawEventPolicies  = drawEvent.getPolicyList();
         var oneEventPolicy = drawEventPolicies.get(0);
 
-        assertThat(drawEvents).isNotNull().hasSize(1);
         assertThat(drawEventMetadata).isNotNull().hasSize(1);
         assertThat(drawEventPolicies).isNotNull().hasSize(1);
         // 부모 자식 관계 잘 설정하는지

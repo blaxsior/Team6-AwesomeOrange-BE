@@ -73,11 +73,11 @@ public class EventMetadata {
     @JoinColumn(name="event_frame_id")
     private EventFrame eventFrame;
 
-    @OneToMany(mappedBy = "eventMetadata", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private final List<DrawEvent> drawEventList = new ArrayList<>();
+    @OneToOne(mappedBy = "eventMetadata", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private DrawEvent drawEvent;
 
-    public void addDrawEvent(DrawEvent drawEvent) {
-        this.drawEventList.add(drawEvent);
+    public void updateDrawEvent(DrawEvent drawEvent) {
+        this.drawEvent = drawEvent;
     }
 
     @OneToMany(mappedBy = "eventMetaData", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
