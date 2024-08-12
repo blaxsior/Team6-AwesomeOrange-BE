@@ -58,7 +58,8 @@ class CommentControllerTest {
     private AuthInterceptor authInterceptor;
 
     ObjectMapper mapper = new ObjectMapper();
-    CreateCommentDto createCommentDto = new CreateCommentDto(1L, "hello");
+    Long eventFrameId = 1L;
+    CreateCommentDto createCommentDto = new CreateCommentDto("hello");
     String requestBody = "";
 
     @BeforeEach
@@ -79,12 +80,12 @@ class CommentControllerTest {
                 ResponseCommentDto.builder().content("기대평2").build()
         );
         ResponseCommentsDto responseCommentsDto = new ResponseCommentsDto(comments);
-        when(commentService.getComments()).thenReturn(responseCommentsDto);
+        when(commentService.getComments(eventFrameId)).thenReturn(responseCommentsDto);
         String responseBody = mapper.writeValueAsString(responseCommentsDto);
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/api/v1/comment"))
+                        .get("/api/v1/comment/" + eventFrameId))
                 .andExpect(status().isOk())
                 .andExpect(content().json(responseBody));
     }
@@ -94,12 +95,12 @@ class CommentControllerTest {
     void getComments200EmptyTest() throws Exception {
         // given
         ResponseCommentsDto responseCommentsDto = new ResponseCommentsDto(List.of());
-        when(commentService.getComments()).thenReturn(responseCommentsDto);
+        when(commentService.getComments(eventFrameId)).thenReturn(responseCommentsDto);
         String responseBody = mapper.writeValueAsString(responseCommentsDto);
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/api/v1/comment"))
+                        .get("/api/v1/comment/" + eventFrameId))
                 .andExpect(status().isOk())
                 .andExpect(content().json(responseBody));
     }
@@ -109,11 +110,11 @@ class CommentControllerTest {
     void createComment200Test() throws Exception {
         // given
         when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), any(CreateCommentDto.class), anyBoolean())).thenReturn(true);
+        when(commentService.createComment(any(), anyLong(), any(CreateCommentDto.class), anyBoolean())).thenReturn(true);
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders
-                        .post("/api/v1/comment")
+                        .post("/api/v1/comment/" + eventFrameId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                         .accept(MediaType.APPLICATION_JSON))
@@ -126,13 +127,13 @@ class CommentControllerTest {
     void createComment400Test() throws Exception {
         // given
         when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), any(CreateCommentDto.class), anyBoolean()))
+        when(commentService.createComment(any(), anyLong(), any(CreateCommentDto.class), anyBoolean()))
                 .thenThrow(new CommentException(ErrorCode.INVALID_COMMENT));
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.INVALID_COMMENT));
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders
-                        .post("/api/v1/comment")
+                        .post("/api/v1/comment/" + eventFrameId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                         .accept(MediaType.APPLICATION_JSON))
@@ -144,17 +145,16 @@ class CommentControllerTest {
     @Test
     void createComment400BadInputTest() throws Exception {
         // given
-        CreateCommentDto badInput = new CreateCommentDto(null, "");
+        CreateCommentDto badInput = new CreateCommentDto( "");
         requestBody = mapper.writeValueAsString(badInput);
 
         Map<String, String> expectedErrors = new HashMap<>();
-        expectedErrors.put("eventFrameId", MessageUtil.BAD_INPUT);
         expectedErrors.put("content", MessageUtil.OUT_OF_SIZE);
         String responseBody = mapper.writeValueAsString(expectedErrors);
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders
-                        .post("/api/v1/comment")
+                        .post("/api/v1/comment/" + eventFrameId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                         .accept(MediaType.APPLICATION_JSON))
@@ -167,13 +167,13 @@ class CommentControllerTest {
     void createComment404Test() throws Exception {
         // given
         when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), any(CreateCommentDto.class), anyBoolean()))
+        when(commentService.createComment(any(), anyLong(), any(CreateCommentDto.class), anyBoolean()))
                 .thenThrow(new CommentException(ErrorCode.EVENT_USER_NOT_FOUND));
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.EVENT_USER_NOT_FOUND));
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders
-                        .post("/api/v1/comment")
+                        .post("/api/v1/comment/" + eventFrameId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                         .accept(MediaType.APPLICATION_JSON))
@@ -186,13 +186,13 @@ class CommentControllerTest {
     void createComment409Test() throws Exception {
         // given
         when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), any(CreateCommentDto.class), anyBoolean()))
+        when(commentService.createComment(any(), anyLong(), any(CreateCommentDto.class), anyBoolean()))
                 .thenThrow(new CommentException(ErrorCode.COMMENT_ALREADY_EXISTS));
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.COMMENT_ALREADY_EXISTS));
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders
-                        .post("/api/v1/comment")
+                        .post("/api/v1/comment/" + eventFrameId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                         .accept(MediaType.APPLICATION_JSON))

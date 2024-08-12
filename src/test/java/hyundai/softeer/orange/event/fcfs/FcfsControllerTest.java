@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -79,12 +80,13 @@ class FcfsControllerTest {
         ResponseFcfsResultDto responseFcfsResultDto = new ResponseFcfsResultDto(true, isWinner);
         when(fcfsAnswerService.judgeAnswer(eventSequence, answer)).thenReturn(true);
         when(fcfsService.participate(eventSequence, userId)).thenReturn(isWinner);
+        String requestBody = mapper.writeValueAsString(answer);
         String responseBody = mapper.writeValueAsString(responseFcfsResultDto);
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs")
-                .param("eventSequence", eventSequence.toString())
-                .param("eventAnswer", answer))
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventSequence)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
                 .andExpect(status().isOk())
                 .andExpect(content().json(responseBody));
         verify(fcfsService, times(1)).participate(eventSequence, userId);
@@ -96,12 +98,13 @@ class FcfsControllerTest {
         // given
         ResponseFcfsResultDto responseFcfsResultDto = new ResponseFcfsResultDto(false, false);
         when(fcfsAnswerService.judgeAnswer(eventSequence, answer)).thenReturn(false);
+        String requestBody = mapper.writeValueAsString(answer);
         String responseBody = mapper.writeValueAsString(responseFcfsResultDto);
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs")
-                        .param("eventSequence", eventSequence.toString())
-                        .param("eventAnswer", answer))
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventSequence)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
                 .andExpect(status().isOk())
                 .andExpect(content().json(responseBody));
         verify(fcfsService, never()).participate(eventSequence, userId);
@@ -113,23 +116,25 @@ class FcfsControllerTest {
         // given
         when(fcfsAnswerService.judgeAnswer(eventSequence, answer)).thenReturn(true);
         when(fcfsService.participate(eventSequence, userId)).thenThrow(new FcfsEventException(ErrorCode.INVALID_EVENT_TIME));
+        String requestBody = mapper.writeValueAsString(answer);
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.INVALID_EVENT_TIME));
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs")
-                .param("eventSequence", eventSequence.toString())
-                .param("eventAnswer", answer))
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventSequence)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().json(responseBody));
     }
 
     @DisplayName("participate: 선착순 이벤트 참여 시 요청 형식이 잘못된 경우")
     @ParameterizedTest(name = "eventSequence: {0}")
-    @ValueSource(strings = {"", " ", "a", "1.1", "1.0", "1.1.1", ""})
+    @ValueSource(strings = {"a", "1.1", "1.0", "1.1.1"})
     void participateBadInputTest(String eventSequence) throws Exception {
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs")
-                .param("eventSequence", eventSequence))
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventSequence)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(answer)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -167,8 +172,7 @@ class FcfsControllerTest {
         when(fcfsManageService.isParticipated(eventSequence, userId)).thenReturn(true);
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/participated")
-                .param("eventSequence", eventSequence.toString()))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/" + eventSequence + "/participated"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
     }
@@ -181,8 +185,7 @@ class FcfsControllerTest {
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.EVENT_NOT_FOUND));
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/participated")
-                .param("eventSequence", eventSequence.toString()))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/" + eventSequence + "/participated"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().json(responseBody));
     }

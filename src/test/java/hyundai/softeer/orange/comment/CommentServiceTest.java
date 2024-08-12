@@ -47,10 +47,8 @@ class CommentServiceTest {
     }
 
     Long commentId = 1L;
-    CreateCommentDto createCommentDto = CreateCommentDto.builder()
-            .eventFrameId(1L)
-            .content("test")
-            .build();
+    Long eventFrameId = 1L;
+    CreateCommentDto createCommentDto = new CreateCommentDto("test");
     EventUser eventUser = EventUser.of("test", "01012345678", null, "uuid");
     EventFrame eventFrame = EventFrame.of("eventFrame");
 
@@ -58,30 +56,30 @@ class CommentServiceTest {
     @Test
     void getCommentsTest() {
         // given
-        given(commentRepository.findRandomPositiveComments(ConstantUtil.COMMENTS_SIZE))
+        given(commentRepository.findRandomPositiveComments(eventFrameId, ConstantUtil.COMMENTS_SIZE))
                 .willReturn(List.of(Comment.of("test", eventFrame, eventUser, true)));
 
         // when
-        ResponseCommentsDto dto = commentService.getComments();
+        ResponseCommentsDto dto = commentService.getComments(eventFrameId);
 
         // then
         assertThat(dto.getComments()).hasSize(1);
         assertThat(dto.getComments().get(0).getContent()).isEqualTo("test");
-        verify(commentRepository, times(1)).findRandomPositiveComments(anyInt());
+        verify(commentRepository, times(1)).findRandomPositiveComments(anyLong(), anyInt());
     }
 
     @DisplayName("getComments: 무작위 긍정 기대평 목록이 없는 경우 빈 목록을 반환한다.")
     @Test
     void getCommentsTestEmpty() {
         // given
-        given(commentRepository.findRandomPositiveComments(ConstantUtil.COMMENTS_SIZE)).willReturn(List.of());
+        given(commentRepository.findRandomPositiveComments(eventFrameId, ConstantUtil.COMMENTS_SIZE)).willReturn(List.of());
 
         // when
-        ResponseCommentsDto dto = commentService.getComments();
+        ResponseCommentsDto dto = commentService.getComments(eventFrameId);
 
         // then
         assertThat(dto.getComments()).isEmpty();
-        verify(commentRepository, times(1)).findRandomPositiveComments(anyInt());
+        verify(commentRepository, times(1)).findRandomPositiveComments(anyLong(), anyInt());
     }
 
     @DisplayName("createComment: 신규 기대평을 작성한다.")
@@ -89,17 +87,17 @@ class CommentServiceTest {
     void createCommentTest() {
         // given
         given(commentRepository.existsByCreatedDateAndEventUser(any())).willReturn(false);
-        given(eventFrameRepository.findById(createCommentDto.getEventFrameId())).willReturn(Optional.of(EventFrame.of("eventFrame")));
+        given(eventFrameRepository.findById(eventFrameId)).willReturn(Optional.of(EventFrame.of("eventFrame")));
         given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.ofNullable(eventUser));
         given(commentRepository.save(any())).willReturn(Comment.of("test", eventFrame, eventUser, true));
 
         // when
-        commentService.createComment(eventUser.getUserId(), createCommentDto, true);
+        commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto, true);
 
         // then
         verify(commentRepository, times(1)).save(any());
         verify(commentRepository, times(1)).existsByCreatedDateAndEventUser(any());
-        verify(eventFrameRepository, times(1)).findById(createCommentDto.getEventFrameId());
+        verify(eventFrameRepository, times(1)).findById(eventFrameId);
         verify(eventUserRepository, times(1)).findByUserId(eventUser.getUserId());
         verify(commentRepository, times(1)).save(any());
     }
@@ -108,12 +106,12 @@ class CommentServiceTest {
     @Test
     void createCommentAlreadyExistsTest() {
         // given
-        given(eventFrameRepository.findById(createCommentDto.getEventFrameId())).willReturn(Optional.of(eventFrame));
+        given(eventFrameRepository.findById(eventFrameId)).willReturn(Optional.of(eventFrame));
         given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.of(eventUser));
         given(commentRepository.existsByCreatedDateAndEventUser(any())).willReturn(true);
 
         // when
-        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), createCommentDto, true))
+        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto, true))
                 .isInstanceOf(CommentException.class)
                 .hasMessage(ErrorCode.COMMENT_ALREADY_EXISTS.getMessage());
     }
@@ -123,10 +121,10 @@ class CommentServiceTest {
     void createCommentFrameNotFoundTest() {
         // given
         given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.ofNullable(eventUser));
-        given(eventFrameRepository.findById(createCommentDto.getEventFrameId())).willReturn(Optional.empty());
+        given(eventFrameRepository.findById(eventFrameId)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), createCommentDto, true))
+        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto, true))
                 .isInstanceOf(CommentException.class)
                 .hasMessage(ErrorCode.EVENT_FRAME_NOT_FOUND.getMessage());
     }
@@ -138,7 +136,7 @@ class CommentServiceTest {
         given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), createCommentDto, true))
+        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto, true))
                 .isInstanceOf(CommentException.class)
                 .hasMessage(ErrorCode.EVENT_USER_NOT_FOUND.getMessage());
     }
