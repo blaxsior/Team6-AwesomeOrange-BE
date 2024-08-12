@@ -36,7 +36,7 @@ public class EventServiceSearchEventsTest {
     public void setUp() {
         mapperMatcher = mock(EventFieldMapperMatcher.class);
         keyGenerator = mock(EventKeyGenerator.class);
-        eventService = new EventService(efRepo, emRepo, mapperMatcher, keyGenerator);
+        eventService = new EventService(efRepo, emRepo, mapperMatcher, keyGenerator, null, null);
         EventFrame ef = EventFrame.of("test");
         efRepo.save(ef);
         EventMetadata em1 = EventMetadata.builder()

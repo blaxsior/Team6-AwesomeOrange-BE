@@ -2,6 +2,7 @@ package hyundai.softeer.orange.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
+import hyundai.softeer.orange.core.ParseUtil;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,10 @@ import java.time.Duration;
 @EnableCaching
 @Configuration
 public class RedisConfig {
+    @Bean
+    public ParseUtil parseUtil(ObjectMapper objectMapper) {
+        return new ParseUtil(objectMapper);
+    }
 
     @Bean
     public RedisTemplate<String, ResponseCommentsDto> redisTemplate(RedisConnectionFactory connectionFactory) {
@@ -37,6 +42,19 @@ public class RedisConfig {
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
         template.setValueSerializer(serializer);
 
+        return template;
+    }
+
+    /**
+     * eventDto에 대한 전환을 지원하는 템플릿. TODO: 현재 string - object 템플릿이 객체 타입마다 존재. 좀 더 일반화할 수 있는 방안 고민.
+     */
+    @Bean
+    public RedisTemplate<String, Object> objectRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory);
+
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new StringRedisSerializer());
         return template;
     }
 
