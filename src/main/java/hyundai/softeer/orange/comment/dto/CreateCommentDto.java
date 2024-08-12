@@ -1,25 +1,16 @@
 package hyundai.softeer.orange.comment.dto;
 
 import hyundai.softeer.orange.common.util.MessageUtil;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Builder
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class CreateCommentDto {
-
-    @NotNull(message = MessageUtil.BAD_INPUT)
-    private Long eventFrameId;
 
     @Size(min = 1, max = 100, message = MessageUtil.OUT_OF_SIZE)
     private String content;
-
-    public CreateCommentDto(Long eventFrameId, String content) {
-        this.eventFrameId = eventFrameId;
-        this.content = content;
-    }
 }

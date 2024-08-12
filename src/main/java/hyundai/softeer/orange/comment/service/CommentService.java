@@ -31,9 +31,9 @@ public class CommentService {
 
     // 주기적으로 무작위 추출되는 긍정 기대평 목록을 조회한다.
     @Transactional(readOnly = true)
-    @Cacheable(value = "comments", key = ConstantUtil.COMMENTS_KEY)
-    public ResponseCommentsDto getComments() {
-        List<ResponseCommentDto> comments = commentRepository.findRandomPositiveComments(ConstantUtil.COMMENTS_SIZE)
+    @Cacheable(value = "comments", key = ConstantUtil.COMMENTS_KEY + " + #eventFrameId")
+    public ResponseCommentsDto getComments(Long eventFrameId) {
+        List<ResponseCommentDto> comments = commentRepository.findRandomPositiveComments(eventFrameId, ConstantUtil.COMMENTS_SIZE)
                 .stream()
                 .map(ResponseCommentDto::from)
                 .toList();
@@ -42,10 +42,10 @@ public class CommentService {
 
     // 신규 기대평을 등록한다.
     @Transactional
-    public Boolean createComment(String userId, CreateCommentDto dto, Boolean isPositive) {
+    public Boolean createComment(String userId, Long eventFrameId, CreateCommentDto dto, Boolean isPositive) {
         EventUser eventUser = eventUserRepository.findByUserId(userId)
                 .orElseThrow(() -> new CommentException(ErrorCode.EVENT_USER_NOT_FOUND));
-        EventFrame eventFrame = eventFrameRepository.findById(dto.getEventFrameId())
+        EventFrame eventFrame = eventFrameRepository.findById(eventFrameId)
                 .orElseThrow(() -> new CommentException(ErrorCode.EVENT_FRAME_NOT_FOUND));
 
         // 하루에 여러 번의 기대평을 작성하려 할 때 예외처리
