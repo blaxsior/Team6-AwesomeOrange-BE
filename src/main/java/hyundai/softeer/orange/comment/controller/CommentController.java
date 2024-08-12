@@ -31,18 +31,18 @@ public class CommentController {
     private final ApiService apiService;
 
     @Tag(name = "Comment")
-    @GetMapping
+    @GetMapping("/{eventFrameId}")
     @Operation(summary = "기대평 조회", description = "주기적으로 추출되는 긍정 기대평 목록을 조회한다.", responses = {
             @ApiResponse(responseCode = "200", description = "기대평 조회 성공",
                     content = @Content(schema = @Schema(implementation = ResponseCommentsDto.class)))
     })
-    public ResponseEntity<ResponseCommentsDto> getComments() {
-        return ResponseEntity.ok(commentService.getComments());
+    public ResponseEntity<ResponseCommentsDto> getComments(@PathVariable Long eventFrameId) {
+        return ResponseEntity.ok(commentService.getComments(eventFrameId));
     }
 
     @Auth(AuthRole.event_user)
     @Tag(name = "Comment")
-    @PostMapping
+    @PostMapping("/{eventFrameId}")
     @Operation(summary = "기대평 등록", description = "유저가 신규 기대평을 등록한다.", responses = {
             @ApiResponse(responseCode = "200", description = "기대평 등록 성공",
                     content = @Content(schema = @Schema(implementation = Boolean.class))),
@@ -53,9 +53,9 @@ public class CommentController {
             @ApiResponse(responseCode = "409", description = "하루에 여러 번의 기대평을 작성하려 할 때",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Boolean> createComment(@EventUserAnnotation EventUserInfo userInfo, @RequestBody @Valid CreateCommentDto dto) {
+    public ResponseEntity<Boolean> createComment(@EventUserAnnotation EventUserInfo userInfo, @PathVariable Long eventFrameId, @RequestBody @Valid CreateCommentDto dto) {
         boolean isPositive = apiService.analyzeComment(dto.getContent());
-        return ResponseEntity.ok(commentService.createComment(userInfo.getUserId(), dto, isPositive));
+        return ResponseEntity.ok(commentService.createComment(userInfo.getUserId(), eventFrameId, dto, isPositive));
     }
 
     @Auth(AuthRole.event_user)
