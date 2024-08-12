@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-@Primary
 public class RedisLockFcfsService implements FcfsService {
 
     private final StringRedisTemplate stringRedisTemplate;
@@ -28,19 +26,20 @@ public class RedisLockFcfsService implements FcfsService {
 
     @Override
     public boolean participate(Long eventSequence, String userId) {
+        String key = eventSequence.toString();
         // 이벤트 종료 여부 확인
-        if (isEventEnded(eventSequence)) {
-            stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(eventSequence.toString()), userId);
+        if (isEventEnded(key)) {
+            stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(key), userId);
             return false;
         }
 
         // 이미 이 이벤트에 참여했는지 확인
-        if(isParticipated(eventSequence, userId)) {
+        if(isParticipated(key, userId)) {
             throw new FcfsEventException(ErrorCode.ALREADY_PARTICIPATED);
         }
 
         // 잘못된 이벤트 참여 시간
-        String startTime = stringRedisTemplate.opsForValue().get(FcfsUtil.startTimeFormatting(eventSequence.toString()));
+        String startTime = stringRedisTemplate.opsForValue().get(FcfsUtil.startTimeFormatting(key));
         if(startTime == null) {
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
@@ -57,15 +56,17 @@ public class RedisLockFcfsService implements FcfsService {
                 return false;
             }
 
-            int quantity = availableCoupons(FcfsUtil.keyFormatting(eventSequence.toString()));
+            int quantity = availableCoupons(FcfsUtil.keyFormatting(key));
             if (quantity <= 0) {
-                endEvent(eventSequence);  // 이벤트 종료 플래그 설정
+                log.info("Event Finished: {},", stringRedisTemplate.opsForZSet().zCard(FcfsUtil.winnerFormatting(key)));
+                endEvent(key);  // 이벤트 종료 플래그 설정
                 return false;
             }
 
-            numberRedisTemplate.opsForValue().decrement(FcfsUtil.keyFormatting(eventSequence.toString()));
-            stringRedisTemplate.opsForZSet().add(FcfsUtil.winnerFormatting(eventSequence.toString()), userId, System.currentTimeMillis());
-            stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(eventSequence.toString()), userId);
+            numberRedisTemplate.opsForValue().decrement(FcfsUtil.keyFormatting(key));
+            stringRedisTemplate.opsForZSet().add(FcfsUtil.winnerFormatting(key), userId, System.currentTimeMillis());
+            stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(key), userId);
+            log.info("Participating Success: {}, User ID: {}", eventSequence, userId);
             return true;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -77,8 +78,8 @@ public class RedisLockFcfsService implements FcfsService {
         }
     }
 
-    private boolean isParticipated(Long eventSequence, String userId){
-        return Boolean.TRUE.equals(stringRedisTemplate.opsForSet().isMember(FcfsUtil.participantFormatting(eventSequence.toString()), userId));
+    private boolean isParticipated(String key, String userId){
+        return Boolean.TRUE.equals(stringRedisTemplate.opsForSet().isMember(FcfsUtil.participantFormatting(key), userId));
     }
 
     private Integer availableCoupons(String key) {
@@ -89,11 +90,11 @@ public class RedisLockFcfsService implements FcfsService {
         return count;
     }
 
-    private boolean isEventEnded(Long eventSequence) {
-        return Boolean.TRUE.equals(booleanRedisTemplate.opsForValue().get(FcfsUtil.endFlagFormatting(eventSequence.toString())));
+    private boolean isEventEnded(String key) {
+        return Boolean.TRUE.equals(booleanRedisTemplate.opsForValue().get(FcfsUtil.endFlagFormatting(key)));
     }
 
-    private void endEvent(Long eventSequence) {
-        booleanRedisTemplate.opsForValue().set(FcfsUtil.endFlagFormatting(eventSequence.toString()), true);
+    private void endEvent(String key) {
+        booleanRedisTemplate.opsForValue().set(FcfsUtil.endFlagFormatting(key), true);
     }
 }

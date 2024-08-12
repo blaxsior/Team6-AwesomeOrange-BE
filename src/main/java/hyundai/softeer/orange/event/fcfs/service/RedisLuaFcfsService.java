@@ -5,6 +5,7 @@ import hyundai.softeer.orange.event.fcfs.exception.FcfsEventException;
 import hyundai.softeer.orange.event.fcfs.util.FcfsUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
@@ -15,6 +16,7 @@ import java.util.Collections;
 
 @Slf4j
 @RequiredArgsConstructor
+@Primary
 @Service
 public class RedisLuaFcfsService implements FcfsService {
 
@@ -24,19 +26,20 @@ public class RedisLuaFcfsService implements FcfsService {
 
     @Override
     public boolean participate(Long eventSequence, String userId) {
+        String key = eventSequence.toString();
         // 이벤트 종료 여부 확인
-        if (isEventEnded(eventSequence)) {
-            stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(eventSequence.toString()), userId);
+        if (isEventEnded(key)) {
+            stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(key), userId);
             return false;
         }
 
         // 이미 이 이벤트에 참여했는지 확인
-        if(isParticipated(eventSequence, userId)) {
+        if(isParticipated(key, userId)) {
             throw new FcfsEventException(ErrorCode.ALREADY_PARTICIPATED);
         }
 
         // 잘못된 이벤트 참여 시간
-        String startTime = stringRedisTemplate.opsForValue().get(FcfsUtil.startTimeFormatting(eventSequence.toString()));
+        String startTime = stringRedisTemplate.opsForValue().get(FcfsUtil.startTimeFormatting(key));
         if(startTime == null) {
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
@@ -55,33 +58,34 @@ public class RedisLuaFcfsService implements FcfsService {
         long timestamp = System.currentTimeMillis();
         Long result = stringRedisTemplate.execute(
                 RedisScript.of(script, Long.class),
-                Collections.singletonList(FcfsUtil.winnerFormatting(eventSequence.toString())),
-                String.valueOf(numberRedisTemplate.opsForValue().get(FcfsUtil.keyFormatting(eventSequence.toString()))),
+                Collections.singletonList(FcfsUtil.winnerFormatting(key)),
+                String.valueOf(numberRedisTemplate.opsForValue().get(FcfsUtil.keyFormatting(key))),
                 String.valueOf(timestamp),
                 userId
         );
 
         if(result == null || result <= 0) {
-            stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(eventSequence.toString()), userId);
-            endEvent(eventSequence);
+            log.info("Event Finished: {},", stringRedisTemplate.opsForZSet().zCard(FcfsUtil.winnerFormatting(key)));
+            stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(key), userId);
+            endEvent(key);
             return false;
         }
 
-        stringRedisTemplate.opsForZSet().add(FcfsUtil.winnerFormatting(eventSequence.toString()), userId, System.currentTimeMillis());
-        stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(eventSequence.toString()), userId);
-        log.info("Event Sequence: {}, User ID: {}, Timestamp: {}", eventSequence, userId, timestamp);
+        stringRedisTemplate.opsForZSet().add(FcfsUtil.winnerFormatting(key), userId, System.currentTimeMillis());
+        stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(key), userId);
+        log.info("Participating Success: {}, User ID: {}, Timestamp: {}", eventSequence, userId, timestamp);
         return true;
     }
 
-    public boolean isParticipated(Long eventSequence, String userId) {
-        return Boolean.TRUE.equals(stringRedisTemplate.opsForSet().isMember(FcfsUtil.participantFormatting(eventSequence.toString()), userId));
+    public boolean isParticipated(String key, String userId) {
+        return Boolean.TRUE.equals(stringRedisTemplate.opsForSet().isMember(FcfsUtil.participantFormatting(key), userId));
     }
 
-    private boolean isEventEnded(Long eventSequence) {
-        return Boolean.TRUE.equals(booleanRedisTemplate.opsForValue().get(FcfsUtil.endFlagFormatting(eventSequence.toString())));
+    private boolean isEventEnded(String key) {
+        return Boolean.TRUE.equals(booleanRedisTemplate.opsForValue().get(FcfsUtil.endFlagFormatting(key)));
     }
 
-    private void endEvent(Long eventSequence) {
-        booleanRedisTemplate.opsForValue().set(FcfsUtil.endFlagFormatting(eventSequence.toString()), true);
+    private void endEvent(String key) {
+        booleanRedisTemplate.opsForValue().set(FcfsUtil.endFlagFormatting(key), true);
     }
 }
