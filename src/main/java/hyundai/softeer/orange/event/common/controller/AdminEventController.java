@@ -2,7 +2,6 @@ package hyundai.softeer.orange.event.common.controller;
 
 import hyundai.softeer.orange.core.auth.Auth;
 import hyundai.softeer.orange.core.auth.AuthRole;
-import hyundai.softeer.orange.event.common.entity.EventMetadata;
 import hyundai.softeer.orange.event.common.service.EventService;
 import hyundai.softeer.orange.event.dto.BriefEventDto;
 import hyundai.softeer.orange.event.dto.EventDto;
@@ -24,11 +23,12 @@ import java.util.List;
 /**
  * 이벤트 관련 CRUD를 다루는 API
  */
+@Auth({AuthRole.admin})
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/events")
+@RequestMapping("/api/v1/admin/events")
 @RestController
-public class EventController {
+public class AdminEventController {
     private final EventService eventService;
     /**
      *
@@ -38,7 +38,6 @@ public class EventController {
      * @param size 한번에 검색하는 이벤트 개수
      * @return 요청한 이벤트 리스트
      */
-    @Auth({AuthRole.admin})
     @GetMapping
     @Operation(summary = "이벤트 리스트 획득", description = "관리자가 이벤트 목록을 검색한다. 검색어, sort 기준 등을 정의할 수 있다.", responses = {
             @ApiResponse(responseCode = "200", description = "성공적으로 이벤트 목록을 반환한다"),
@@ -55,7 +54,6 @@ public class EventController {
         return ResponseEntity.ok(events);
     }
 
-    @Auth({AuthRole.admin})
     @PostMapping
     @Operation(summary = "이벤트 생성", description = "관리자가 이벤트를 새롭게 등록한다", responses = {
             @ApiResponse(responseCode = "201", description = "이벤트 생성 성공"),
@@ -71,7 +69,6 @@ public class EventController {
      * @param eventId 이벤트 ID. HD000000~로 시작하는 그것
      * @return 해당 이벤트에 대한 정보
      */
-    @Auth({AuthRole.admin})
     @GetMapping("{eventId}")
     @Operation(summary = "이벤트 데이터 획득", description = "이벤트 초기 정보를 받는다", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 정보를 정상적으로 받음"),
@@ -87,7 +84,6 @@ public class EventController {
     /**
      * @param eventDto 수정된 이벤트 정보
      */
-    @Auth({AuthRole.admin})
     @PostMapping("/edit")
     @Operation(summary = "이벤트 수정", description = "관리자가 이벤트를 수정한다", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 생성 성공"),
@@ -102,7 +98,6 @@ public class EventController {
     /**
      * @param req 이벤트 프레임 생성을 위한 json
      */
-    @Auth({AuthRole.admin})
     @PostMapping("/frame")
     @Operation(summary = "이벤트 프레임 생성", description = "관리자가 이벤트 프레임을 새롭게 등록한다", responses = {
             @ApiResponse(responseCode = "201", description = "이벤트 프레임 생성 성공"),
@@ -113,7 +108,6 @@ public class EventController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @Auth({AuthRole.admin})
     @GetMapping("/hints")
     @Operation(summary="이벤트 힌트 목록 얻기", description = "관리자가 이벤트 댓글 열람을 위해 검색할 때 반환하는 (이벤트 id / 이름 ) 정보 목록을 얻는다.", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 힌트 목록 획득")
