@@ -58,7 +58,7 @@ class CommentControllerTest {
     private AuthInterceptor authInterceptor;
 
     ObjectMapper mapper = new ObjectMapper();
-    Long eventFrameId = 1L;
+    String eventFrameId = "the-new-ioniq5";
     CreateCommentDto createCommentDto = new CreateCommentDto("hello");
     String requestBody = "";
 
@@ -110,7 +110,7 @@ class CommentControllerTest {
     void createComment200Test() throws Exception {
         // given
         when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), anyLong(), any(CreateCommentDto.class), anyBoolean())).thenReturn(true);
+        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class), anyBoolean())).thenReturn(true);
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders
@@ -127,7 +127,7 @@ class CommentControllerTest {
     void createComment400Test() throws Exception {
         // given
         when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), anyLong(), any(CreateCommentDto.class), anyBoolean()))
+        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class), anyBoolean()))
                 .thenThrow(new CommentException(ErrorCode.INVALID_COMMENT));
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.INVALID_COMMENT));
 
@@ -167,7 +167,7 @@ class CommentControllerTest {
     void createComment404Test() throws Exception {
         // given
         when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), anyLong(), any(CreateCommentDto.class), anyBoolean()))
+        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class), anyBoolean()))
                 .thenThrow(new CommentException(ErrorCode.EVENT_USER_NOT_FOUND));
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.EVENT_USER_NOT_FOUND));
 
@@ -186,7 +186,7 @@ class CommentControllerTest {
     void createComment409Test() throws Exception {
         // given
         when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), anyLong(), any(CreateCommentDto.class), anyBoolean()))
+        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class), anyBoolean()))
                 .thenThrow(new CommentException(ErrorCode.COMMENT_ALREADY_EXISTS));
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.COMMENT_ALREADY_EXISTS));
 

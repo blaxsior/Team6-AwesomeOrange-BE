@@ -54,6 +54,7 @@ class EventUserServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        given(eventFrameRepository.findByFrameId(eventFrameId)).willReturn(Optional.of(eventFrame));
         given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
     }
 
@@ -62,9 +63,9 @@ class EventUserServiceTest {
             .phoneNumber("01012345678")
             .build();
     TokenDto tokenDto = new TokenDto("token");
-    EventFrame eventFrame = EventFrame.of("eventFrame");
+    EventFrame eventFrame = EventFrame.of("the-new-ioniq5", "eventFrame");
     EventUser eventUser = EventUser.of("test", "01000000000", eventFrame, "uuid");
-    Long eventFrameId = 1L;
+    String eventFrameId = "the-new-ioniq5";
 
     @DisplayName("login: 유저가 로그인한다.")
     @Test

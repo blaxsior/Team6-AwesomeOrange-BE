@@ -65,7 +65,7 @@ class FcfsManageServiceTest {
         eventUserRepository.deleteAll();
         eventFrameRepository.deleteAll();
 
-        EventFrame eventFrame = EventFrame.of("FcfsManageServiceTest");
+        EventFrame eventFrame = EventFrame.of("the-new-ioniq5","FcfsManageServiceTest");
         FcfsEvent fcfsEvent = FcfsEvent.builder()
                 .startTime(LocalDateTime.now().plusSeconds(10))
                 .participantCount(10L)

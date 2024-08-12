@@ -15,6 +15,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 @DataJpaTest
 @TestPropertySource(locations = "classpath:application-test.yml")
 class EventSpecificationTest {
@@ -26,7 +27,7 @@ class EventSpecificationTest {
     @DisplayName("search가 없으면 predicate는 항상 참")
     @Test
     void searchWithoutSearchClause() {
-        EventFrame ef = EventFrame.of("test");
+        EventFrame ef = EventFrame.of("the-new-ioniq5", "test");
         efRepository.save(ef);
         EventMetadata em1 = EventMetadata.builder()
                 .eventId("HD240805_001")
@@ -60,7 +61,7 @@ class EventSpecificationTest {
     @Test
     void searchWithSearchClause() {
         String search = "event";
-        EventFrame ef = EventFrame.of("test");
+        EventFrame ef = EventFrame.of("the-new-ioniq5","test");
         efRepository.save(ef);
         // event 포함 ( name )
         EventMetadata em1 = EventMetadata.builder()

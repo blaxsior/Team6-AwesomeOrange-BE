@@ -19,7 +19,6 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -61,7 +60,7 @@ class EventServiceTest {
         EventDto eventDto = mock(EventDto.class);
         when(eventDto.getTag()).thenReturn("testtag");
         when(eventDto.getEventType()).thenReturn(EventType.fcfs);
-        when(efRepo.findByName(anyString())).thenReturn(Optional.of(EventFrame.of("test")));
+        when(efRepo.findByName(anyString())).thenReturn(Optional.of(EventFrame.of("the-new-ioniq5","test")));
 
         assertThatThrownBy(() -> {
             eventService.createEvent(eventDto);
@@ -75,7 +74,7 @@ class EventServiceTest {
         EventDto eventDto = mock(EventDto.class);
         when(eventDto.getTag()).thenReturn("testtag");
         when(eventDto.getEventType()).thenReturn(EventType.fcfs);
-        when(efRepo.findByName(anyString())).thenReturn(Optional.of(EventFrame.of("test")));
+        when(efRepo.findByName(anyString())).thenReturn(Optional.of(EventFrame.of("the-new-ioniq5","test")));
         when(mapperMatcher.getMapper(any(EventType.class))).thenReturn(mock(FcfsEventFieldMapper.class));
 
         eventService.createEvent(eventDto);

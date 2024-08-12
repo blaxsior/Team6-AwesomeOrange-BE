@@ -7,8 +7,6 @@ import hyundai.softeer.orange.event.common.enums.EventType;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
 import hyundai.softeer.orange.event.common.repository.EventMetadataRepository;
 import hyundai.softeer.orange.event.component.EventKeyGenerator;
-import hyundai.softeer.orange.event.draw.entity.DrawEvent;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +22,7 @@ import static org.mockito.Mockito.mock;
 
 @DataJpaTest
 @TestPropertySource(locations = "classpath:application-test.yml")
-public class EventServiceSearchHintsTest {
+class EventServiceSearchHintsTest {
     @Autowired
     private EventMetadataRepository emRepo;
     @Autowired
@@ -40,7 +38,7 @@ public class EventServiceSearchHintsTest {
         keyGenerator = mock(EventKeyGenerator.class);
         eventService = new EventService(efRepo, emRepo, mapperMatcher, keyGenerator, null, null);
         // 이벤트 프레임 생성
-        EventFrame ef = EventFrame.of("test");
+        EventFrame ef = EventFrame.of("the-new-ioniq5","test");
         efRepo.save(ef);
 
         // 이벤트 메타데이터 생성
