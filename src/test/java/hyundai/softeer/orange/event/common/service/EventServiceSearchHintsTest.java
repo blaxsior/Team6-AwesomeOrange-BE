@@ -38,7 +38,7 @@ public class EventServiceSearchHintsTest {
     public void setUp() {
         mapperMatcher = mock(EventFieldMapperMatcher.class);
         keyGenerator = mock(EventKeyGenerator.class);
-        eventService = new EventService(efRepo, emRepo, mapperMatcher, keyGenerator);
+        eventService = new EventService(efRepo, emRepo, mapperMatcher, keyGenerator, null, null);
         // 이벤트 프레임 생성
         EventFrame ef = EventFrame.of("test");
         efRepo.save(ef);

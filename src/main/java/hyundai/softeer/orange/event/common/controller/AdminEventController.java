@@ -1,15 +1,21 @@
 package hyundai.softeer.orange.event.common.controller;
 
+import hyundai.softeer.orange.admin.component.AdminAnnotation;
+import hyundai.softeer.orange.admin.entity.Admin;
+import hyundai.softeer.orange.common.ErrorResponse;
 import hyundai.softeer.orange.core.auth.Auth;
 import hyundai.softeer.orange.core.auth.AuthRole;
-import hyundai.softeer.orange.event.common.entity.EventMetadata;
 import hyundai.softeer.orange.event.common.service.EventService;
 import hyundai.softeer.orange.event.dto.BriefEventDto;
 import hyundai.softeer.orange.event.dto.EventDto;
 import hyundai.softeer.orange.event.dto.EventFrameCreateRequest;
 import hyundai.softeer.orange.event.dto.EventSearchHintDto;
 import hyundai.softeer.orange.event.dto.group.EventEditGroup;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +30,12 @@ import java.util.List;
 /**
  * 이벤트 관련 CRUD를 다루는 API
  */
+@Auth({AuthRole.admin})
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/events")
+@RequestMapping("/api/v1/admin/events")
 @RestController
-public class EventController {
+public class AdminEventController {
     private final EventService eventService;
     /**
      *
@@ -38,7 +45,6 @@ public class EventController {
      * @param size 한번에 검색하는 이벤트 개수
      * @return 요청한 이벤트 리스트
      */
-    @Auth({AuthRole.admin})
     @GetMapping
     @Operation(summary = "이벤트 리스트 획득", description = "관리자가 이벤트 목록을 검색한다. 검색어, sort 기준 등을 정의할 수 있다.", responses = {
             @ApiResponse(responseCode = "200", description = "성공적으로 이벤트 목록을 반환한다"),
@@ -55,14 +61,17 @@ public class EventController {
         return ResponseEntity.ok(events);
     }
 
-    @Auth({AuthRole.admin})
     @PostMapping
     @Operation(summary = "이벤트 생성", description = "관리자가 이벤트를 새롭게 등록한다", responses = {
             @ApiResponse(responseCode = "201", description = "이벤트 생성 성공"),
             @ApiResponse(responseCode = "4xx", description = "유저 측 실수로 이벤트 생성 실패")
     })
-    public ResponseEntity<Void> createEvent(@Validated @RequestBody EventDto eventDto) {
+    public ResponseEntity<Void> createEvent(@Validated @RequestBody EventDto eventDto,
+                                            @Parameter(hidden = true) @AdminAnnotation Admin admin
+    ) {
+        // 나중에 두개 과정을 통합할 수도 있음.
         eventService.createEvent(eventDto);
+        eventService.clearTempEvent(admin.getId());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -71,7 +80,6 @@ public class EventController {
      * @param eventId 이벤트 ID. HD000000~로 시작하는 그것
      * @return 해당 이벤트에 대한 정보
      */
-    @Auth({AuthRole.admin})
     @GetMapping("{eventId}")
     @Operation(summary = "이벤트 데이터 획득", description = "이벤트 초기 정보를 받는다", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 정보를 정상적으로 받음"),
@@ -87,7 +95,6 @@ public class EventController {
     /**
      * @param eventDto 수정된 이벤트 정보
      */
-    @Auth({AuthRole.admin})
     @PostMapping("/edit")
     @Operation(summary = "이벤트 수정", description = "관리자가 이벤트를 수정한다", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 생성 성공"),
@@ -102,7 +109,6 @@ public class EventController {
     /**
      * @param req 이벤트 프레임 생성을 위한 json
      */
-    @Auth({AuthRole.admin})
     @PostMapping("/frame")
     @Operation(summary = "이벤트 프레임 생성", description = "관리자가 이벤트 프레임을 새롭게 등록한다", responses = {
             @ApiResponse(responseCode = "201", description = "이벤트 프레임 생성 성공"),
@@ -113,7 +119,6 @@ public class EventController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @Auth({AuthRole.admin})
     @GetMapping("/hints")
     @Operation(summary="이벤트 힌트 목록 얻기", description = "관리자가 이벤트 댓글 열람을 위해 검색할 때 반환하는 (이벤트 id / 이름 ) 정보 목록을 얻는다.", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 힌트 목록 획득")
@@ -123,4 +128,29 @@ public class EventController {
         return ResponseEntity.ok(searchHints);
     }
 
+    @GetMapping("/temp")
+    @Operation(summary = "임시 저장 된 이벤트 불러오기", description = "관리자가 이벤트 프레임을 새롭게 등록한다", responses = {
+            @ApiResponse(responseCode = "200", description = "이벤트 불러오기 성공"),
+    })
+    public ResponseEntity<EventDto> getTempEvent(@Parameter(hidden = true) @AdminAnnotation Admin admin) {
+        Long adminId = admin.getId();
+        EventDto eventDto = eventService.getTempEvent(adminId);
+        return ResponseEntity.ok(eventDto);
+    }
+
+    /**
+     * @param eventDto 임시로 저장할 이벤트 정보
+     */
+    @PostMapping("/temp")
+    @Operation(summary = "이벤트 임시 저장", description = "이벤트를 임시 저장한다.", responses = {
+            @ApiResponse(responseCode = "200", description = "이벤트 임시 저장 성공"),
+            @ApiResponse(responseCode = "4xx", description = "이벤트 임시 저장 실패", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+
+    })
+    public ResponseEntity<Void> saveTempEvent(@RequestBody EventDto eventDto,
+                                              @Parameter(hidden = true) @AdminAnnotation Admin admin) {
+        Long adminId = admin.getId();
+        eventService.saveTempEvent(adminId, eventDto);
+        return ResponseEntity.ok().build();
+    }
 }

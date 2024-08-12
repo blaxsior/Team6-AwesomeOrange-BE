@@ -1,6 +1,7 @@
 package hyundai.softeer.orange.event.common.service;
 
 import hyundai.softeer.orange.common.ErrorCode;
+import hyundai.softeer.orange.core.ParseUtil;
 import hyundai.softeer.orange.event.common.EventConst;
 import hyundai.softeer.orange.event.common.component.eventFieldMapper.EventFieldMapperMatcher;
 import hyundai.softeer.orange.event.common.component.eventFieldMapper.mapper.EventFieldMapper;
@@ -22,12 +23,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 이벤트 전반에 대한 조회, 수정을 다루는 서비스. 구체적인 액션(추첨 등)은 구체적인 클래스에서 처리 요망
@@ -40,6 +43,8 @@ public class EventService {
     private final EventMetadataRepository emRepository;
     private final EventFieldMapperMatcher mapperMatcher;
     private final EventKeyGenerator keyGenerator;
+    private final RedisTemplate<String, Object> eventDtoRedisTemplate;
+    private final ParseUtil parseUtil;
 
     /**
      * 이벤트를 생성한다.
@@ -72,8 +77,39 @@ public class EventService {
         if(mapper == null) throw new EventException(ErrorCode.INVALID_EVENT_TYPE);
 
         mapper.fetchToEventEntity(eventMetadata, eventDto);
-
         emRepository.save(eventMetadata);
+    }
+
+    /**
+     * 이벤트를 임시 저장한다.
+     * @param adminId 이벤트를 임시 저장하는 관리자의 id
+     * @param eventDto 임시 저장하는 이벤트 정보
+     */
+    public void saveTempEvent(Long adminId, EventDto eventDto) {
+        String key = EventConst.TEMP_KEY(adminId);
+        // 24시간 동안 유지.
+        eventDtoRedisTemplate.opsForValue().set(key, eventDto, EventConst.TEMP_EVENT_DURATION_HOUR, TimeUnit.HOURS);
+    }
+
+    /**
+     * 임시 저장 된 이벤트를 가져온다.
+     * @param adminId 이벤트를 임시 저장한 관리자의 id
+     * @return 임시 저장 된 이벤트 정보
+     */
+    public EventDto getTempEvent(Long adminId) {
+        String key = EventConst.TEMP_KEY(adminId);
+        String dto = (String) eventDtoRedisTemplate.opsForValue().get(key);
+
+        return parseUtil.parse(dto, EventDto.class);
+    }
+
+    /**
+     * 임시 저장 된 이벤트를 제거한다.
+     * @param adminId 이벤트를 임시 저장한 관리자의 id
+     */
+    public void clearTempEvent(Long adminId) {
+        String key = EventConst.TEMP_KEY(adminId);
+        eventDtoRedisTemplate.delete(key);
     }
 
     /**

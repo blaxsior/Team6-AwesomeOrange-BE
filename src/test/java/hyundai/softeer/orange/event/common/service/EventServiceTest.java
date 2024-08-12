@@ -41,7 +41,7 @@ class EventServiceTest {
         emRepo = mock(EventMetadataRepository.class);
         mapperMatcher = mock(EventFieldMapperMatcher.class);
         keyGenerator = mock(EventKeyGenerator.class);
-        eventService = new EventService(efRepo, emRepo, mapperMatcher, keyGenerator);
+        eventService = new EventService(efRepo, emRepo, mapperMatcher, keyGenerator, null, null);
     }
 
     @DisplayName("대응되는 eventframe이 없으면 예외 반환")

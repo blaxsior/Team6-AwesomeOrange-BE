@@ -3,7 +3,6 @@ package hyundai.softeer.orange.core.security;
 import hyundai.softeer.orange.common.exception.InternalServerException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpServerErrorException;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
