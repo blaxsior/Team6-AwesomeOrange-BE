@@ -1,6 +1,6 @@
-INSERT INTO event_frame(name) VALUES ('test1');
-INSERT INTO event_frame(name) VALUES ('test2');
-INSERT INTO event_frame(name) VALUES ('test3');
+INSERT INTO event_frame(frame_id, name) VALUES ('frame_id1', 'test1');
+INSERT INTO event_frame(frame_id, name) VALUES ('frame_id2', 'test2');
+INSERT INTO event_frame(frame_id, name) VALUES ('frame_id3', 'test3');
 
 INSERT INTO event_metadata(event_type, event_frame_id, event_id) VALUES (1, 1, 'HD_240808_001');
 INSERT INTO event_metadata(event_type, event_frame_id, event_id) VALUES (1, 2, 'HD_240808_002');

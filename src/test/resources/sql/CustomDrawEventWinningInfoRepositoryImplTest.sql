@@ -1,4 +1,4 @@
-INSERT INTO event_frame(name) VALUES ('test');
+INSERT INTO event_frame(frame_id, name) VALUES ('frame_id1', 'test');
 
 INSERT INTO event_metadata(event_type, event_frame_id, event_id)
 VALUES (1, 1, 'HD_240808_001');
