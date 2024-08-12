@@ -11,7 +11,6 @@ import hyundai.softeer.orange.event.dto.EventDto;
 import hyundai.softeer.orange.event.dto.EventFrameCreateRequest;
 import hyundai.softeer.orange.event.dto.EventSearchHintDto;
 import hyundai.softeer.orange.event.dto.group.EventEditGroup;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -115,7 +114,7 @@ public class AdminEventController {
             @ApiResponse(responseCode = "4xx", description = "이벤트 프레임 생성 실패")
     })
     public ResponseEntity<Void> createEventFrame(@Valid @RequestBody EventFrameCreateRequest req) {
-        eventService.createEventFrame(req.getName());
+        eventService.createEventFrame(req.getFrameId(), req.getName());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

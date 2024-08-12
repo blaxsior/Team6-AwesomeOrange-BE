@@ -36,7 +36,7 @@ public class CommentController {
             @ApiResponse(responseCode = "200", description = "기대평 조회 성공",
                     content = @Content(schema = @Schema(implementation = ResponseCommentsDto.class)))
     })
-    public ResponseEntity<ResponseCommentsDto> getComments(@PathVariable Long eventFrameId) {
+    public ResponseEntity<ResponseCommentsDto> getComments(@PathVariable String eventFrameId) {
         return ResponseEntity.ok(commentService.getComments(eventFrameId));
     }
 
@@ -53,7 +53,7 @@ public class CommentController {
             @ApiResponse(responseCode = "409", description = "하루에 여러 번의 기대평을 작성하려 할 때",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Boolean> createComment(@EventUserAnnotation EventUserInfo userInfo, @PathVariable Long eventFrameId, @RequestBody @Valid CreateCommentDto dto) {
+    public ResponseEntity<Boolean> createComment(@EventUserAnnotation EventUserInfo userInfo, @PathVariable String eventFrameId, @RequestBody @Valid CreateCommentDto dto) {
         boolean isPositive = apiService.analyzeComment(dto.getContent());
         return ResponseEntity.ok(commentService.createComment(userInfo.getUserId(), eventFrameId, dto, isPositive));
     }

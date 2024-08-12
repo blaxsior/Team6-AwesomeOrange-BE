@@ -64,7 +64,7 @@ public class EventUserController {
             @ApiResponse(responseCode = "401", description = "인증번호가 일치하지 않을 때",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
-    public ResponseEntity<TokenDto> checkAuthCode(@PathVariable Long eventFrameId,  @RequestBody @Valid RequestAuthCodeDto dto) {
+    public ResponseEntity<TokenDto> checkAuthCode(@PathVariable String eventFrameId,  @RequestBody @Valid RequestAuthCodeDto dto) {
         return ResponseEntity.ok(eventUserService.checkAuthCode(dto, eventFrameId));
     }
 }
