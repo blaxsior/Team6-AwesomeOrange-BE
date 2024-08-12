@@ -42,7 +42,9 @@
 ![image](https://github.com/user-attachments/assets/d7444775-cbad-48a2-a278-fd73368a1b6e)
 
 ## ERD
-<img width="686" alt="image" src="https://github.com/user-attachments/assets/eece7379-ad7b-4b29-b0bb-ae4bc20a7104">
+![image](https://github.com/user-attachments/assets/5a014392-513c-48ff-92fd-94732f4f7277)
+
+
 
 ## Tech Stack
 
