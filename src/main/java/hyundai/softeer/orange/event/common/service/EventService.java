@@ -230,8 +230,8 @@ public class EventService {
      * @param name 이벤트 프레임의 이름
      */
     @Transactional
-    public void createEventFrame(String name) {
-        EventFrame eventFrame = EventFrame.of(name);
+    public void createEventFrame(String frameId, String name) {
+        EventFrame eventFrame = EventFrame.of(frameId, name);
         efRepository.save(eventFrame);
     }
 

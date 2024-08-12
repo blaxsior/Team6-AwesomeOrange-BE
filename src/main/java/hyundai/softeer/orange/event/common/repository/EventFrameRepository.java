@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface EventFrameRepository extends JpaRepository<EventFrame, Long> {
     Optional<EventFrame> findByName(String name);
 
-    @Query("SELECT ef.id FROM EventFrame ef")
-    List<Long> findAllIds();
+    @Query("SELECT ef.frameId FROM EventFrame ef")
+    List<String> findAllFrameIds();
+
+    Optional<EventFrame> findByFrameId(String frameId);
 }
