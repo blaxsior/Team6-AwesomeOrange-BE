@@ -35,11 +35,9 @@ public class CommentService {
     @Transactional(readOnly = true)
     @Cacheable(value = "comments", key = ConstantUtil.COMMENTS_KEY + " + #eventFrameId")
     public ResponseCommentsDto getComments(String eventFrameId) {
+        log.info("fetching comments of {}", eventFrameId);
         EventFrame frame = getEventFrame(eventFrameId);
-        List<ResponseCommentDto> comments = commentRepository.findRandomPositiveComments(frame.getId(), ConstantUtil.COMMENTS_SIZE)
-                .stream()
-                .map(ResponseCommentDto::from)
-                .toList();
+        List<ResponseCommentDto> comments = commentRepository.findRandomPositiveComments(frame.getId(), PageRequest.of(0, ConstantUtil.COMMENTS_SIZE));
         log.info("comments of {} fetched from DB to Redis", eventFrameId);
         return new ResponseCommentsDto(comments);
     }
