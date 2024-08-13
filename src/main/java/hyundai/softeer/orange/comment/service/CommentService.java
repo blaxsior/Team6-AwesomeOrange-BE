@@ -34,8 +34,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     @Cacheable(value = "comments", key = ConstantUtil.COMMENTS_KEY + " + #eventFrameId")
     public ResponseCommentsDto getComments(String eventFrameId) {
-        EventFrame frame = eventFrameRepository.findByFrameId(eventFrameId)
-                .orElseThrow(() -> new CommentException(ErrorCode.EVENT_FRAME_NOT_FOUND));
+        EventFrame frame = getEventFrame(eventFrameId);
         List<ResponseCommentDto> comments = commentRepository.findRandomPositiveComments(frame.getId(), ConstantUtil.COMMENTS_SIZE)
                 .stream()
                 .map(ResponseCommentDto::from)
@@ -46,11 +45,9 @@ public class CommentService {
 
     // 신규 기대평을 등록한다.
     @Transactional
-    public Boolean createComment(String userId, String eventFrameId, CreateCommentDto dto, Boolean isPositive) {
-        EventUser eventUser = eventUserRepository.findByUserId(userId)
-                .orElseThrow(() -> new CommentException(ErrorCode.EVENT_USER_NOT_FOUND));
-        EventFrame eventFrame = eventFrameRepository.findByFrameId(eventFrameId)
-                .orElseThrow(() -> new CommentException(ErrorCode.EVENT_FRAME_NOT_FOUND));
+    public Boolean createComment(String userId, String eventFrameId, CreateCommentDto dto) {
+        EventUser eventUser = getEventUser(userId);
+        EventFrame eventFrame = getEventFrame(eventFrameId);
 
         // 하루에 여러 번의 기대평을 작성하려 할 때 예외처리
         if(commentRepository.existsByCreatedDateAndEventUser(eventUser.getId())) {
@@ -67,8 +64,7 @@ public class CommentService {
     // 오늘 이 유저가 기대평을 작성할 수 있는지 여부를 조회한다.
     @Transactional(readOnly = true)
     public Boolean isCommentable(String userId) {
-        EventUser eventUser = eventUserRepository.findByUserId(userId)
-                .orElseThrow(() -> new CommentException(ErrorCode.EVENT_USER_NOT_FOUND));
+        EventUser eventUser = getEventUser(userId);
         log.info("checking commentable of user {}", eventUser.getUserId());
         return !commentRepository.existsByCreatedDateAndEventUser(eventUser.getId());
     }
@@ -98,5 +94,15 @@ public class CommentService {
                 .getContent().stream().map(ResponseCommentDto::from).toList();
         log.info("searched comments: {}", comments);
         return new ResponseCommentsDto(comments);
+    }
+
+    private EventUser getEventUser(String userId) {
+        return eventUserRepository.findByUserId(userId)
+                .orElseThrow(() -> new CommentException(ErrorCode.EVENT_USER_NOT_FOUND));
+    }
+
+    private EventFrame getEventFrame(String eventFrameId) {
+        return eventFrameRepository.findByFrameId(eventFrameId)
+                .orElseThrow(() -> new CommentException(ErrorCode.EVENT_FRAME_NOT_FOUND));
     }
 }
