@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "FCFS", description = "선착순 이벤트 관련 API")
+@Tag(name = "FcfsEvent", description = "선착순 이벤트 관련 API")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/event/fcfs")
 @RestController
