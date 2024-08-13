@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,7 +76,7 @@ class CommentServiceTest {
                 .id(1L)
                 .content("test")
                 .userName("test")
-                .createdAt("2021-08-01")
+                .createdAt(LocalDateTime.now())
                 .build();
         given(commentRepository.findRandomPositiveComments(anyLong(), eq(pageable)))
                 .willReturn(List.of(responseCommentDto));
