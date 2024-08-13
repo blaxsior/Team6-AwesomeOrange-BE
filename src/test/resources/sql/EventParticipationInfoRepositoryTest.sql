@@ -13,16 +13,16 @@ INSERT INTO event_user(score, event_frame_id, user_id) VALUES (0, 1, 'user2');
 INSERT INTO event_user(score, event_frame_id, user_id) VALUES (0, 1, 'user3');
 INSERT INTO event_user(score, event_frame_id, user_id) VALUES (0, 3, 'user4');
 
-INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,1);
-INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,1);
-INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,1);
+INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,1);
+INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,1);
+INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,1);
 
-INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,2);
-INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,2);
-INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,2);
-INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,2);
-INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,2);
-INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,2);
+INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,2);
+INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,2);
+INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,2);
+INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,2);
+INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,2);
+INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,2);
 
 INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,3);
 INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,3);
