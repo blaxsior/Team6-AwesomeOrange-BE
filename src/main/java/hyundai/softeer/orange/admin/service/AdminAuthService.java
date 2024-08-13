@@ -8,6 +8,8 @@ import hyundai.softeer.orange.core.auth.AuthRole;
 import hyundai.softeer.orange.core.jwt.JWTManager;
 import hyundai.softeer.orange.core.security.PasswordManager;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -16,6 +18,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class AdminAuthService {
+    private static final Logger log = LoggerFactory.getLogger(AdminAuthService.class);
     private final AdminRepository adminRepository;
     private final PasswordManager pwManager;
     private final JWTManager jwtManager;
@@ -56,7 +59,7 @@ public class AdminAuthService {
                 .password(encryptedPassword)
                 .nickName(nickname)
                 .build();
-
+        log.info("admin signed up: {}", admin.getUserName());
         adminRepository.save(admin);
     }
 }

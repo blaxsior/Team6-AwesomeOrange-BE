@@ -19,7 +19,8 @@ import hyundai.softeer.orange.event.dto.BriefEventDto;
 import hyundai.softeer.orange.event.dto.EventDto;
 import hyundai.softeer.orange.event.dto.EventSearchHintDto;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -35,10 +36,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * 이벤트 전반에 대한 조회, 수정을 다루는 서비스. 구체적인 액션(추첨 등)은 구체적인 클래스에서 처리 요망
  */
-@Slf4j
 @RequiredArgsConstructor
 @Service
 public class EventService {
+    private static final Logger log = LoggerFactory.getLogger(EventService.class);
     private final EventFrameRepository efRepository;
     private final EventMetadataRepository emRepository;
     private final EventFieldMapperMatcher mapperMatcher;
@@ -77,6 +78,7 @@ public class EventService {
         if(mapper == null) throw new EventException(ErrorCode.INVALID_EVENT_TYPE);
 
         mapper.fetchToEventEntity(eventMetadata, eventDto);
+        log.info("Created Event: {}", eventKey);
         emRepository.save(eventMetadata);
     }
 
@@ -89,6 +91,7 @@ public class EventService {
         String key = EventConst.TEMP_KEY(adminId);
         // 24시간 동안 유지.
         eventDtoRedisTemplate.opsForValue().set(key, eventDto, EventConst.TEMP_EVENT_DURATION_HOUR, TimeUnit.HOURS);
+        log.info("Saved temp event by {}", adminId);
     }
 
     /**
@@ -100,6 +103,7 @@ public class EventService {
         String key = EventConst.TEMP_KEY(adminId);
         String dto = (String) eventDtoRedisTemplate.opsForValue().get(key);
 
+        log.info("Fetched temp event by {}", adminId);
         return parseUtil.parse(dto, EventDto.class);
     }
 
@@ -110,6 +114,7 @@ public class EventService {
     public void clearTempEvent(Long adminId) {
         String key = EventConst.TEMP_KEY(adminId);
         eventDtoRedisTemplate.delete(key);
+        log.info("Cleared temp event by {}", adminId);
     }
 
     /**
@@ -132,6 +137,7 @@ public class EventService {
         if(mapper == null) throw new EventException(ErrorCode.INVALID_EVENT_TYPE);
 
         mapper.editEventField(eventMetadata, eventDto);
+        log.info("Edited event: {}", eventId);
         emRepository.save(eventMetadata);
     }
 
@@ -160,6 +166,7 @@ public class EventService {
                 .build();
 
         mapper.fetchToDto(metadata, eventDto);
+        log.info("Fetched Event Info: {}", eventId);
         return eventDto;
     }
 
@@ -206,6 +213,7 @@ public class EventService {
                         .page(pageInfo)
         );
 
+        log.info("Searched events for {}", search);
         return eventPage.getContent();
     }
 
@@ -219,6 +227,7 @@ public class EventService {
         var isDrawEvent = EventSpecification.isEventTypeOf(EventType.draw);
         // 내부적으로는 모든 데이터를 fetch하는 문제가 여전히 존재.
 
+        log.info("searching hints for {}", search);
         return emRepository.findBy(
                 searchOnEventIdDefaultReject.and(isDrawEvent),
                 (q) -> q.as(EventSearchHintDto.class).all()
@@ -233,6 +242,7 @@ public class EventService {
     public void createEventFrame(String frameId, String name) {
         EventFrame eventFrame = EventFrame.of(frameId, name);
         efRepository.save(eventFrame);
+        log.info("Created Event Frame: {}", name);
     }
 
 }

@@ -13,6 +13,8 @@ import hyundai.softeer.orange.event.fcfs.util.FcfsUtil;
 import hyundai.softeer.orange.eventuser.entity.EventUser;
 import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import java.util.Set;
 @Service
 public class FcfsManageService {
 
+    private static final Logger log = LoggerFactory.getLogger(FcfsManageService.class);
     private final EventUserRepository eventUserRepository;
     private final FcfsEventRepository fcfsEventRepository;
     private final FcfsEventWinningInfoRepository fcfsEventWinningInfoRepository;
@@ -39,6 +42,7 @@ public class FcfsManageService {
     public void registerFcfsEvents() {
         List<FcfsEvent> events = fcfsEventRepository.findByStartTimeBetween(LocalDateTime.now(), LocalDateTime.now().plusDays(1));
         events.forEach(this::prepareEventInfo);
+        log.info("Today's FCFS events were registered in Redis");
     }
 
     // redis에 저장된 모든 선착순 이벤트의 당첨자 정보를 DB로 이관
@@ -69,6 +73,7 @@ public class FcfsManageService {
             fcfsEventWinningInfoRepository.saveAll(winningInfos);
             deleteEventInfo(eventId);
         }
+        log.info("Winners of all FCFS events were registered in DB");
     }
 
     // 특정 선착순 이벤트의 정보 조회
@@ -85,6 +90,7 @@ public class FcfsManageService {
         // 서버시간 < 이벤트시작시간 < 서버시간+3시간 -> countdown
         // 이벤트시작시간 < 서버시간 < 이벤트시작시간+7시간 -> progress
         // 그 외 -> waiting
+        log.info("Checked FCFS event status: {}", eventSequence);
         if(nowDateTime.isBefore(eventStartTime) && nowDateTime.plusHours(ConstantUtil.FCFS_COUNTDOWN_HOUR).isAfter(eventStartTime)) {
             return new ResponseFcfsInfoDto(nowDateTime, "countdown");
         } else if(eventStartTime.isBefore(nowDateTime) && eventStartTime.plusHours(ConstantUtil.FCFS_AVAILABLE_HOUR).isAfter(nowDateTime)) {
@@ -106,6 +112,7 @@ public class FcfsManageService {
     // 특정 선착순 이벤트의 당첨자 조회 - 어드민에서 사용
     @Transactional(readOnly = true)
     public List<ResponseFcfsWinnerDto> getFcfsWinnersInfo(Long eventSequence) {
+        log.info("Checked FCFS winners: {}", eventSequence);
         return fcfsEventWinningInfoRepository.findByFcfsEventId(eventSequence)
                 .stream()
                 .map(winningInfo -> ResponseFcfsWinnerDto.builder()
@@ -125,6 +132,7 @@ public class FcfsManageService {
         // 현재 정책 상 1~4 중 하나의 숫자를 선정하여 현재 선착순 이벤트의 정답에 저장
         int answer = new Random().nextInt(4) + 1;
         stringRedisTemplate.opsForValue().set(FcfsUtil.answerFormatting(key), String.valueOf(answer));
+        log.info("Registered FCFS event: {}", key);
     }
 
     public void deleteEventInfo(String eventId) {
@@ -134,5 +142,6 @@ public class FcfsManageService {
         stringRedisTemplate.delete(FcfsUtil.winnerFormatting(eventId));
         numberRedisTemplate.delete(FcfsUtil.keyFormatting(eventId));
         booleanRedisTemplate.delete(FcfsUtil.endFlagFormatting(eventId));
+        log.info("Deleted Information of FCFS event: {}", eventId);
     }
 }

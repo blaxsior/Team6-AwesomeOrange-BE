@@ -8,6 +8,8 @@ import hyundai.softeer.orange.event.url.exception.UrlException;
 import hyundai.softeer.orange.event.url.repository.UrlRepository;
 import hyundai.softeer.orange.event.url.util.UrlTypeValidation;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import java.util.Random;
 @Service
 public class UrlService {
 
+    private static final Logger log = LoggerFactory.getLogger(UrlService.class);
     private final UrlRepository urlRepository;
 
     @Transactional
@@ -33,6 +36,7 @@ public class UrlService {
 
         Url url = Url.of(originalUrl, shortUrl);
         urlRepository.save(url);
+        log.info("shortUrl generated: {}", shortUrl);
         return new ResponseUrlDto(shortUrl);
     }
 
@@ -40,6 +44,7 @@ public class UrlService {
     public String getOriginalUrl(String shortUrl) {
         Url url = urlRepository.findByShortUrl(shortUrl)
                 .orElseThrow(() -> new UrlException(ErrorCode.SHORT_URL_NOT_FOUND));
+        log.info("shortUrl {}'s originalUrl fetched: {}", shortUrl, url.getOriginalUrl());
         return url.getOriginalUrl();
     }
 
