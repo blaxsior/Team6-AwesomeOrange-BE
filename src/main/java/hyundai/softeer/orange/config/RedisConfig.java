@@ -3,6 +3,7 @@ package hyundai.softeer.orange.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
 import hyundai.softeer.orange.core.ParseUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -18,9 +19,12 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
 
+@RequiredArgsConstructor
 @EnableCaching
 @Configuration
 public class RedisConfig {
+    private final ObjectMapper objectMapper;
+
     @Bean
     public ParseUtil parseUtil(ObjectMapper objectMapper) {
         return new ParseUtil(objectMapper);
@@ -33,7 +37,6 @@ public class RedisConfig {
         template.setKeySerializer(new StringRedisSerializer());
 
         // ObjectMapper 설정
-        ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.activateDefaultTyping(
                 objectMapper.getPolymorphicTypeValidator(),
                 ObjectMapper.DefaultTyping.NON_FINAL);
@@ -84,10 +87,10 @@ public class RedisConfig {
     }
 
     @Bean
-    public CacheManager diareatCacheManager(RedisConnectionFactory cf) {
+    public CacheManager cacheManager(RedisConnectionFactory cf) {
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper)))
                 .entryTtl(Duration.ofMinutes(120L)); // 캐시 만료 시간 2시간
         return RedisCacheManager.RedisCacheManagerBuilder.fromConnectionFactory(cf).cacheDefaults(redisCacheConfiguration).build();
     }

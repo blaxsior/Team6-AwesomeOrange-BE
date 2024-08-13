@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Getter
@@ -17,14 +16,14 @@ public class ResponseCommentDto {
     private Long id;
     private String content;
     private String userName;
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     // CommentRepository에서 Projection으로 ResponseCommentDto를 생성할 때 사용, 추후 더 나은 방법으로 수정 필요
     public ResponseCommentDto(Long id, String content, String userName, LocalDateTime createdAt) {
         this.id = id;
         this.content = content;
         this.userName = userName;
-        this.createdAt = createdAt.toString();
+        this.createdAt = createdAt;
     }
 
     public static ResponseCommentDto from(Comment comment) {
@@ -32,7 +31,7 @@ public class ResponseCommentDto {
                 .id(comment.getId())
                 .content(comment.getContent())
                 .userName(comment.getEventUser().getUserName())
-                .createdAt(comment.getCreatedAt().toString())
+                .createdAt(comment.getCreatedAt())
                 .build();
     }
 }
