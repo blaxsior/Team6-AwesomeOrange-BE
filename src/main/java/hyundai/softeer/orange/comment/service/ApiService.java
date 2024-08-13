@@ -17,6 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RequiredArgsConstructor
 @Service
 public class ApiService {
@@ -29,14 +32,27 @@ public class ApiService {
         headers.set(ConstantUtil.CLIENT_ID, naverApiConfig.getClientId());
         headers.set(ConstantUtil.CLIENT_SECRET, naverApiConfig.getClientSecret());
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> requestEntity = new HttpEntity<>(content, headers);
+
+        // Create a JSON for the request body
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("content", content);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonContent = "";
+        try {
+            jsonContent = objectMapper.writeValueAsString(requestBody);
+        } catch (JsonProcessingException e) {
+            throw new CommentException(ErrorCode.INVALID_JSON);
+        }
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(jsonContent, headers);
+        log.info("comment <{}> sentiment analysis request to Naver API", content);
 
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(naverApiConfig.getUrl(), requestEntity, String.class);
         String responseBody = responseEntity.getBody();
         boolean isPositive = true;
 
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             JsonNode rootNode = objectMapper.readTree(responseBody);
 
