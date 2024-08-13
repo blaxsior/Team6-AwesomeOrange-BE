@@ -68,7 +68,7 @@ public class EventParticipationService {
      * @param eventUserId 이벤트 유저의 id
      * @param date 이벤트에 참여하는 날짜.
      */
-    private void participateAtDate(String eventId, String eventUserId, LocalDateTime date) {
+    protected void participateAtDate(String eventId, String eventUserId, LocalDateTime date) {
         // 이벤트가 존재하는지 검사
         EventMetadata event = emRepository.findFirstByEventId(eventId)
                 .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
@@ -76,6 +76,7 @@ public class EventParticipationService {
         if(event.getEventType() != EventType.draw) throw new EventException(ErrorCode.EVENT_NOT_FOUND);
 
         DrawEvent drawEvent = event.getDrawEvent();
+
         EventUser eventUser = eventUserRepository.findByUserId(eventUserId)
                 .orElseThrow(() -> new EventUserException(ErrorCode.USER_NOT_FOUND));
 
@@ -83,7 +84,7 @@ public class EventParticipationService {
 
         // 이벤트 기간 안에 있는지 검사
         if(event.getStartTime().isAfter(date) || event.getEndTime().isBefore(date))
-            throw new EventException(ErrorCode.INVALID_EVENT_TYPE);
+            throw new EventException(ErrorCode.INVALID_EVENT_TIME);
 
         // 오늘 시작 / 끝 시간
         LocalDateTime startOfDay = today.atStartOfDay();
