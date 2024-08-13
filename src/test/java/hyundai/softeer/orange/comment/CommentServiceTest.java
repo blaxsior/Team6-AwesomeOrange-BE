@@ -1,6 +1,7 @@
 package hyundai.softeer.orange.comment;
 
 import hyundai.softeer.orange.comment.dto.CreateCommentDto;
+import hyundai.softeer.orange.comment.dto.ResponseCommentDto;
 import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
 import hyundai.softeer.orange.comment.entity.Comment;
 import hyundai.softeer.orange.comment.exception.CommentException;
@@ -8,6 +9,7 @@ import hyundai.softeer.orange.comment.repository.CommentRepository;
 import hyundai.softeer.orange.comment.service.CommentService;
 import hyundai.softeer.orange.comment.service.CommentValidator;
 import hyundai.softeer.orange.common.ErrorCode;
+import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
 import hyundai.softeer.orange.eventuser.entity.EventUser;
@@ -21,6 +23,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,24 +51,34 @@ class CommentServiceTest {
     @Mock
     private EventUserRepository eventUserRepository;
 
+    @Mock
+    private EventFrame eventFrame;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         given(eventFrameRepository.findByFrameId(eventFrameId)).willReturn(Optional.of(eventFrame));
+        given(eventFrame.getId()).willReturn(1L);
     }
 
     Long commentId = 1L;
     String eventFrameId = "the-new-ioniq5";
     CreateCommentDto createCommentDto = new CreateCommentDto("test");
     EventUser eventUser = EventUser.of("test", "01012345678", null, "uuid");
-    EventFrame eventFrame = EventFrame.of("the-new-ioniq5", "eventFrame");
+    Pageable pageable = PageRequest.of(0, ConstantUtil.COMMENTS_SIZE);
 
     @DisplayName("getComments: 무작위 긍정 기대평 목록을 조회한다.")
     @Test
     void getCommentsTest() {
         // given
-        given(commentRepository.findRandomPositiveComments(any(), anyInt()))
-                .willReturn(List.of(Comment.of("test", eventFrame, eventUser, true)));
+        ResponseCommentDto responseCommentDto = ResponseCommentDto.builder()
+                .id(1L)
+                .content("test")
+                .userName("test")
+                .createdAt("2021-08-01")
+                .build();
+        given(commentRepository.findRandomPositiveComments(anyLong(), eq(pageable)))
+                .willReturn(List.of(responseCommentDto));
 
         // when
         ResponseCommentsDto dto = commentService.getComments(eventFrameId);
@@ -72,21 +86,21 @@ class CommentServiceTest {
         // then
         assertThat(dto.getComments()).hasSize(1);
         assertThat(dto.getComments().get(0).getContent()).isEqualTo("test");
-        verify(commentRepository, times(1)).findRandomPositiveComments(any(), anyInt());
+        verify(commentRepository, times(1)).findRandomPositiveComments(anyLong(), any(Pageable.class));
     }
 
     @DisplayName("getComments: 무작위 긍정 기대평 목록이 없는 경우 빈 목록을 반환한다.")
     @Test
     void getCommentsTestEmpty() {
         // given
-        given(commentRepository.findRandomPositiveComments(any(), anyInt())).willReturn(List.of());
+        given(commentRepository.findRandomPositiveComments(anyLong(), eq(pageable))).willReturn(List.of());
 
         // when
         ResponseCommentsDto dto = commentService.getComments(eventFrameId);
 
         // then
         assertThat(dto.getComments()).isEmpty();
-        verify(commentRepository, times(1)).findRandomPositiveComments(any(), anyInt());
+        verify(commentRepository, times(1)).findRandomPositiveComments(anyLong(), any(Pageable.class));
     }
 
     @DisplayName("createComment: 신규 기대평을 작성한다.")
