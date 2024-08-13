@@ -28,8 +28,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -56,7 +55,7 @@ class EventUserControllerTest {
     ObjectMapper mapper = new ObjectMapper();
     RequestUserDto requestUserDto = new RequestUserDto("hyundai", "01000000000");
     TokenDto tokenDto = new TokenDto("token");
-    Long eventFrameId = 1L;
+    String eventFrameId = "the-new-ioniq5";
 
     @DisplayName("login: 로그인 API를 호출한다.")
     @ParameterizedTest(name = "name: {0}, phoneNumber: {1}")
@@ -135,7 +134,7 @@ class EventUserControllerTest {
         RequestAuthCodeDto requestAuthCodeDto = new RequestAuthCodeDto("name", "01000000000", "123456");
         String requestBody = mapper.writeValueAsString(requestAuthCodeDto);
         String responseBody = mapper.writeValueAsString(tokenDto);
-        when(eventUserService.checkAuthCode(any(RequestAuthCodeDto.class), anyLong())).thenReturn(tokenDto);
+        when(eventUserService.checkAuthCode(any(RequestAuthCodeDto.class), anyString())).thenReturn(tokenDto);
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/check-auth/" + eventFrameId)
@@ -172,7 +171,7 @@ class EventUserControllerTest {
         RequestAuthCodeDto requestAuthCodeDto = new RequestAuthCodeDto("name", "01000000000", "123456");
         String requestBody = mapper.writeValueAsString(requestAuthCodeDto);
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.INVALID_AUTH_CODE));
-        when(eventUserService.checkAuthCode(any(RequestAuthCodeDto.class), anyLong())).thenThrow(new EventUserException(ErrorCode.INVALID_AUTH_CODE));
+        when(eventUserService.checkAuthCode(any(RequestAuthCodeDto.class), anyString())).thenThrow(new EventUserException(ErrorCode.INVALID_AUTH_CODE));
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/check-auth/" + eventFrameId)

@@ -49,10 +49,10 @@ public class CoolSmsService implements SmsService {
         message.setText("[소프티어 오렌지] 인증번호는 (" + authCode + ")입니다.");
 
         SingleMessageSentResponse response = defaultMessageService.sendOne(new SingleMessageSendingRequest(message));
-        log.info("{}에게 SMS 전송 완료: {}", dto.getPhoneNumber(), response);
 
         // 5분 동안 인증번호 유효
         stringRedisTemplate.opsForValue().set(dto.getPhoneNumber(), authCode, ConstantUtil.AUTH_CODE_EXPIRE_TIME, TimeUnit.MINUTES);
+        log.info("successfully send SMS to {}, response: {}", dto.getPhoneNumber(), response);
     }
 
     // 6자리 난수 인증번호 생성

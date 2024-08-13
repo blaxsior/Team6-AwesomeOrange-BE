@@ -6,5 +6,7 @@ import lombok.Getter;
 @Getter
 public class EventFrameCreateRequest {
     @NotBlank
+    private String frameId;
+    @NotBlank
     private String name;
 }

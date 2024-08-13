@@ -13,6 +13,8 @@ import hyundai.softeer.orange.eventuser.entity.EventUser;
 import hyundai.softeer.orange.eventuser.exception.EventUserException;
 import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ import java.util.UUID;
 @Service
 public class EventUserService {
 
+    private static final Logger log = LoggerFactory.getLogger(EventUserService.class);
     private final EventUserRepository eventUserRepository;
     private final EventFrameRepository eventFrameRepository;
     private final StringRedisTemplate stringRedisTemplate;
@@ -39,6 +42,7 @@ public class EventUserService {
         EventUser eventUser = eventUserRepository.findByUserNameAndPhoneNumber(dto.getName(), dto.getPhoneNumber())
                 .orElseThrow(() -> new EventUserException(ErrorCode.EVENT_USER_NOT_FOUND));
 
+        log.info("EventUser {} found, Login success", eventUser.getUserName());
         return generateToken(eventUser);
     }
 
@@ -49,7 +53,7 @@ public class EventUserService {
      * 4. 전화번호로 발송된 인증번호가 존재하지 않는다면 400 예외
      */
     @Transactional
-    public TokenDto checkAuthCode(RequestAuthCodeDto dto, Long eventFrameId) {
+    public TokenDto checkAuthCode(RequestAuthCodeDto dto, String eventFrameId) {
         // Redis에서 인증번호 조회
         String authCode = stringRedisTemplate.opsForValue().get(dto.getPhoneNumber());
 
@@ -67,11 +71,12 @@ public class EventUserService {
         stringRedisTemplate.delete(dto.getPhoneNumber());
 
         // DB에 유저 데이터 저장
-        EventFrame eventFrame = eventFrameRepository.findById(eventFrameId)
+        EventFrame eventFrame = eventFrameRepository.findByFrameId(eventFrameId)
                 .orElseThrow(() -> new EventUserException(ErrorCode.EVENT_FRAME_NOT_FOUND));
         String userId = UUID.randomUUID().toString().substring(0, ConstantUtil.USER_ID_LENGTH);
         EventUser eventUser = EventUser.of(dto.getName(), dto.getPhoneNumber(), eventFrame, userId);
         eventUserRepository.save(eventUser);
+        log.info("EventUser {} saved, Authentication success", eventUser.getUserName());
         return generateToken(eventUser);
     }
 
@@ -80,6 +85,7 @@ public class EventUserService {
         Map<String, Object> claims = Map.of(ConstantUtil.CLAIMS_USER_KEY, eventUser.getUserId(), ConstantUtil.CLAIMS_ROLE_KEY, AuthRole.event_user,
                 ConstantUtil.CLAIMS_USER_NAME_KEY, eventUser.getUserName());
         String token = jwtManager.generateToken(ConstantUtil.JWT_USER_KEY, claims, ConstantUtil.JWT_LIFESPAN);
+        log.info("JWT Token generated for EventUser {}", eventUser.getUserName());
         return new TokenDto(token);
     }
 }

@@ -4,7 +4,8 @@ import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.event.fcfs.exception.FcfsEventException;
 import hyundai.softeer.orange.event.fcfs.util.FcfsUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -14,12 +15,12 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
-@Slf4j
 @RequiredArgsConstructor
 @Primary
 @Service
 public class RedisLuaFcfsService implements FcfsService {
 
+    private static final Logger log = LoggerFactory.getLogger(RedisLuaFcfsService.class);
     private final StringRedisTemplate stringRedisTemplate;
     private final RedisTemplate<String, Integer> numberRedisTemplate;
     private final RedisTemplate<String, Boolean> booleanRedisTemplate;

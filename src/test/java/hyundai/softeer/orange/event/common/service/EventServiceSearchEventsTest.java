@@ -22,7 +22,7 @@ import static org.mockito.Mockito.mock;
 
 @DataJpaTest
 @TestPropertySource(locations = "classpath:application-test.yml")
-public class EventServiceSearchEventsTest {
+class EventServiceSearchEventsTest {
     @Autowired
     private EventMetadataRepository emRepo;
     @Autowired
@@ -37,7 +37,7 @@ public class EventServiceSearchEventsTest {
         mapperMatcher = mock(EventFieldMapperMatcher.class);
         keyGenerator = mock(EventKeyGenerator.class);
         eventService = new EventService(efRepo, emRepo, mapperMatcher, keyGenerator, null, null);
-        EventFrame ef = EventFrame.of("test");
+        EventFrame ef = EventFrame.of("the-new-ioniq5","test");
         efRepo.save(ef);
         EventMetadata em1 = EventMetadata.builder()
                 .eventId("HD240805_001")

@@ -13,7 +13,8 @@ import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
 import hyundai.softeer.orange.eventuser.entity.EventUser;
 import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -21,10 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Slf4j
 @RequiredArgsConstructor
 @Service
 public class CommentService {
+    private static final Logger log = LoggerFactory.getLogger(CommentService.class);
     private final CommentRepository commentRepository;
     private final EventFrameRepository eventFrameRepository;
     private final EventUserRepository eventUserRepository;
@@ -32,20 +33,23 @@ public class CommentService {
     // 주기적으로 무작위 추출되는 긍정 기대평 목록을 조회한다.
     @Transactional(readOnly = true)
     @Cacheable(value = "comments", key = ConstantUtil.COMMENTS_KEY + " + #eventFrameId")
-    public ResponseCommentsDto getComments(Long eventFrameId) {
-        List<ResponseCommentDto> comments = commentRepository.findRandomPositiveComments(eventFrameId, ConstantUtil.COMMENTS_SIZE)
+    public ResponseCommentsDto getComments(String eventFrameId) {
+        EventFrame frame = eventFrameRepository.findByFrameId(eventFrameId)
+                .orElseThrow(() -> new CommentException(ErrorCode.EVENT_FRAME_NOT_FOUND));
+        List<ResponseCommentDto> comments = commentRepository.findRandomPositiveComments(frame.getId(), ConstantUtil.COMMENTS_SIZE)
                 .stream()
                 .map(ResponseCommentDto::from)
                 .toList();
+        log.info("comments of {} fetched from DB to Redis", eventFrameId);
         return new ResponseCommentsDto(comments);
     }
 
     // 신규 기대평을 등록한다.
     @Transactional
-    public Boolean createComment(String userId, Long eventFrameId, CreateCommentDto dto, Boolean isPositive) {
+    public Boolean createComment(String userId, String eventFrameId, CreateCommentDto dto, Boolean isPositive) {
         EventUser eventUser = eventUserRepository.findByUserId(userId)
                 .orElseThrow(() -> new CommentException(ErrorCode.EVENT_USER_NOT_FOUND));
-        EventFrame eventFrame = eventFrameRepository.findById(eventFrameId)
+        EventFrame eventFrame = eventFrameRepository.findByFrameId(eventFrameId)
                 .orElseThrow(() -> new CommentException(ErrorCode.EVENT_FRAME_NOT_FOUND));
 
         // 하루에 여러 번의 기대평을 작성하려 할 때 예외처리
@@ -56,6 +60,7 @@ public class CommentService {
         // TODO: 점수정책와 연계하여 기대평 등록 시 점수를 부여 추가해야함
         Comment comment = Comment.of(dto.getContent(), eventFrame, eventUser, isPositive);
         commentRepository.save(comment);
+        log.info("created comment: {}", comment.getId());
         return true;
     }
 
@@ -64,6 +69,7 @@ public class CommentService {
     public Boolean isCommentable(String userId) {
         EventUser eventUser = eventUserRepository.findByUserId(userId)
                 .orElseThrow(() -> new CommentException(ErrorCode.EVENT_USER_NOT_FOUND));
+        log.info("checking commentable of user {}", eventUser.getUserId());
         return !commentRepository.existsByCreatedDateAndEventUser(eventUser.getId());
     }
 
@@ -75,12 +81,14 @@ public class CommentService {
         }
 
         commentRepository.deleteById(commentId);
+        log.info("deleted comment: {}", commentId);
         return commentId;
     }
 
     @Transactional
     public void deleteComments(List<Long> commentIds) {
         commentRepository.deleteAllById(commentIds);
+        log.info("deleted comments: {}", commentIds);
     }
 
     public ResponseCommentsDto searchComments(String eventId, Integer page, Integer size) {
@@ -88,6 +96,7 @@ public class CommentService {
 
         var comments = commentRepository.findAllByEventId(eventId,pageInfo)
                 .getContent().stream().map(ResponseCommentDto::from).toList();
+        log.info("searched comments: {}", comments);
         return new ResponseCommentsDto(comments);
     }
 }

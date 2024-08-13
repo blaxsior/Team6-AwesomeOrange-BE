@@ -8,6 +8,8 @@ import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.config.NaverApiConfig;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class ApiService {
 
+    private static final Logger log = LoggerFactory.getLogger(ApiService.class);
     private final NaverApiConfig naverApiConfig;
 
     public boolean analyzeComment(String content) {
@@ -48,6 +51,7 @@ public class ApiService {
         } catch (JsonProcessingException e) {
             throw new CommentException(ErrorCode.INVALID_JSON);
         }
+        log.info("comment <{}> sentiment analysis result: {}", content, isPositive);
         return isPositive;
     }
 }

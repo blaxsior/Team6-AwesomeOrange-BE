@@ -12,6 +12,8 @@ import hyundai.softeer.orange.event.draw.repository.DrawEventRepository;
 import hyundai.softeer.orange.event.draw.component.picker.WinnerPicker;
 import hyundai.softeer.orange.event.draw.repository.DrawEventWinningInfoRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class DrawEventService {
+    private static final Logger log = LoggerFactory.getLogger(DrawEventService.class);
     private final DrawEventRepository deRepository;
     private final DrawEventWinningInfoRepository deWinningInfoRepository;
     private final WinnerPicker picker;
@@ -91,6 +94,7 @@ public class DrawEventService {
             remain--;
         }
 
+        log.info("Draw Event: {}, Winners: {}", drawEventRawId, insertTargets.size());
         deWinningInfoRepository.insertMany(insertTargets);
     }
 }
