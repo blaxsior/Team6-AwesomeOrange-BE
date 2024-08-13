@@ -22,9 +22,9 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
-public class ApiService {
+public class CommentValidator {
 
-    private static final Logger log = LoggerFactory.getLogger(ApiService.class);
+    private static final Logger log = LoggerFactory.getLogger(CommentValidator.class);
     private final NaverApiConfig naverApiConfig;
 
     public boolean analyzeComment(String content) {

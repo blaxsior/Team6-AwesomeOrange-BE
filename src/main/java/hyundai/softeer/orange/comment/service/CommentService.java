@@ -29,6 +29,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final EventFrameRepository eventFrameRepository;
     private final EventUserRepository eventUserRepository;
+    private final CommentValidator commentValidator;
 
     // 주기적으로 무작위 추출되는 긍정 기대평 목록을 조회한다.
     @Transactional(readOnly = true)
@@ -53,6 +54,8 @@ public class CommentService {
         if(commentRepository.existsByCreatedDateAndEventUser(eventUser.getId())) {
             throw new CommentException(ErrorCode.COMMENT_ALREADY_EXISTS);
         }
+
+        boolean isPositive = commentValidator.analyzeComment(dto.getContent());
 
         // TODO: 점수정책와 연계하여 기대평 등록 시 점수를 부여 추가해야함
         Comment comment = Comment.of(dto.getContent(), eventFrame, eventUser, isPositive);

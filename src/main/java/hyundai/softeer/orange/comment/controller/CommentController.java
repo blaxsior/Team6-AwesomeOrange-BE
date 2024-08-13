@@ -2,7 +2,6 @@ package hyundai.softeer.orange.comment.controller;
 
 import hyundai.softeer.orange.comment.dto.CreateCommentDto;
 import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
-import hyundai.softeer.orange.comment.service.ApiService;
 import hyundai.softeer.orange.comment.service.CommentService;
 import hyundai.softeer.orange.common.ErrorResponse;
 import hyundai.softeer.orange.core.auth.Auth;
@@ -29,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 public class CommentController {
 
     private final CommentService commentService;
-    private final ApiService apiService;
 
     @Tag(name = "Comment")
     @GetMapping("/{eventFrameId}")
@@ -55,8 +53,7 @@ public class CommentController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<Boolean> createComment(@Parameter(hidden = true) @EventUserAnnotation EventUserInfo userInfo, @PathVariable String eventFrameId, @RequestBody @Valid CreateCommentDto dto) {
-        boolean isPositive = apiService.analyzeComment(dto.getContent());
-        return ResponseEntity.ok(commentService.createComment(userInfo.getUserId(), eventFrameId, dto, isPositive));
+        return ResponseEntity.ok(commentService.createComment(userInfo.getUserId(), eventFrameId, dto));
     }
 
     @Auth(AuthRole.event_user)
