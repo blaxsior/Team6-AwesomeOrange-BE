@@ -40,7 +40,7 @@ public class DrawEventFieldMapper implements EventFieldMapper {
         if (dto == null) throw new EventException(ErrorCode.INVALID_JSON);
 
         DrawEvent event = new DrawEvent();
-        metadata.addDrawEvent(event);
+        metadata.updateDrawEvent(event);
         event.setEventMetadata(metadata);
 
         List<DrawEventScorePolicy> policies = dto.getPolicies().stream().map(
@@ -65,37 +65,36 @@ public class DrawEventFieldMapper implements EventFieldMapper {
 
     @Override
     public void fetchToDto(EventMetadata metadata, EventDto eventDto) {
-        Optional<DrawEvent> drawEventOpt = metadata.getDrawEventList().stream().findFirst();
+       DrawEvent drawEvent = metadata.getDrawEvent();
         // drawEvent 정보가 있으면 넣기
-        drawEventOpt.ifPresent(drawEvent -> {
-            DrawEventDto drawEventDto = DrawEventDto
-                    .builder()
-                    .id(drawEvent.getId())
-                    .metadata(drawEvent.getMetadataList().stream().map(
-                            it -> DrawEventMetadataDto.builder()
-                                    .id(it.getId())
-                                    .count(it.getCount())
-                                    .grade(it.getGrade())
-                                    .prizeInfo(it.getPrizeInfo())
-                                    .build()
-                    ).toList())
-                    .policies(drawEvent.getPolicyList().stream().map(
-                            it -> DrawEventScorePolicyDto.builder()
-                                    .id(it.getId())
-                                    .score(it.getScore())
-                                    .action(it.getAction())
-                                    .build()
-                    ).toList())
-                    .build();
+        if(drawEvent == null) throw new EventException(ErrorCode.INVALID_JSON);
+        DrawEventDto drawEventDto = DrawEventDto
+                .builder()
+                .id(drawEvent.getId())
+                .metadata(drawEvent.getMetadataList().stream().map(
+                        it -> DrawEventMetadataDto.builder()
+                                .id(it.getId())
+                                .count(it.getCount())
+                                .grade(it.getGrade())
+                            .prizeInfo(it.getPrizeInfo())
+                            .build()
+            ).toList())
+            .policies(drawEvent.getPolicyList().stream().map(
+                    it -> DrawEventScorePolicyDto.builder()
+                            .id(it.getId())
+                            .score(it.getScore())
+                            .action(it.getAction())
+                            .build()
+            ).toList())
+            .build();
 
             eventDto.setDraw(drawEventDto);
-        });
     }
 
     @Override
     public void editEventField(EventMetadata metadata, EventDto dto) {
-        Optional<DrawEvent> drawEventOpt = metadata.getDrawEventList().stream().findFirst();
-        DrawEvent drawEvent = drawEventOpt.orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
+        DrawEvent drawEvent = metadata.getDrawEvent();
+        if(drawEvent == null) throw new EventException(ErrorCode.EVENT_NOT_FOUND);
         DrawEventDto drawEventDto = dto.getDraw();
 
         editDrawEventMetadata(drawEvent, drawEventDto);

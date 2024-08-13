@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @Sql(value="classpath:sql/CustomDrawEventWinningInfoRepositoryImplTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(value= "classpath:sql/RefreshTable.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 @DataJpaTest(showSql = false)
 @TestPropertySource(locations = "classpath:application-test.yml")
 class CustomDrawEventWinningInfoRepositoryImplTest {

@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 // 매 테스트마다 초기화하는 코드 찾아봐야 할듯?
 @Sql(value = "classpath:sql/CommentRepositoryTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(value= "classpath:sql/RefreshTable.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 @DataJpaTest(showSql = false)
 @TestPropertySource(locations = "classpath:application-test.yml")
 class CommentRepositoryTest {
