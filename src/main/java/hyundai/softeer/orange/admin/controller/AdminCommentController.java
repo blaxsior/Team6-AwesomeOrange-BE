@@ -4,18 +4,20 @@ import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
 import hyundai.softeer.orange.comment.service.CommentService;
 import hyundai.softeer.orange.core.auth.Auth;
 import hyundai.softeer.orange.core.auth.AuthRole;
+import hyundai.softeer.orange.core.auth.list.AdminAuthRequirement;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
+@Tag(name = "admin comment", description = "어드민 페이지에서 댓글 관리에 사용되는 api")
 @RequestMapping("/api/v1/admin/comments")
 @RequiredArgsConstructor
 @RestController
-@Auth({AuthRole.admin})
+@AdminAuthRequirement @Auth({AuthRole.admin})
 public class AdminCommentController {
     private final CommentService commentService;
 
@@ -38,7 +40,7 @@ public class AdminCommentController {
          return ResponseEntity.ok(comments);
     }
 
-    @Operation(summary = "관리가 댓글 목록 삭제", description = "관리자가 이벤트에 대한 댓글 목록을 삭제한다.", responses = {
+    @Operation(summary = "관리자가 댓글 목록 삭제", description = "관리자가 이벤트에 대한 댓글 목록을 삭제한다.", responses = {
             @ApiResponse(responseCode = "200", description = "댓글 삭제 성공")
     })
     @DeleteMapping

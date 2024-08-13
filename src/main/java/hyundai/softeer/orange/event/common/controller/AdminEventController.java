@@ -5,6 +5,7 @@ import hyundai.softeer.orange.admin.entity.Admin;
 import hyundai.softeer.orange.common.ErrorResponse;
 import hyundai.softeer.orange.core.auth.Auth;
 import hyundai.softeer.orange.core.auth.AuthRole;
+import hyundai.softeer.orange.core.auth.list.AdminAuthRequirement;
 import hyundai.softeer.orange.event.common.service.EventService;
 import hyundai.softeer.orange.event.dto.BriefEventDto;
 import hyundai.softeer.orange.event.dto.EventDto;
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +31,9 @@ import java.util.List;
 /**
  * 이벤트 관련 CRUD를 다루는 API
  */
-
-@Auth({AuthRole.admin})
+@Tag(name = "admin event", description = "어드민 페이지에서 이벤트 관리에 사용하는 api")
 @Slf4j
+@AdminAuthRequirement @Auth({AuthRole.admin})
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/events")
 @RestController
