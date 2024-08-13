@@ -2,7 +2,6 @@ package hyundai.softeer.orange.comment.controller;
 
 import hyundai.softeer.orange.comment.dto.CreateCommentDto;
 import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
-import hyundai.softeer.orange.comment.service.ApiService;
 import hyundai.softeer.orange.comment.service.CommentService;
 import hyundai.softeer.orange.common.ErrorResponse;
 import hyundai.softeer.orange.core.auth.Auth;
@@ -10,6 +9,7 @@ import hyundai.softeer.orange.core.auth.AuthRole;
 import hyundai.softeer.orange.eventuser.component.EventUserAnnotation;
 import hyundai.softeer.orange.eventuser.dto.EventUserInfo;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 public class CommentController {
 
     private final CommentService commentService;
-    private final ApiService apiService;
 
     @Tag(name = "Comment")
     @GetMapping("/{eventFrameId}")
@@ -53,9 +52,8 @@ public class CommentController {
             @ApiResponse(responseCode = "409", description = "하루에 여러 번의 기대평을 작성하려 할 때",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Boolean> createComment(@EventUserAnnotation EventUserInfo userInfo, @PathVariable String eventFrameId, @RequestBody @Valid CreateCommentDto dto) {
-        boolean isPositive = apiService.analyzeComment(dto.getContent());
-        return ResponseEntity.ok(commentService.createComment(userInfo.getUserId(), eventFrameId, dto, isPositive));
+    public ResponseEntity<Boolean> createComment(@Parameter(hidden = true) @EventUserAnnotation EventUserInfo userInfo, @PathVariable String eventFrameId, @RequestBody @Valid CreateCommentDto dto) {
+        return ResponseEntity.ok(commentService.createComment(userInfo.getUserId(), eventFrameId, dto));
     }
 
     @Auth(AuthRole.event_user)
@@ -67,7 +65,7 @@ public class CommentController {
             @ApiResponse(responseCode = "404", description = "해당 정보를 갖는 유저가 존재하지 않을 때",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Boolean> isCommentable(@EventUserAnnotation EventUserInfo userInfo) {
+    public ResponseEntity<Boolean> isCommentable(@Parameter(hidden = true) @EventUserAnnotation EventUserInfo userInfo) {
         return ResponseEntity.ok(commentService.isCommentable(userInfo.getUserId()));
     }
 }

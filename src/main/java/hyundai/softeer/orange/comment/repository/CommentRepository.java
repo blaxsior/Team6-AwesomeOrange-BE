@@ -1,5 +1,6 @@
 package hyundai.softeer.orange.comment.repository;
 
+import hyundai.softeer.orange.comment.dto.ResponseCommentDto;
 import hyundai.softeer.orange.comment.dto.WriteCommentCountDto;
 import hyundai.softeer.orange.comment.entity.Comment;
 import org.springframework.data.domain.Page;
@@ -12,12 +13,16 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    // DB 상에서 무작위로 추출된 n개의 긍정 기대평 목록을 조회
-    @Query(value = "SELECT * FROM comment WHERE event_frame_id = :eventFrameId AND is_positive = true ORDER BY RAND() LIMIT :n", nativeQuery = true)
-    List<Comment> findRandomPositiveComments(Long eventFrameId, @Param("n") int n);
+    // DB 상에서 무작위로 추출된 n개의 긍정 기대평 목록을 조회하고 Dto로 반환, N+1 문제 방지 (JPQL)
+    @Query("select new hyundai.softeer.orange.comment.dto.ResponseCommentDto(c.id, c.content, cu.userName, c.createdAt) " +
+            "from Comment c " +
+            "JOIN c.eventUser cu " +
+            "where c.eventFrame.id = :eventFrameId and c.isPositive = true " +
+            "order by function('RAND')")
+    List<ResponseCommentDto> findRandomPositiveComments(Long eventFrameId, Pageable pageable);
 
-    // 오늘 날짜 기준으로 이미 유저의 기대평이 등록되어 있는지 확인
-    @Query(value = "SELECT COUNT(*) FROM comment WHERE event_user_id = :eventUserId AND DATE(createdAt) = CURDATE()", nativeQuery = true)
+    // 오늘 날짜 기준으로 이미 유저의 기대평이 등록되어 있는지 확인 (JPQL)
+    @Query("SELECT (COUNT(c) > 0) FROM Comment c WHERE c.eventUser.id = :eventUserId AND FUNCTION('DATE', c.createdAt) = CURRENT_DATE")
     boolean existsByCreatedDateAndEventUser(@Param("eventUserId") Long eventUserId);
 
     @Query(value = "SELECT c.* FROM comment c " +

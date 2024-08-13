@@ -6,7 +6,7 @@ import hyundai.softeer.orange.comment.dto.CreateCommentDto;
 import hyundai.softeer.orange.comment.dto.ResponseCommentDto;
 import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
 import hyundai.softeer.orange.comment.exception.CommentException;
-import hyundai.softeer.orange.comment.service.ApiService;
+import hyundai.softeer.orange.comment.service.CommentValidator;
 import hyundai.softeer.orange.comment.service.CommentService;
 import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.common.ErrorResponse;
@@ -49,7 +49,7 @@ class CommentControllerTest {
     private CommentService commentService;
 
     @MockBean
-    private ApiService apiService;
+    private CommentValidator commentValidator;
 
     @MockBean
     private EventUserArgumentResolver eventUserArgumentResolver;
@@ -109,8 +109,8 @@ class CommentControllerTest {
     @Test
     void createComment200Test() throws Exception {
         // given
-        when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class), anyBoolean())).thenReturn(true);
+        when(commentValidator.analyzeComment(createCommentDto.getContent())).thenReturn(true);
+        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class))).thenReturn(true);
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders
@@ -126,8 +126,8 @@ class CommentControllerTest {
     @Test
     void createComment400Test() throws Exception {
         // given
-        when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class), anyBoolean()))
+        when(commentValidator.analyzeComment(createCommentDto.getContent())).thenReturn(true);
+        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class)))
                 .thenThrow(new CommentException(ErrorCode.INVALID_COMMENT));
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.INVALID_COMMENT));
 
@@ -166,8 +166,8 @@ class CommentControllerTest {
     @Test
     void createComment404Test() throws Exception {
         // given
-        when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class), anyBoolean()))
+        when(commentValidator.analyzeComment(createCommentDto.getContent())).thenReturn(true);
+        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class)))
                 .thenThrow(new CommentException(ErrorCode.EVENT_USER_NOT_FOUND));
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.EVENT_USER_NOT_FOUND));
 
@@ -185,8 +185,8 @@ class CommentControllerTest {
     @Test
     void createComment409Test() throws Exception {
         // given
-        when(apiService.analyzeComment(createCommentDto.getContent())).thenReturn(true);
-        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class), anyBoolean()))
+        when(commentValidator.analyzeComment(createCommentDto.getContent())).thenReturn(true);
+        when(commentService.createComment(any(), anyString(), any(CreateCommentDto.class)))
                 .thenThrow(new CommentException(ErrorCode.COMMENT_ALREADY_EXISTS));
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.COMMENT_ALREADY_EXISTS));
 

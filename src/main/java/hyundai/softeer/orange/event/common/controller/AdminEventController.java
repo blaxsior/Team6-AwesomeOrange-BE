@@ -29,6 +29,7 @@ import java.util.List;
 /**
  * 이벤트 관련 CRUD를 다루는 API
  */
+
 @Auth({AuthRole.admin})
 @Slf4j
 @RequiredArgsConstructor
