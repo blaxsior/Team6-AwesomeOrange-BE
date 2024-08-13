@@ -1,6 +1,5 @@
 package hyundai.softeer.orange.comment.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hyundai.softeer.orange.comment.exception.CommentException;
@@ -17,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -25,49 +23,59 @@ import java.util.Map;
 public class CommentValidator {
 
     private static final Logger log = LoggerFactory.getLogger(CommentValidator.class);
+    private final RestTemplate restTemplate = new RestTemplate();
     private final NaverApiConfig naverApiConfig;
+    private final ObjectMapper objectMapper;
 
     public boolean analyzeComment(String content) {
+        String responseBody = sendSentimentAnalysisRequest(content);
+        return parseSentimentAnalysisResponse(responseBody, content);
+    }
+
+    private String sendSentimentAnalysisRequest(String content) {
+        HttpHeaders headers = createHeaders();
+        String requestJson = createRequestBody(content);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestJson, headers);
+        log.info("comment <{}> sentiment analysis request to Naver API", content);
+
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(naverApiConfig.getUrl(), requestEntity, String.class);
+        return responseEntity.getBody();
+    }
+
+    private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.set(ConstantUtil.CLIENT_ID, naverApiConfig.getClientId());
         headers.set(ConstantUtil.CLIENT_SECRET, naverApiConfig.getClientSecret());
         headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
 
-        // Create a JSON for the request body
-        Map<String, String> requestBody = new HashMap<>();
-        requestBody.put("content", content);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonContent = "";
+    private String createRequestBody(String content) {
+        Map<String, String> requestBody = Map.of("content", content);
         try {
-            jsonContent = objectMapper.writeValueAsString(requestBody);
-        } catch (JsonProcessingException e) {
+            return objectMapper.writeValueAsString(requestBody);
+        } catch (Exception e) {
             throw new CommentException(ErrorCode.INVALID_JSON);
         }
+    }
 
-        HttpEntity<String> requestEntity = new HttpEntity<>(jsonContent, headers);
-        log.info("comment <{}> sentiment analysis request to Naver API", content);
-
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(naverApiConfig.getUrl(), requestEntity, String.class);
-        String responseBody = responseEntity.getBody();
-        boolean isPositive = true;
-
+    private boolean parseSentimentAnalysisResponse(String responseBody, String content) {
         try {
             JsonNode rootNode = objectMapper.readTree(responseBody);
-
             String sentiment = rootNode.path("document").path("sentiment").asText();
+            log.info("comment <{}> sentiment analysis result: {}", content, sentiment);
+
             if (sentiment.equals("negative")) {
-                isPositive = false;
-                double documentNegativeConfidence = rootNode.path("document").path("confidence").path("negative").asDouble();
-                if (documentNegativeConfidence >= ConstantUtil.LIMIT_NEGATIVE_CONFIDENCE) { // 부정이며 확률이 99.5% 이상일 경우 재작성 요청
+                double negativeConfidence = rootNode.path("document").path("confidence").path("negative").asDouble();
+                if (negativeConfidence >= ConstantUtil.LIMIT_NEGATIVE_CONFIDENCE) {
                     throw new CommentException(ErrorCode.INVALID_COMMENT);
                 }
+                return false;
             }
-        } catch (JsonProcessingException e) {
+            return true;
+        } catch (Exception e) {
             throw new CommentException(ErrorCode.INVALID_JSON);
         }
-        log.info("comment <{}> sentiment analysis result: {}", content, isPositive);
-        return isPositive;
     }
 }
