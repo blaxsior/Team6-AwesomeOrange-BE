@@ -6,7 +6,7 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Table(name="event_partication_info")
+@Table(name="event_participation_info")
 @Getter
 @Entity
 public class EventParticipationInfo {
@@ -24,4 +24,12 @@ public class EventParticipationInfo {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="draw_event_id")
     private DrawEvent drawEvent;
+
+    public static EventParticipationInfo of(LocalDateTime date, EventUser eventUser, DrawEvent drawEvent) {
+        EventParticipationInfo participationInfo = new EventParticipationInfo();
+        participationInfo.date = date;
+        participationInfo.eventUser = eventUser;
+        participationInfo.drawEvent = drawEvent;
+        return participationInfo;
+    }
 }
