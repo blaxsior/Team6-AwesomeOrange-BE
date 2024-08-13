@@ -12,6 +12,7 @@ import hyundai.softeer.orange.event.fcfs.service.FcfsService;
 import hyundai.softeer.orange.eventuser.component.EventUserAnnotation;
 import hyundai.softeer.orange.eventuser.dto.EventUserInfo;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,7 +40,7 @@ public class FcfsController {
             @ApiResponse(responseCode = "400", description = "선착순 이벤트 시간이 아니거나, 요청 형식이 잘못된 경우",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<ResponseFcfsResultDto> participate(@EventUserAnnotation EventUserInfo userInfo, @PathVariable Long eventSequence, @RequestBody RequestAnswerDto dto) {
+    public ResponseEntity<ResponseFcfsResultDto> participate(@Parameter(hidden = true) @EventUserAnnotation EventUserInfo userInfo, @PathVariable Long eventSequence, @RequestBody RequestAnswerDto dto) {
         boolean answerResult = fcfsAnswerService.judgeAnswer(eventSequence, dto.getAnswer());
         boolean isWin = answerResult && fcfsService.participate(eventSequence, userInfo.getUserId());
         return ResponseEntity.ok(new ResponseFcfsResultDto(answerResult, isWin));
@@ -66,7 +67,7 @@ public class FcfsController {
             @ApiResponse(responseCode = "404", description = "선착순 이벤트를 찾을 수 없는 경우",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Boolean> isParticipated(@EventUserAnnotation EventUserInfo userInfo, @PathVariable Long eventSequence) {
+    public ResponseEntity<Boolean> isParticipated(@Parameter(hidden = true) @EventUserAnnotation EventUserInfo userInfo, @PathVariable Long eventSequence) {
         return ResponseEntity.ok(fcfsManageService.isParticipated(eventSequence, userInfo.getUserId()));
     }
 }
