@@ -6,6 +6,7 @@ import hyundai.softeer.orange.comment.entity.Comment;
 import hyundai.softeer.orange.comment.exception.CommentException;
 import hyundai.softeer.orange.comment.repository.CommentRepository;
 import hyundai.softeer.orange.comment.service.CommentService;
+import hyundai.softeer.orange.comment.service.CommentValidator;
 import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
@@ -14,9 +15,12 @@ import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +34,9 @@ class CommentServiceTest {
 
     @InjectMocks
     private CommentService commentService;
+
+    @Mock
+    private CommentValidator commentValidator;
 
     @Mock
     private CommentRepository commentRepository;
@@ -89,10 +96,11 @@ class CommentServiceTest {
         given(commentRepository.existsByCreatedDateAndEventUser(any())).willReturn(false);
         given(eventFrameRepository.findByFrameId(eventFrameId)).willReturn(Optional.of(eventFrame));
         given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.ofNullable(eventUser));
+        given(commentValidator.analyzeComment(createCommentDto.getContent())).willReturn(true);
         given(commentRepository.save(any())).willReturn(Comment.of("test", eventFrame, eventUser, true));
 
         // when
-        commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto, true);
+        commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto);
 
         // then
         verify(commentRepository, times(1)).save(any());
@@ -111,7 +119,7 @@ class CommentServiceTest {
         given(commentRepository.existsByCreatedDateAndEventUser(any())).willReturn(true);
 
         // when
-        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto, true))
+        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
                 .isInstanceOf(CommentException.class)
                 .hasMessage(ErrorCode.COMMENT_ALREADY_EXISTS.getMessage());
     }
@@ -124,7 +132,7 @@ class CommentServiceTest {
         given(eventFrameRepository.findByFrameId(eventFrameId)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto, true))
+        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
                 .isInstanceOf(CommentException.class)
                 .hasMessage(ErrorCode.EVENT_FRAME_NOT_FOUND.getMessage());
     }
@@ -136,9 +144,39 @@ class CommentServiceTest {
         given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto, true))
+        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
                 .isInstanceOf(CommentException.class)
                 .hasMessage(ErrorCode.EVENT_USER_NOT_FOUND.getMessage());
+    }
+
+    @DisplayName("createComment: 기대평이 부정적인 경우 예외가 발생한다.")
+    @Test
+    void createCommentNegativeTest() {
+        // given
+        given(eventFrameRepository.findByFrameId(eventFrameId)).willReturn(Optional.of(eventFrame));
+        given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.ofNullable(eventUser));
+        given(commentValidator.analyzeComment(createCommentDto.getContent())).willThrow(new CommentException(ErrorCode.INVALID_COMMENT));
+
+        // when & then
+        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
+                .isInstanceOf(CommentException.class)
+                .hasMessage(ErrorCode.INVALID_COMMENT.getMessage());
+    }
+
+    @DisplayName("isCommentable: 오늘 이 유저가 기대평을 작성할 수 있는지 조회한다.")
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void isCommentableTest(boolean exists) {
+        // given
+        given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.ofNullable(eventUser));
+        given(commentRepository.existsByCreatedDateAndEventUser(eventUser.getId())).willReturn(exists);
+
+        // when
+        Boolean isCommentable = commentService.isCommentable(eventUser.getUserId());
+
+        // then
+        assertThat(isCommentable).isEqualTo(!exists);
+        verify(commentRepository, times(1)).existsByCreatedDateAndEventUser(eventUser.getId());
     }
 
     @DisplayName("deleteComment: commentId로 기대평을 찾아 삭제한다.")
@@ -166,5 +204,20 @@ class CommentServiceTest {
         assertThatThrownBy(() -> commentService.deleteComment(commentId))
                 .isInstanceOf(CommentException.class)
                 .hasMessage(ErrorCode.COMMENT_NOT_FOUND.getMessage());
+    }
+
+    @DisplayName("searchComments: eventId로 기대평 목록을 조회한다.")
+    @Test
+    void searchCommentsTest() {
+        // given
+        given(commentRepository.findAllByEventId(any(), any())).willReturn(new PageImpl<>(List.of(Comment.of("test", eventFrame, eventUser, true))));
+
+        // when
+        ResponseCommentsDto dto = commentService.searchComments(eventFrameId, 0, 10);
+
+        // then
+        assertThat(dto.getComments()).hasSize(1);
+        assertThat(dto.getComments().get(0).getContent()).isEqualTo("test");
+        verify(commentRepository, times(1)).findAllByEventId(any(), any());
     }
 }

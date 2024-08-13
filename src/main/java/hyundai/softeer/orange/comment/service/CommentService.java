@@ -90,6 +90,7 @@ public class CommentService {
         log.info("deleted comments: {}", commentIds);
     }
 
+    @Transactional(readOnly = true)
     public ResponseCommentsDto searchComments(String eventId, Integer page, Integer size) {
         PageRequest pageInfo = PageRequest.of(page, size);
 
