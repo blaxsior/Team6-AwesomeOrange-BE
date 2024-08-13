@@ -2,7 +2,9 @@ package hyundai.softeer.orange.event.draw.repository;
 
 import hyundai.softeer.orange.event.draw.dto.EventParticipateCountDto;
 import hyundai.softeer.orange.event.draw.dto.EventParticipationDateDto;
+import hyundai.softeer.orange.event.draw.entity.DrawEvent;
 import hyundai.softeer.orange.event.draw.entity.EventParticipationInfo;
+import hyundai.softeer.orange.eventuser.entity.EventUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,14 +27,5 @@ public interface EventParticipationInfoRepository extends JpaRepository<EventPar
             "AND info.draw_event_id = :drawEventId", nativeQuery = true)
     List<EventParticipationDateDto> findByEventUserId(@Param("eventUserId") String eventUserId, @Param("drawEventId") Long drawEventId);
 
-
-    // boolean / exists를 시도했으나 실패. 개발이 어느 정도 진행된 이후 처리할 예정.
-    @Query(value = "SELECT COUNT(*) "+
-            "FROM event_participation_info info " +
-            "JOIN event_user e ON info.event_user_id = e.id " +
-            "WHERE e.user_id = :eventUserId " +
-            "AND info.draw_event_id = :drawEventId " +
-            "AND info.date BETWEEN :from AND :to " +
-            "limit 1", nativeQuery = true)
-    Long count1ByUserId(@Param("eventUserId") String eventUserId, @Param("drawEventId") Long drawEventId, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+    boolean existsByEventUserAndDrawEventAndDateBetween(EventUser eventUser, DrawEvent drawEvent, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

@@ -49,7 +49,7 @@ public class EventParticipationService {
 
         List<EventParticipationDateDto> infos = participationInfoRepository.findByEventUserId(eventUserId, drawEvent.getId());
 
-        return new EventParticipationDatesDto(infos.stream().map(EventParticipationDateDto::date).toList());
+        return new EventParticipationDatesDto(infos.stream().map(EventParticipationDateDto::getDate).toList());
     }
 
     /**
@@ -90,7 +90,7 @@ public class EventParticipationService {
         LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
 
         // 오늘 참여 여부 검사
-        boolean alreadyParticipated = participationInfoRepository.count1ByUserId(eventUserId, drawEvent.getId(), startOfDay, endOfDay) > 0;
+        boolean alreadyParticipated = participationInfoRepository.existsByEventUserAndDrawEventAndDateBetween(eventUser, drawEvent, startOfDay, endOfDay);
         if(alreadyParticipated) throw new EventException(ErrorCode.ALREADY_PARTICIPATED);
 
         EventParticipationInfo info = EventParticipationInfo.of(date, eventUser, drawEvent);
