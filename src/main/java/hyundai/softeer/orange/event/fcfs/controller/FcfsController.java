@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "fcfs", description = "선착순 이벤트 관련 API")
+@Tag(name = "FCFS", description = "선착순 이벤트 관련 API")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/event/fcfs")
 @RestController
@@ -32,7 +32,6 @@ public class FcfsController {
     private final FcfsManageService fcfsManageService;
 
     @Auth(AuthRole.event_user)
-    @Tag(name = "fcfs")
     @PostMapping("/{eventSequence}")
     @Operation(summary = "선착순 이벤트 참여", description = "선착순 이벤트에 참여한 결과(boolean)를 반환한다.", responses = {
             @ApiResponse(responseCode = "200", description = "선착순 이벤트 당첨 성공 혹은 실패",
@@ -46,7 +45,6 @@ public class FcfsController {
         return ResponseEntity.ok(new ResponseFcfsResultDto(answerResult, isWin));
     }
 
-    @Tag(name = "fcfs")
     @GetMapping("/{eventSequence}/info")
     @Operation(summary = "특정 선착순 이벤트의 정보 조회", description = "특정 선착순 이벤트에 대한 정보(서버 기준 시각, 이벤트의 상태)를 반환한다.", responses = {
             @ApiResponse(responseCode = "200", description = "선착순 이벤트에 대한 상태 정보",
@@ -59,7 +57,6 @@ public class FcfsController {
     }
 
     @Auth(AuthRole.event_user)
-    @Tag(name = "fcfs")
     @GetMapping("/{eventSequence}/participated")
     @Operation(summary = "선착순 이벤트 참여 여부 조회", description = "정답을 맞혀서 선착순 이벤트에 참여했는지 여부를 조회한다. (당첨은 별도)", responses = {
             @ApiResponse(responseCode = "200", description = "선착순 이벤트의 정답을 맞혀서 참여했는지에 대한 결과",

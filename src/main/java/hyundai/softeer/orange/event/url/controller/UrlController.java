@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Url", description = "단축 URL 관련 API")
+@Tag(name = "URL", description = "단축 URL 관련 API")
 @RequestMapping("/api/v1/url")
 @RequiredArgsConstructor
 @RestController
@@ -21,7 +21,6 @@ public class UrlController {
 
     private final UrlService urlService;
 
-    @Tag(name = "Url")
     @PostMapping("/shorten")
     @Operation(summary = "URL 단축", description = "URL을 단축하여 반환합니다.", responses = {
             @ApiResponse(responseCode = "200", description = "URL 단축 성공",
@@ -35,7 +34,6 @@ public class UrlController {
         return ResponseEntity.ok(urlService.generateUrl(originalUrl));
     }
 
-    @Tag(name = "Url")
     @GetMapping("/{shortUrl}")
     @Operation(summary = "URL 리다이렉트", description = "단축 URL을 원본 URL로 리다이렉트합니다.", responses = {
             @ApiResponse(responseCode = "302", description = "URL 리다이렉트"),

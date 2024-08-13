@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ import java.util.List;
 /**
  * 이벤트 관련 CRUD를 다루는 API
  */
+@Tag(name = "AdminEvent", description = "어드민 이벤트 관련 API")
 @Auth({AuthRole.admin})
 @Slf4j
 @RequiredArgsConstructor
