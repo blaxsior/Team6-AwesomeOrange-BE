@@ -1,4 +1,4 @@
-package hyundai.softeer.orange.event.common.controller;
+package hyundai.softeer.orange.admin.controller;
 
 import hyundai.softeer.orange.admin.component.AdminAnnotation;
 import hyundai.softeer.orange.admin.entity.Admin;
