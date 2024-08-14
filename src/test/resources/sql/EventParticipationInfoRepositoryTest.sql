@@ -24,5 +24,5 @@ INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,2);
 INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,2);
 INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,2);
 
-INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,3);
-INSERT INTO event_partication_info(draw_event_id, event_user_id) VALUES (1,3);
+INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,3);
+INSERT INTO event_participation_info(draw_event_id, event_user_id) VALUES (1,3);

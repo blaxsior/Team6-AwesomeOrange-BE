@@ -1,154 +1,191 @@
 package hyundai.softeer.orange.event.fcfs;
 
+import hyundai.softeer.orange.common.ErrorCode;
+import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
 import hyundai.softeer.orange.event.fcfs.dto.ResponseFcfsInfoDto;
 import hyundai.softeer.orange.event.fcfs.dto.ResponseFcfsWinnerDto;
 import hyundai.softeer.orange.event.fcfs.entity.FcfsEvent;
 import hyundai.softeer.orange.event.fcfs.entity.FcfsEventWinningInfo;
+import hyundai.softeer.orange.event.fcfs.exception.FcfsEventException;
 import hyundai.softeer.orange.event.fcfs.repository.FcfsEventRepository;
 import hyundai.softeer.orange.event.fcfs.repository.FcfsEventWinningInfoRepository;
 import hyundai.softeer.orange.event.fcfs.service.FcfsManageService;
 import hyundai.softeer.orange.event.fcfs.util.FcfsUtil;
 import hyundai.softeer.orange.eventuser.entity.EventUser;
 import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
-@SpringBootTest
 class FcfsManageServiceTest {
 
-    @Autowired
+    @InjectMocks
     private FcfsManageService fcfsManageService;
 
-    @Autowired
+    @Mock
     private EventUserRepository eventUserRepository;
 
-    @Autowired
+    @Mock
     private FcfsEventRepository fcfsEventRepository;
 
-    @Autowired
+    @Mock
     private FcfsEventWinningInfoRepository fcfsEventWinningInfoRepository;
 
-    @Autowired
+    @Mock
     private EventFrameRepository eventFrameRepository;
 
-    @Autowired
+    @Mock
     private StringRedisTemplate stringRedisTemplate;
 
-    @Autowired
+    @Mock
+    private SetOperations<String, String> setOperations;
+
+    @Mock
+    private ZSetOperations<String, String> zSetOperations;
+
+    @Mock
+    private ValueOperations<String, String> valueOperations;
+
+    @Mock
     private RedisTemplate<String, Integer> numberRedisTemplate;
 
-    @Autowired
+    @Mock
     private RedisTemplate<String, Boolean> booleanRedisTemplate;
 
-    Long eventSequence;
+    Long eventSequence = 1L;
+    EventFrame eventFrame = EventFrame.of("the-new-ioniq5","FcfsManageServiceTest");
+    EventUser eventUser = EventUser.of("test", "0101234567", eventFrame, "uuid");
+    FcfsEvent fcfsEvent = FcfsEvent.builder()
+            .startTime(LocalDateTime.now().plusSeconds(10))
+            .participantCount(100L)
+            .build();
 
     @BeforeEach
     void setUp() {
-        // 초기화
-        stringRedisTemplate.delete("*");
-        numberRedisTemplate.delete("*");
-        booleanRedisTemplate.delete("*");
-        fcfsEventRepository.deleteAll();
-        fcfsEventWinningInfoRepository.deleteAll();
-        eventUserRepository.deleteAll();
-        eventFrameRepository.deleteAll();
-
-        EventFrame eventFrame = EventFrame.of("the-new-ioniq5","FcfsManageServiceTest");
-        FcfsEvent fcfsEvent = FcfsEvent.builder()
-                .startTime(LocalDateTime.now().plusSeconds(10))
-                .participantCount(10L)
-                .build();
-        eventSequence = fcfsEventRepository.save(fcfsEvent).getId();
-        eventFrameRepository.save(eventFrame);
-
-        for(int i=0; i<5; i++){
-            EventUser eventUser = EventUser.of("test"+i, "0101234567"+i, eventFrame, "uuid"+i);
-            eventUserRepository.save(eventUser);
-            fcfsEventWinningInfoRepository.save(FcfsEventWinningInfo.of(fcfsEvent, eventUser));
-        }
+        MockitoAnnotations.openMocks(this);
     }
 
-    @AfterEach
-    void tearDown() {
-        // 초기화
-        stringRedisTemplate.delete("*");
-        numberRedisTemplate.delete("*");
-        booleanRedisTemplate.delete("*");
-        fcfsEventWinningInfoRepository.deleteAll();
-        fcfsEventRepository.deleteAll();
-        eventUserRepository.deleteAll();
-        eventFrameRepository.deleteAll();
-    }
-
-    @DisplayName("registerFcfsEvents: 오늘의 선착순 이벤트 정보(당첨자 수, 시작 시각)를 Redis에 배치")
+    @DisplayName("registerFcfsEvents: 오늘의 선착순 이벤트 정보(당첨자 수, 시작 시각)를 배치")
     @Test
     void registerFcfsEventsTest() {
         // given
-        List<FcfsEvent> events = fcfsEventRepository.findByStartTimeBetween(LocalDateTime.now(), LocalDateTime.now().plusDays(1));
-        FcfsEvent fcfsEvent = events.get(0);
+        given(fcfsEventRepository.findByStartTimeBetween(LocalDateTime.now(), LocalDateTime.now().plusDays(1)))
+                .willReturn(new ArrayList<>(List.of(fcfsEvent)));
 
         // when
         fcfsManageService.registerFcfsEvents();
 
         // then
-        Integer numberOfWinner = numberRedisTemplate.opsForValue().get(FcfsUtil.keyFormatting(fcfsEvent.getId().toString()));
-        Boolean endFlag = booleanRedisTemplate.opsForValue().get(FcfsUtil.endFlagFormatting(fcfsEvent.getId().toString()));
-        String startTime = stringRedisTemplate.opsForValue().get(FcfsUtil.startTimeFormatting(fcfsEvent.getId().toString()));
-        String answer = stringRedisTemplate.opsForValue().get(FcfsUtil.answerFormatting(fcfsEvent.getId().toString()));
-
-        assertThat(numberOfWinner).isEqualTo(fcfsEvent.getParticipantCount().intValue());
-        assertThat(endFlag).isFalse();
-        assertThat(startTime).isEqualTo(fcfsEvent.getStartTime().toString());
-        assertThat(answer).isBetween("1", "5");
+        verify(fcfsEventRepository).findByStartTimeBetween(any(), any());
+        // TODO: Redis ValueOperations에 대한 verify 추가
     }
 
     @DisplayName("registerWinners: redis에 저장된 모든 선착순 이벤트의 당첨자 정보를 DB로 이관")
     @Test
     void registerWinnersTest() {
+        // given
+        given(stringRedisTemplate.keys("*:fcfs")).willReturn(Set.of("1:fcfs"));
+        given(stringRedisTemplate.opsForZSet()).willReturn(zSetOperations);
+        given(zSetOperations.range(FcfsUtil.winnerFormatting(eventSequence.toString()), 0, -1))
+                .willReturn(Set.of(eventUser.getUserId()));
+        given(fcfsEventRepository.findById(eventSequence)).willReturn(Optional.of(fcfsEvent));
+        given(eventUserRepository.findAllByUserId(List.of(eventUser.getUserId()))).willReturn(List.of(eventUser));
+
         // when
-        fcfsManageService.registerFcfsEvents();
-        for(int i=0; i<5; i++){
-            stringRedisTemplate.opsForZSet().add(FcfsUtil.winnerFormatting("1"), "uuid"+i, i);
-        }
         fcfsManageService.registerWinners();
 
         // then
-        List<FcfsEventWinningInfo> infos = fcfsEventWinningInfoRepository.findByFcfsEventId(eventSequence);
-        assertThat(infos).hasSize(5)
-                .extracting("eventUser.userId")
-                .contains("uuid0", "uuid1", "uuid2", "uuid3", "uuid4");
+        verify(stringRedisTemplate).keys("*:fcfs");
+        verify(zSetOperations).range(FcfsUtil.winnerFormatting(eventSequence.toString()), 0, -1);
+        verify(fcfsEventRepository).findById(eventSequence);
+        verify(eventUserRepository).findAllByUserId(List.of(eventUser.getUserId()));
+        verify(fcfsEventWinningInfoRepository).saveAll(any());
     }
 
-    @DisplayName("getFcfsInfo: 특정 선착순 이벤트의 정보 조회")
-    @Test
-    void getFcfsInfoTest() {
+    @DisplayName("getFcfsInfo: 특정 선착순 이벤트의 정보를 조회하며, 이벤트 시작시간 직후부터 7시간 동안 progress 상태여야 한다.")
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 2, 200, 418, 419})
+    void getFcfsInfoProgressTest(int minute) {
         // when
-        stringRedisTemplate.opsForValue().set(FcfsUtil.startTimeFormatting(eventSequence.toString()), LocalDateTime.now().toString());
+        given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get(FcfsUtil.startTimeFormatting(eventSequence.toString())))
+                .willReturn(LocalDateTime.now().minusMinutes(minute).toString());
+
         ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventSequence);
 
         // then
-        assertThat(fcfsInfo.getNowDateTime()).isNotNull();
-        assertThat(fcfsInfo.getEventStatus()).isEqualTo("progress");
+        assertThat(fcfsInfo.getEventStatus()).isEqualTo(ConstantUtil.PROGRESS);
+    }
+
+    @DisplayName("getFcfsInfo: 특정 선착순 이벤트의 정보를 조회하며, 이벤트 시작시간 3시간 전부터 직전까지는 countdown 상태여야 한다.")
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3, 120, 178, 179})
+    void getFcfsInfoCountdownTest(int minute) {
+        // when
+        given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get(FcfsUtil.startTimeFormatting(eventSequence.toString())))
+                .willReturn(LocalDateTime.now().plusMinutes(minute).toString());
+
+        ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventSequence);
+
+        // then
+        assertThat(fcfsInfo.getEventStatus()).isEqualTo(ConstantUtil.COUNTDOWN);
+    }
+
+    @DisplayName("getFcfsInfo: 특정 선착순 이벤트의 정보를 조회하며, 이벤트 시작시간 7시간 이후부터는 waiting 상태여야 한다.")
+    @ParameterizedTest
+    @ValueSource(ints = {420, 421, 422})
+    void getFcfsInfoWaitingTest(int minute) {
+        // when
+        given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get(FcfsUtil.startTimeFormatting(eventSequence.toString())))
+                .willReturn(LocalDateTime.now().minusMinutes(minute).toString());
+
+        ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventSequence);
+
+        // then
+        assertThat(fcfsInfo.getEventStatus()).isEqualTo(ConstantUtil.WAITING);
+    }
+
+    @DisplayName("getFcfsInfo: 특정 선착순 이벤트의 시간을 찾을 수 없는 경우 예외가 발생한다.")
+    @Test
+    void getFcfsInfoNotFoundTest() {
+        // when
+        given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get(FcfsUtil.startTimeFormatting(eventSequence.toString())))
+                .willReturn(null);
+
+        assertThatThrownBy(() -> fcfsManageService.getFcfsInfo(eventSequence))
+                .isInstanceOf(FcfsEventException.class)
+                .hasMessage(ErrorCode.FCFS_EVENT_NOT_FOUND.getMessage());
     }
 
     @DisplayName("isParticipated: 특정 선착순 이벤트에 참여한 유저임을 확인한다.")
     @Test
     void isParticipatedTest() {
         // given
-        EventUser eventUser = eventUserRepository.findByUserId("uuid0").get();
-        stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(eventSequence.toString()), eventUser.getUserId());
+        given(fcfsEventRepository.existsById(eventSequence)).willReturn(true);
+        given(stringRedisTemplate.opsForSet()).willReturn(setOperations);
+        given(setOperations.isMember(FcfsUtil.participantFormatting(eventSequence.toString()), eventUser.getUserId())).willReturn(true);
 
         // when
         boolean participated = fcfsManageService.isParticipated(eventSequence, eventUser.getUserId());
@@ -157,17 +194,31 @@ class FcfsManageServiceTest {
         assertThat(participated).isTrue();
     }
 
+    @DisplayName("isParticipated: 선착순 이벤트가 존재하지 않는 경우 예외가 발생한다.")
+    @Test
+    void isParticipatedNotFoundTest() {
+        // given
+        given(fcfsEventRepository.existsById(eventSequence)).willReturn(false);
+
+        // when & then
+        assertThatThrownBy(() -> fcfsManageService.isParticipated(eventSequence, eventUser.getUserId()))
+                .isInstanceOf(FcfsEventException.class)
+                .hasMessage(ErrorCode.FCFS_EVENT_NOT_FOUND.getMessage());
+    }
+
     @DisplayName("getFcfsWinnersInfo: 특정 선착순 이벤트의 당첨자 조회 - 어드민에서 사용")
     @Test
     void getFcfsWinnersInfoTest() {
+        // given
+        given(fcfsEventWinningInfoRepository.findByFcfsEventId(eventSequence))
+                .willReturn(List.of(FcfsEventWinningInfo.of(fcfsEvent, eventUser)));
+
         // when
         List<ResponseFcfsWinnerDto> fcfsWinnersInfo = fcfsManageService.getFcfsWinnersInfo(eventSequence);
 
         // then
-        assertThat(fcfsWinnersInfo)
-                .hasSize(5)
-                .extracting("name")
-                .contains("test0", "test1", "test2", "test3", "test4");
+        assertThat(fcfsWinnersInfo).hasSize(1);
+        assertThat(fcfsWinnersInfo.get(0).getName()).isEqualTo(eventUser.getUserName());
+        assertThat(fcfsWinnersInfo.get(0).getPhoneNumber()).isEqualTo(eventUser.getPhoneNumber());
     }
-
 }

@@ -1,4 +1,4 @@
-package hyundai.softeer.orange.event.fcfs.load;
+package hyundai.softeer.orange.load;
 
 import hyundai.softeer.orange.event.fcfs.entity.FcfsEvent;
 import hyundai.softeer.orange.event.fcfs.repository.FcfsEventRepository;

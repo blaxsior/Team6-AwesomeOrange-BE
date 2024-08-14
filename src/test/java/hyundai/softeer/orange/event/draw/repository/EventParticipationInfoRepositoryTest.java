@@ -1,19 +1,16 @@
 package hyundai.softeer.orange.event.draw.repository;
 
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import hyundai.softeer.orange.support.TCDataJpaTest;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Sql(value = "classpath:sql/EventParticipationInfoRepositoryTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(value= "classpath:sql/RefreshTable.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-@DataJpaTest(showSql = false)
-@TestPropertySource(locations = "classpath:application-test.yml")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+@TCDataJpaTest
 class EventParticipationInfoRepositoryTest {
     @Autowired
     EventParticipationInfoRepository epiRepository;
@@ -39,14 +36,6 @@ class EventParticipationInfoRepositoryTest {
     @DisplayName("draw 이벤트 존재해도 유저 없으면 안함")
     @Test
     void getEmptyArrIfDrawEventExistButUserNotExist() {
-        var participationCounts = epiRepository.countPerEventUserByEventId(2L);
-        assertThat(participationCounts).isEmpty();
-    }
-
-
-    @DisplayName("draw 이벤트 존재해도 유저 없으면 안함")
-    @Test
-    void getEmptyArrIfDrawEventAndUserExistButNoParticipation() {
         var participationCounts = epiRepository.countPerEventUserByEventId(2L);
         assertThat(participationCounts).isEmpty();
     }

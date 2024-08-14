@@ -18,6 +18,9 @@ public class ConstantUtil {
     public static final String JWT_USER_KEY = "eventUser";
     public static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     public static final String LOCATION = "Location";
+    public static final String COUNTDOWN = "countdown";
+    public static final String WAITING = "waiting";
+    public static final String PROGRESS = "progress";
 
     public static final double LIMIT_NEGATIVE_CONFIDENCE = 99.5;
     public static final int COMMENTS_SIZE = 20;
