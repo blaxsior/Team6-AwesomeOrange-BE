@@ -103,7 +103,10 @@ public class EventService {
         String dto = (String) eventDtoRedisTemplate.opsForValue().get(key);
 
         log.info("Fetched temp event by {}", adminId);
-        return parseUtil.parse(dto, EventDto.class);
+        EventDto eventDto = parseUtil.parse(dto, EventDto.class);
+        if(eventDto == null) throw new EventException(ErrorCode.TEMP_EVENT_NOT_FOUND);
+
+        return eventDto;
     }
 
     /**
