@@ -17,7 +17,7 @@ import java.util.List;
 @Setter
 public class DrawEventDto {
     /**
-     * 추첨 이벤트의 id 값. 서버 내부적으로 사용하는 데이터.
+     * 추첨 이벤트의 id 값. 서버 내부적으로 사용하는 데이터. 직접 설정 X
      */
     private Long id;
 
