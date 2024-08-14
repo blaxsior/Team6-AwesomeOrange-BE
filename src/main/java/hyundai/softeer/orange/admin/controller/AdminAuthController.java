@@ -9,13 +9,14 @@ package hyundai.softeer.orange.admin.controller;
  import io.swagger.v3.oas.annotations.media.Content;
  import io.swagger.v3.oas.annotations.media.Schema;
  import io.swagger.v3.oas.annotations.responses.ApiResponse;
+ import io.swagger.v3.oas.annotations.tags.Tag;
  import jakarta.validation.Valid;
  import lombok.RequiredArgsConstructor;
  import org.springframework.http.HttpStatus;
  import org.springframework.http.ResponseEntity;
  import org.springframework.web.bind.annotation.*;
 
-
+@Tag(name = "admin auth", description = "어드민 인증에 사용되는 api")
 @RequestMapping("/api/v1/admin/auth")
 @RequiredArgsConstructor
 @RestController
