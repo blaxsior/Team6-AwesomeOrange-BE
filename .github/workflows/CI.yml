@@ -24,10 +24,10 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@ec92e829475ac0c2315ea8f9eced72db85bb337a # v3.0.0
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Test with Gradle
-        run: ./gradlew test
+        run: ./gradlew clean test --no-build-cache
 
       - name: Build with Gradle
         run: ./gradlew build -x test
