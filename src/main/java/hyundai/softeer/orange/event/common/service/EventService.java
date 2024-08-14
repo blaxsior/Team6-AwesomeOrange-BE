@@ -54,7 +54,7 @@ public class EventService {
     @Transactional
     public void createEvent(EventDto eventDto) {
         // 1. eventframe을 찾는다. 없으면 작업이 의미 X
-        Optional<EventFrame> frameOpt = efRepository.findByName(eventDto.getTag());
+        Optional<EventFrame> frameOpt = efRepository.findByFrameId(eventDto.getEventFrameId());
         EventFrame frame = frameOpt
                 .orElseThrow(() -> new EventException(ErrorCode.EVENT_FRAME_NOT_FOUND));
 

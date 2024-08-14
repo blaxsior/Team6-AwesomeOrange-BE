@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Getter
 public class FcfsEventDto {
     /**
-     * Fcfs 이벤트의 id. 서버 db 측에서 사용하기 위한 값
+     * Fcfs 이벤트의 id. 서버 db 측에서 사용하기 위한 값. 직접 설정 X
      */
     private Long id;
 

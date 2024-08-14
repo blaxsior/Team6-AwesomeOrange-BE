@@ -13,7 +13,7 @@ import lombok.*;
 @Getter
 public class DrawEventMetadataDto {
     /**
-     * 추첨 이벤트 메타데이터에 대한 id 값. 서버 내부적으로 사용
+     * 추첨 이벤트 메타데이터에 대한 id 값. 서버 내부적으로 사용. 직접 설정 X
      */
     private Long id;
 

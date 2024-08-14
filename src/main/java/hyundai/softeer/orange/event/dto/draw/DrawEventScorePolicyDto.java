@@ -15,7 +15,7 @@ import lombok.*;
 @Getter
 public class DrawEventScorePolicyDto {
     /**
-     * 점수 정책의 id. 서버 내부적으로 사용하는 값
+     * 점수 정책의 id. 서버 내부적으로 사용하는 값. 직접 설정 X
      */
     private Long id;
 
