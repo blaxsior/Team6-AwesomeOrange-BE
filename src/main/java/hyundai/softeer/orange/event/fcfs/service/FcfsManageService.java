@@ -92,11 +92,11 @@ public class FcfsManageService {
         // 그 외 -> waiting
         log.info("Checked FCFS event status: {}", eventSequence);
         if(nowDateTime.isBefore(eventStartTime) && nowDateTime.plusHours(ConstantUtil.FCFS_COUNTDOWN_HOUR).isAfter(eventStartTime)) {
-            return new ResponseFcfsInfoDto(nowDateTime, "countdown");
+            return new ResponseFcfsInfoDto(nowDateTime, ConstantUtil.COUNTDOWN);
         } else if(eventStartTime.isBefore(nowDateTime) && eventStartTime.plusHours(ConstantUtil.FCFS_AVAILABLE_HOUR).isAfter(nowDateTime)) {
-            return new ResponseFcfsInfoDto(nowDateTime, "progress");
+            return new ResponseFcfsInfoDto(nowDateTime, ConstantUtil.PROGRESS);
         } else {
-            return new ResponseFcfsInfoDto(nowDateTime, "waiting");
+            return new ResponseFcfsInfoDto(nowDateTime, ConstantUtil.WAITING);
         }
     }
 
