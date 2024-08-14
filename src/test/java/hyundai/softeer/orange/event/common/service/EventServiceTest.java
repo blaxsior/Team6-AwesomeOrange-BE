@@ -14,8 +14,9 @@ import hyundai.softeer.orange.event.dto.EventDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.TestPropertySource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
 
@@ -24,23 +25,26 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-
-@DataJpaTest
-@TestPropertySource(locations = "classpath:application-test.yml")
 class EventServiceTest {
+
+    @InjectMocks
     private EventService eventService;
+
+    @Mock
     private EventFrameRepository efRepo;
+
+    @Mock
     private EventMetadataRepository emRepo;
+
+    @Mock
     private EventFieldMapperMatcher mapperMatcher;
+
+    @Mock
     private EventKeyGenerator keyGenerator;
 
     @BeforeEach
     void setUp() {
-        efRepo = mock(EventFrameRepository.class);
-        emRepo = mock(EventMetadataRepository.class);
-        mapperMatcher = mock(EventFieldMapperMatcher.class);
-        keyGenerator = mock(EventKeyGenerator.class);
-        eventService = new EventService(efRepo, emRepo, mapperMatcher, keyGenerator, null, null);
+        MockitoAnnotations.openMocks(this);
     }
 
     @DisplayName("대응되는 eventframe이 없으면 예외 반환")
