@@ -57,7 +57,7 @@ public class FcfsEventFieldMapper implements EventFieldMapper {
                 .prizeInfo(it.getPrizeInfo())
                 .build()
         ).toList();
-        eventDto.setFcfsList(fcfsEventDtos);
+        eventDto.setFcfs(fcfsEventDtos);
     }
 
     @Override

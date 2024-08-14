@@ -71,7 +71,7 @@ public class EventDto {
      * 이벤트 프레임 정보. 추후 변경될 수 있음.
      */
     @NotNull
-    private String tag;
+    private String eventFrameId;
 
     /**
      * fcfs 이벤트 내용을 정의하는 부분
@@ -89,7 +89,7 @@ public class EventDto {
         this.draw = drawEventDto;
     }
 
-    public void setFcfsList(List<FcfsEventDto> fcfsEventDtos) {
+    public void setFcfs(List<FcfsEventDto> fcfsEventDtos) {
         this.fcfs = fcfsEventDtos;
     }
 }

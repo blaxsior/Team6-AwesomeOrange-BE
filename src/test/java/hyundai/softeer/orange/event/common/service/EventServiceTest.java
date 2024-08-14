@@ -58,7 +58,7 @@ class EventServiceTest {
     @Test
     void createEvent_throwErrorIFNoMatchedEventMapper() {
         EventDto eventDto = mock(EventDto.class);
-        when(eventDto.getTag()).thenReturn("testtag");
+        when(eventDto.getEventFrameId()).thenReturn("testtag");
         when(eventDto.getEventType()).thenReturn(EventType.fcfs);
         when(efRepo.findByName(anyString())).thenReturn(Optional.of(EventFrame.of("the-new-ioniq5","test")));
 
@@ -72,7 +72,7 @@ class EventServiceTest {
     @Test
     void createEvent_presistEventMetadataSuccessfully() {
         EventDto eventDto = mock(EventDto.class);
-        when(eventDto.getTag()).thenReturn("testtag");
+        when(eventDto.getEventFrameId()).thenReturn("testtag");
         when(eventDto.getEventType()).thenReturn(EventType.fcfs);
         when(efRepo.findByName(anyString())).thenReturn(Optional.of(EventFrame.of("the-new-ioniq5","test")));
         when(mapperMatcher.getMapper(any(EventType.class))).thenReturn(mock(FcfsEventFieldMapper.class));
