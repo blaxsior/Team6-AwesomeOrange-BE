@@ -19,14 +19,32 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.*;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 @SpringBootTest
 class FcfsManageServiceTest {
+
+    // Redis Testcontainers 설정
+    @Container
+    static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.5")
+            .withExposedPorts(6379);
+
+    // Spring의 속성을 동적으로 설정
+    @DynamicPropertySource
+    static void redisProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.redis.host", redis::getHost);
+        registry.add("spring.data.redis.port", redis::getFirstMappedPort);
+    }
 
     @Autowired
     private FcfsManageService fcfsManageService;
