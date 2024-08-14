@@ -1,26 +1,20 @@
 package hyundai.softeer.orange.event.draw.repository;
 
-import hyundai.softeer.orange.event.common.entity.EventFrame;
-import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
 import hyundai.softeer.orange.event.draw.dto.DrawEventWinningInfoBulkInsertDto;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import hyundai.softeer.orange.support.TCDataJpaTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 @Sql(value="classpath:sql/CustomDrawEventWinningInfoRepositoryImplTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(value= "classpath:sql/RefreshTable.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-@DataJpaTest(showSql = false)
-@TestPropertySource(locations = "classpath:application-test.yml")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+@TCDataJpaTest
 class CustomDrawEventWinningInfoRepositoryImplTest {
     @Autowired // DrawEventWinningInfoRepository로 접근 가능해야 함
     private DrawEventWinningInfoRepository repo;
