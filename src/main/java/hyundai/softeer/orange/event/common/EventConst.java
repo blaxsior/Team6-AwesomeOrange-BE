@@ -1,5 +1,7 @@
 package hyundai.softeer.orange.event.common;
 
+import hyundai.softeer.orange.event.common.enums.EventType;
+
 import java.util.Set;
 
 public class EventConst {
@@ -15,4 +17,10 @@ public class EventConst {
     public static final int EVENT_DEFAULT_PAGE = 0;
     public static final int EVENT_DEFAULT_SIZE = 5;
     public static final Set<String> sortableFields = Set.of("eventId", "name", "startTime", "endTime", "eventType");
+
+    public static final String[] filterFields = {
+            EventType.fcfs.name(),
+            EventType.draw.name(),
+
+    };
 }

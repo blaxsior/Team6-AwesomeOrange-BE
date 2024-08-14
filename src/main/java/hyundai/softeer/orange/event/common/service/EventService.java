@@ -16,6 +16,7 @@ import hyundai.softeer.orange.event.common.repository.EventMetadataRepository;
 import hyundai.softeer.orange.event.common.repository.EventSpecification;
 import hyundai.softeer.orange.event.component.EventKeyGenerator;
 import hyundai.softeer.orange.event.dto.BriefEventDto;
+import hyundai.softeer.orange.event.dto.BriefEventPageDto;
 import hyundai.softeer.orange.event.dto.EventDto;
 import hyundai.softeer.orange.event.dto.EventSearchHintDto;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +29,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -104,7 +103,10 @@ public class EventService {
         String dto = (String) eventDtoRedisTemplate.opsForValue().get(key);
 
         log.info("Fetched temp event by {}", adminId);
-        return parseUtil.parse(dto, EventDto.class);
+        EventDto eventDto = parseUtil.parse(dto, EventDto.class);
+        if(eventDto == null) throw new EventException(ErrorCode.TEMP_EVENT_NOT_FOUND);
+
+        return eventDto;
     }
 
     /**
@@ -179,8 +181,48 @@ public class EventService {
      * @return 매칭된 이벤트 목록
      */
     @Transactional(readOnly = true)
-    public List<BriefEventDto> searchEvents(String search, String sortQuery, Integer page, Integer size) {
+    public BriefEventPageDto searchEvents(String search, String sortQuery, String typeQuery, Integer page, Integer size) {
+        // findBy를 이용하려면 Sort와 Page를 하나로 몰아넣으면 안된다.
+        Sort sort = parseSort(sortQuery);
+        Set<EventType> types = parseTypes(typeQuery);
 
+        PageRequest pageInfo = PageRequest.of(
+                page != null ? page : EventConst.EVENT_DEFAULT_PAGE,
+                size != null ? size : EventConst.EVENT_DEFAULT_SIZE
+        );
+
+        var searchOnName = EventSpecification.searchOnName(search);
+        var searchOnEventId = EventSpecification.searchOnEventId(search);
+        var eventTypeIn = EventSpecification.isEventTypeIn(types);
+
+        Page<BriefEventDto> eventPage = emRepository.findBy(
+                searchOnName.or(searchOnEventId)
+                        .and(eventTypeIn),
+                (p) -> p.as(BriefEventDto.class)
+                        .sortBy(sort)
+                        .page(pageInfo)
+        );
+
+        return BriefEventPageDto.from(eventPage);
+    }
+
+    private Set<EventType> parseTypes(String typeQuery) {
+        Set<EventType> result = new HashSet<>();
+        if(typeQuery == null) return result;
+
+        String[] types = typeQuery.split(",");
+        for(String type : types) {
+            try {
+                EventType eventType = EventType.valueOf(type);
+                result.add(eventType);
+            } catch(Exception e) {
+                continue;
+            }
+        }
+        return result;
+    }
+
+    private Sort parseSort(String sortQuery) {
         List<Sort.Order> orders = new ArrayList<>();
         for(var entries: EventSearchQueryParser.parse(sortQuery).entrySet()){
             String field = entries.getKey();
@@ -197,24 +239,7 @@ public class EventService {
             }
         }
         // findBy를 이용하려면 Sort와 Page를 하나로 몰아넣으면 안된다.
-        Sort sort = Sort.by(orders);
-        PageRequest pageInfo = PageRequest.of(
-                page != null ? page : EventConst.EVENT_DEFAULT_PAGE,
-                size != null ? size : EventConst.EVENT_DEFAULT_SIZE
-        );
-
-        var searchOnName = EventSpecification.searchOnName(search);
-        var searchOnEventId = EventSpecification.searchOnEventId(search);
-
-        Page<BriefEventDto> eventPage = emRepository.findBy(
-                searchOnName.or(searchOnEventId),
-                (p) -> p.as(BriefEventDto.class)
-                        .sortBy(sort)
-                        .page(pageInfo)
-        );
-
-        log.info("Searched events for {}", search);
-        return eventPage.getContent();
+        return Sort.by(orders);
     }
 
     /**

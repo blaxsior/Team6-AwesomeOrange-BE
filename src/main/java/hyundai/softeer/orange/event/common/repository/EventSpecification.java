@@ -4,6 +4,8 @@ import hyundai.softeer.orange.event.common.entity.EventMetadata;
 import hyundai.softeer.orange.event.common.enums.EventType;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.Set;
+
 public class EventSpecification {
 
     public static Specification<EventMetadata> searchOnName(String search) {
@@ -30,5 +32,12 @@ public class EventSpecification {
 
     public static Specification<EventMetadata> isEventTypeOf(EventType eventType) {
         return (metadata, query, cb) -> cb.equal(metadata.get("eventType"), eventType);
+    }
+
+    public static Specification<EventMetadata> isEventTypeIn(Set<EventType> types) {
+        return (metadata, query, cb) -> {
+            if (types.isEmpty() || types.size() == EventType.values().length) return cb.conjunction();
+            return metadata.get("eventType").in(types);
+        };
     }
 }

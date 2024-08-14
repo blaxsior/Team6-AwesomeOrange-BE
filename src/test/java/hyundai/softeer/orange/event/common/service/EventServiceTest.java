@@ -60,7 +60,7 @@ class EventServiceTest {
         EventDto eventDto = mock(EventDto.class);
         when(eventDto.getEventFrameId()).thenReturn("testtag");
         when(eventDto.getEventType()).thenReturn(EventType.fcfs);
-        when(efRepo.findByName(anyString())).thenReturn(Optional.of(EventFrame.of("the-new-ioniq5","test")));
+        when(efRepo.findByFrameId(anyString())).thenReturn(Optional.of(EventFrame.of("the-new-ioniq5","test")));
 
         assertThatThrownBy(() -> {
             eventService.createEvent(eventDto);
@@ -74,7 +74,7 @@ class EventServiceTest {
         EventDto eventDto = mock(EventDto.class);
         when(eventDto.getEventFrameId()).thenReturn("testtag");
         when(eventDto.getEventType()).thenReturn(EventType.fcfs);
-        when(efRepo.findByName(anyString())).thenReturn(Optional.of(EventFrame.of("the-new-ioniq5","test")));
+        when(efRepo.findByFrameId(anyString())).thenReturn(Optional.of(EventFrame.of("the-new-ioniq5","test")));
         when(mapperMatcher.getMapper(any(EventType.class))).thenReturn(mock(FcfsEventFieldMapper.class));
 
         eventService.createEvent(eventDto);
