@@ -8,12 +8,11 @@ import hyundai.softeer.orange.event.dto.EventDto;
 import hyundai.softeer.orange.event.dto.draw.DrawEventDto;
 import hyundai.softeer.orange.event.dto.draw.DrawEventMetadataDto;
 import hyundai.softeer.orange.event.dto.draw.DrawEventScorePolicyDto;
+import hyundai.softeer.orange.support.TCDataJpaTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
 
@@ -22,8 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@DataJpaTest
-@TestPropertySource(locations = "classpath:application-test.yml")
+@TCDataJpaTest
 class DrawEventFieldMapperTest {
     @Autowired
     DrawEventMetadataRepository drawEventMetadataRepository;

@@ -7,12 +7,11 @@ import hyundai.softeer.orange.event.common.enums.EventType;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
 import hyundai.softeer.orange.event.common.repository.EventMetadataRepository;
 import hyundai.softeer.orange.event.component.EventKeyGenerator;
+import hyundai.softeer.orange.support.TCDataJpaTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,9 +19,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-@DataJpaTest
-@TestPropertySource(locations = "classpath:application-test.yml")
-class EventServiceSearchHintsTest {
+@TCDataJpaTest
+class EventServiceSearchHintsTest  {
     @Autowired
     private EventMetadataRepository emRepo;
     @Autowired
