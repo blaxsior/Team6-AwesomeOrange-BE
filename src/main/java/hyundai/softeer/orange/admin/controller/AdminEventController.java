@@ -7,10 +7,7 @@ import hyundai.softeer.orange.core.auth.Auth;
 import hyundai.softeer.orange.core.auth.AuthRole;
 import hyundai.softeer.orange.core.auth.list.AdminAuthRequirement;
 import hyundai.softeer.orange.event.common.service.EventService;
-import hyundai.softeer.orange.event.dto.BriefEventDto;
-import hyundai.softeer.orange.event.dto.EventDto;
-import hyundai.softeer.orange.event.dto.EventFrameCreateRequest;
-import hyundai.softeer.orange.event.dto.EventSearchHintDto;
+import hyundai.softeer.orange.event.dto.*;
 import hyundai.softeer.orange.event.dto.group.EventEditGroup;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -43,9 +40,10 @@ public class AdminEventController {
      *
      * @param search 검색어
      * @param sort 정렬 기준. (eventId|name|startTime|endTime|eventType)(:(asc|desc))? 패턴이 ,로 나뉘는 형태. ex) eventId,name:asc,startTime:desc
+     * @param type 선택할 이벤트의 타입 (fcfs|draw)을 ,로 나눠 표현. ex) type=fcfs,draw / 비어 있으면 모두 선택
      * @param page 페이지 번호
      * @param size 한번에 검색하는 이벤트 개수
-     * @return 요청한 이벤트 리스트
+     * @return 요청한 이벤트 리스트 및 페이지 정보
      */
     @GetMapping
     @Operation(summary = "이벤트 리스트 획득", description = "관리자가 이벤트 목록을 검색한다. 검색어, sort 기준 등을 정의할 수 있다.", responses = {
@@ -53,14 +51,15 @@ public class AdminEventController {
             @ApiResponse(responseCode = "5xx", description = "서버 내부적 에러"),
             @ApiResponse(responseCode = "4xx", description = "클라이언트 에러 (보통 page / size 값을 잘못 지정. 숫자가 아닌 경우 등) ")
     })
-    public ResponseEntity<List<BriefEventDto>> getEvents(
+    public ResponseEntity<BriefEventPageDto> getEvents(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String type,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size
     ) {
-        List<BriefEventDto> events = eventService.searchEvents(search, sort, page, size);
-        return ResponseEntity.ok(events);
+        BriefEventPageDto pageDto = eventService.searchEvents(search, sort, type, page, size);
+        return ResponseEntity.ok(pageDto);
     }
 
     @PostMapping

@@ -93,21 +93,24 @@ class EventServiceSearchEventsTest {
     @DisplayName("search 없으면 모두 출력")
     @Test
     void searchEvents_findAllIfSearchIsNull() {
-        var list = eventService.searchEvents(null, null, null, null);
+        var page = eventService.searchEvents(null, null, null,null, null);
+        var list = page.getContents();
         assertThat(list).hasSize(5);
     }
 
     @DisplayName("search 있으면 매칭되는 값 출력")
     @Test
     void searchEvents_findMatchedIfSearchExists() {
-        var list = eventService.searchEvents("hyundai", null, null, null);
+        var page = eventService.searchEvents("hyundai", null, null,null, null);
+        var list = page.getContents();
         assertThat(list).hasSize(2);
     }
 
     @DisplayName("search 있더라도 매칭되는 것 없으면 아무것도 반환 안함")
     @Test
     void searchEvents_findNothingIfSearchExistsButNotMatch() {
-        var list = eventService.searchEvents("not-exist", null, null, null);
+        var page = eventService.searchEvents("not-exist", null, null,null, null);
+        var list = page.getContents();
         assertThat(list).hasSize(0);
     }
 
@@ -119,8 +122,8 @@ class EventServiceSearchEventsTest {
         // endTime은 존재, desc
         // error은 존재 X, 맞지 않는 값은 그냥 무시
 
-        var list = eventService.searchEvents(null, "startTime,endTime:desc,error", null, null);
-        BriefEventDto target = list.get(0);
+        var list = eventService.searchEvents(null, "startTime,endTime:desc,error", null,null, null);
+        BriefEventDto target = list.getContents().get(0);
 
         assertThat(target.getEventId()).isEqualTo("HD240805_002");
     }
@@ -133,7 +136,8 @@ class EventServiceSearchEventsTest {
         // endTime은 존재, desc
         // error은 존재 X, 맞지 않는 값은 그냥 무시
 
-        var list = eventService.searchEvents(null, "eventId", 1, 2);
+        var page = eventService.searchEvents(null, "eventId", null,1, 2);
+        var list = page.getContents();
 
         assertThat(list.get(0).getEventId()).isEqualTo("HD240805_003");
         assertThat(list.get(1).getEventId()).isEqualTo("HD240805_004");
@@ -142,10 +146,10 @@ class EventServiceSearchEventsTest {
     @DisplayName("여러 옵션 함께 사용도 가능")
     @Test
     void searchEvents_withMultipleOptions() {
-        var list = eventService.searchEvents("25", "endTime:desc", 1, 1);
-        BriefEventDto target = list.get(0);
+        var page = eventService.searchEvents("25", "endTime:desc", null,1, 1);
+        BriefEventDto target = page.getContents().get(0);
 
-        assertThat(list).hasSize(1);
+        assertThat(page.getContents()).hasSize(1);
         assertThat(target.getEventId()).isEqualTo("HD240805_004");
     }
 }
