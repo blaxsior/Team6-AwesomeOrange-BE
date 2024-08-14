@@ -7,10 +7,11 @@ import java.util.Set;
 public class EventConst {
     public static final String REDIS_KEY_PREFIX = "@event_key:";
 
-    public static final String REDIS_TEMP_EVENT_PREFIX = REDIS_KEY_PREFIX + "temp:";
-    public static String TEMP_KEY(Long userId) {
+    public static final String REDIS_TEMP_EVENT_PREFIX = REDIS_KEY_PREFIX + "temp:admin:";
+    public static String ADMIN_TEMP(Long userId) {
         return REDIS_TEMP_EVENT_PREFIX + userId;
     }
+    public static String IS_DRAWING(String eventId) {return REDIS_KEY_PREFIX + eventId + ":is_drawing";}
     public static final long TEMP_EVENT_DURATION_HOUR = 24L;
 
     // 검색 기능 관련 상수들
