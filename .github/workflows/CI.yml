@@ -27,7 +27,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Test with Gradle
-        run: ./gradlew clean test --no-build-cache
+        run: ./gradlew clean test --no-build-cache -Dspring.profiles.active=test
 
       - name: Build with Gradle
         run: ./gradlew build -x test
