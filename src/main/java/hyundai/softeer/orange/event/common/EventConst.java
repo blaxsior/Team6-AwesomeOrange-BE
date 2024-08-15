@@ -13,6 +13,7 @@ public class EventConst {
     }
     public static String IS_DRAWING(String eventId) {return REDIS_KEY_PREFIX + eventId + ":is_drawing";}
     public static final long TEMP_EVENT_DURATION_HOUR = 24L;
+    public static final long DRAW_EVENT_DRAW_TIMEOUT_HOUR = 24L;
 
     // 검색 기능 관련 상수들
     public static final int EVENT_DEFAULT_PAGE = 0;

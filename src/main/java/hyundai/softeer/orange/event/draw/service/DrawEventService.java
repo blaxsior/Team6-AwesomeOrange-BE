@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 추첨 이벤트를 다루는 서비스
@@ -45,6 +46,8 @@ public class DrawEventService {
         tryDraw(key);
 
         machine.draw(drawEvent)
+        // 시간 제한
+        .orTimeout(EventConst.DRAW_EVENT_DRAW_TIMEOUT_HOUR, TimeUnit.HOURS)
         // 예외가 발생하더라도 추첨이 끝나면 키를 제거해야 함 = release
         .handleAsync((unused, throwable) -> {
             releaseDraw(key);
@@ -58,7 +61,7 @@ public class DrawEventService {
         assert count != null; // 트랜잭션이 아니므로 null 이면 안됨.
         if (count > 1) throw new DrawEventException(ErrorCode.EVENT_IS_DRAWING);
         // N 시간동안 유지. 추후 변경될 수 있음
-        redisTemplate.expire(key, Duration.ofHours(24));
+        redisTemplate.expire(key, Duration.ofHours(EventConst.DRAW_EVENT_DRAW_TIMEOUT_HOUR));
     }
 
     private void releaseDraw(String key) {
