@@ -12,4 +12,8 @@ import java.util.Optional;
 public interface DrawEventRepository extends JpaRepository<DrawEvent, Long> {
     @Query(value = "SELECT d FROM DrawEvent d WHERE d.eventMetadata.eventId = :eventId")
     Optional<DrawEvent> findByEventId(@Param("eventId") String eventId);
+
+//    @Modifying // 수정 쿼리는 Modifying 필요
+//    @Query(value = "UPDATE DrawEvent d SET d.isDrawn = true WHERE d.id = :id")
+//    void updateIsDrawnById(@Param("id") Long id);
 }

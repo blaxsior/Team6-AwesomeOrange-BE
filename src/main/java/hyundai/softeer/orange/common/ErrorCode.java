@@ -16,6 +16,9 @@ public enum ErrorCode {
     INVALID_URL(HttpStatus.BAD_REQUEST, false, "유효하지 않은 URL입니다."),
     INVALID_EVENT_TIME(HttpStatus.BAD_REQUEST, false, "이벤트 시간이 아닙니다."),
     INVALID_EVENT_TYPE(HttpStatus.BAD_REQUEST, false, "이벤트 타입이 지원되지 않습니다."),
+    EVENT_NOT_ENDED(HttpStatus.BAD_REQUEST, false, "이벤트가 아직 종료되지 않았습니다."),
+    EVENT_IS_DRAWING(HttpStatus.BAD_REQUEST, false, "현재 추첨이 진행되고 있는 이벤트입니다."),
+
 
     // 401 Unauthorized
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, false, "인증되지 않은 사용자입니다."),
@@ -49,6 +52,7 @@ public enum ErrorCode {
     ALREADY_WINNER(HttpStatus.CONFLICT, false, "이미 당첨된 사용자입니다."),
     ALREADY_PARTICIPATED(HttpStatus.CONFLICT, false, "이미 참여한 사용자입니다."),
     PHONE_NUMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, false, "이미 존재하는 전화번호입니다."),
+    ALREADY_DRAWN(HttpStatus.CONFLICT, false, "이미 추첨된 이벤트입니다."),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, false, "서버에 오류가 발생하였습니다.");

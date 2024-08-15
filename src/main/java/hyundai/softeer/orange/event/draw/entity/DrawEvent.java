@@ -18,6 +18,12 @@ public class DrawEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * 현재 추첨이 끝난 상태인지 여부를 반환
+     */
+    @Column(nullable = false)
+    private boolean isDrawn = false;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="event_metadata_id")
     private EventMetadata eventMetadata;
@@ -34,7 +40,6 @@ public class DrawEvent {
 
     @OneToMany(mappedBy ="drawEvent")
     private List<EventParticipationInfo> participationInfoList = new ArrayList<>();
-
 
     @OneToMany(mappedBy ="drawEvent")
     private List<DrawEventWinningInfo> winningInfoList = new ArrayList<>();

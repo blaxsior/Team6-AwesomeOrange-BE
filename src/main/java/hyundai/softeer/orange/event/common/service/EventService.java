@@ -87,7 +87,7 @@ public class EventService {
      * @param eventDto 임시 저장하는 이벤트 정보
      */
     public void saveTempEvent(Long adminId, EventDto eventDto) {
-        String key = EventConst.TEMP_KEY(adminId);
+        String key = EventConst.ADMIN_TEMP(adminId);
         // 24시간 동안 유지.
         eventDtoRedisTemplate.opsForValue().set(key, eventDto, EventConst.TEMP_EVENT_DURATION_HOUR, TimeUnit.HOURS);
         log.info("Saved temp event by {}", adminId);
@@ -99,7 +99,7 @@ public class EventService {
      * @return 임시 저장 된 이벤트 정보
      */
     public EventDto getTempEvent(Long adminId) {
-        String key = EventConst.TEMP_KEY(adminId);
+        String key = EventConst.ADMIN_TEMP(adminId);
         String dto = (String) eventDtoRedisTemplate.opsForValue().get(key);
 
         log.info("Fetched temp event by {}", adminId);
@@ -114,7 +114,7 @@ public class EventService {
      * @param adminId 이벤트를 임시 저장한 관리자의 id
      */
     public void clearTempEvent(Long adminId) {
-        String key = EventConst.TEMP_KEY(adminId);
+        String key = EventConst.ADMIN_TEMP(adminId);
         eventDtoRedisTemplate.delete(key);
         log.info("Cleared temp event by {}", adminId);
     }

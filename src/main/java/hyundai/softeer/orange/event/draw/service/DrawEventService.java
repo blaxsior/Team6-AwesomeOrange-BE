@@ -1,26 +1,23 @@
 package hyundai.softeer.orange.event.draw.service;
 
 import hyundai.softeer.orange.common.ErrorCode;
-import hyundai.softeer.orange.event.draw.component.picker.PickTarget;
-import hyundai.softeer.orange.event.draw.component.score.ScoreCalculator;
-import hyundai.softeer.orange.event.draw.dto.DrawEventWinningInfoBulkInsertDto;
+import hyundai.softeer.orange.event.common.EventConst;
+import hyundai.softeer.orange.event.common.entity.EventMetadata;
+import hyundai.softeer.orange.event.common.enums.EventType;
+import hyundai.softeer.orange.event.common.exception.EventException;
+import hyundai.softeer.orange.event.common.repository.EventMetadataRepository;
 import hyundai.softeer.orange.event.draw.entity.DrawEvent;
-import hyundai.softeer.orange.event.draw.entity.DrawEventMetadata;
-import hyundai.softeer.orange.event.draw.entity.DrawEventScorePolicy;
 import hyundai.softeer.orange.event.draw.exception.DrawEventException;
-import hyundai.softeer.orange.event.draw.repository.DrawEventRepository;
-import hyundai.softeer.orange.event.draw.component.picker.WinnerPicker;
-import hyundai.softeer.orange.event.draw.repository.DrawEventWinningInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 추첨 이벤트를 다루는 서비스
@@ -29,72 +26,58 @@ import java.util.List;
 @Service
 public class DrawEventService {
     private static final Logger log = LoggerFactory.getLogger(DrawEventService.class);
-    private final DrawEventRepository deRepository;
-    private final DrawEventWinningInfoRepository deWinningInfoRepository;
-    private final WinnerPicker picker;
-    private final ScoreCalculator calculator;
+    private final EventMetadataRepository emRepository;
+    private final DrawEventDrawMachine machine;
+    private final StringRedisTemplate redisTemplate;
 
     /**
      * eventId에 대한 추첨을 진행하는 메서드
      * @param drawEventId draw event의 id 값.
      */
     @Transactional
-    @Async
-    public void draw(Long drawEventId) {
-        // 채점 & 추첨 과정 분리하는 것도 좋을것 같다.
-        DrawEvent drawEvent = deRepository.findById(drawEventId)
-                .orElseThrow(() -> new DrawEventException(ErrorCode.DRAW_EVENT_NOT_FOUND));
+    public void draw(String drawEventId) {
+        // 이벤트가 존재하는지 검사
+        EventMetadata event = emRepository.findFirstByEventId(drawEventId)
+                .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
+        DrawEvent drawEvent = event.getDrawEvent(); // draw event fetch
+        // 이벤트 검증
+        validateDrawCondition(event, LocalDateTime.now());
+        String key = EventConst.IS_DRAWING(event.getEventId());
+        tryDraw(key);
 
-        // draw event의 primary key id 값
-        long drawEventRawId = drawEvent.getId();
+        machine.draw(drawEvent)
+        // 시간 제한
+        .orTimeout(EventConst.DRAW_EVENT_DRAW_TIMEOUT_HOUR, TimeUnit.HOURS)
+        // 예외가 발생하더라도 추첨이 끝나면 키를 제거해야 함 = release
+        .handleAsync((unused, throwable) -> {
+            releaseDraw(key);
+            if(throwable != null) log.error(throwable.getMessage(), throwable);
+            return null;
+        });
+    }
 
-        // 점수 계산. 추후 추첨 과정과 분리될 수도 있음.
-        List<DrawEventScorePolicy> policies = drawEvent.getPolicyList();
-        var userScoreMap = calculator.calculate(drawEventRawId, policies);
+    private void tryDraw(String key) {
+        Long count = redisTemplate.opsForValue().increment(key);
+        assert count != null; // 트랜잭션이 아니므로 null 이면 안됨.
+        if (count > 1) throw new DrawEventException(ErrorCode.EVENT_IS_DRAWING);
+        // N 시간동안 유지. 추후 변경될 수 있음
+        redisTemplate.expire(key, Duration.ofHours(EventConst.DRAW_EVENT_DRAW_TIMEOUT_HOUR));
+    }
 
-        // 추첨 타겟 리스트 생성
-        List<PickTarget> targets = userScoreMap.entrySet().stream()
-                .map(it -> new PickTarget(it.getKey(), it.getValue())).toList();
+    private void releaseDraw(String key) {
+        redisTemplate.delete(key);
+    }
 
-        // 몇 등이 몇명이나 있는지 적혀 있는 정보. 등급끼리 정렬해서 1 ~ n 등 순서로 정렬
-        // 확률 높은 사람이 손해보면 안됨
-        List<DrawEventMetadata> metadataList = drawEvent.getMetadataList();
-        metadataList.sort(Comparator.comparing(DrawEventMetadata::getGrade));
+    private void validateDrawCondition(EventMetadata event, LocalDateTime now) {
+        // 이벤트가 draw event 인지 검사
+        if (event.getEventType() != EventType.draw) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
+        // 이벤트가 종료되었는지 검사
+        if (now.isBefore(event.getEndTime())) throw new DrawEventException(ErrorCode.EVENT_NOT_ENDED);
 
-        // 총 당첨 인원 설정
-        long pickCount = metadataList.stream()
-                .mapToLong(DrawEventMetadata::getCount).sum();
-
-        // 당첨된 인원 구하기
-        var pickedTargets = picker.pick(targets, pickCount);
-
-        // 이하 영역은 여러 작업을 동시에 수행할 수도 있음
-        // ex) 인원 등록 / 상품 문자 발송 ...
-
-        // 인원 등록을 위한 작업
-        List<DrawEventWinningInfoBulkInsertDto> insertTargets = new ArrayList<>();
-        int mdIdx = -1;
-        long remain = 0;
-        long grade = -1;
-        DrawEventMetadata metadata = null;
-
-        for(var target : pickedTargets) {
-            if(remain <= 0) {
-                mdIdx++;
-                metadata = metadataList.get(mdIdx);
-                grade = metadata.getGrade();
-                remain = metadata.getCount();
-            }
-
-            insertTargets.add(DrawEventWinningInfoBulkInsertDto.of(
-                    target.key(),
-                    grade,
-                    drawEventRawId
-            ));
-            remain--;
-        }
-
-        log.info("Draw Event: {}, Winners: {}", drawEventRawId, insertTargets.size());
-        deWinningInfoRepository.insertMany(insertTargets);
+        // draw 이벤트 객체가 있는지 검사
+        DrawEvent drawEvent = event.getDrawEvent();
+        if (drawEvent == null) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
+        // 이벤트가 이미 추첨되었는지 검사
+        if (drawEvent.isDrawn()) throw new DrawEventException(ErrorCode.ALREADY_DRAWN);
     }
 }
