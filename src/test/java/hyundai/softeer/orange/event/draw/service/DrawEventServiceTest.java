@@ -178,10 +178,12 @@ class DrawEventServiceTest {
         ValueOperations<String, String> ops = mock(ValueOperations.class);
         when(ops.increment(key)).thenReturn(1L);
         when(redisTemplate.opsForValue()).thenReturn(ops);
-        when(machine.draw(any(DrawEvent.class))).thenReturn(CompletableFuture.completedFuture(null));
+        CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
+        when(machine.draw(any(DrawEvent.class))).thenReturn(future);
 
         var deService = new DrawEventService(emRepository, machine, redisTemplate);
         deService.draw("test-key");
+        future.join(); // 비동기 끝날 때까지 대기 -> delete 실행되는지 검사
 
         verify(ops, times(1)).increment(key);
         verify(redisTemplate, times(1)).delete(key);
