@@ -28,6 +28,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -163,7 +164,7 @@ class DrawEventServiceTest {
 
     @DisplayName("이벤트 추첨 조건이 된다면 추첨 진행")
     @Test
-    void draw_successfullyDraw() {
+    void draw_successfullyDraw() throws InterruptedException {
         String eventId = "test-key";
         String key = EventConst.IS_DRAWING(eventId);
         var endTime = LocalDateTime.now().plusDays(-10);
@@ -184,6 +185,7 @@ class DrawEventServiceTest {
         var deService = new DrawEventService(emRepository, machine, redisTemplate);
         deService.draw("test-key");
         future.join(); // 비동기 끝날 때까지 대기 -> delete 실행되는지 검사
+        TimeUnit.SECONDS.sleep(1L);
 
         verify(ops, times(1)).increment(key);
         verify(redisTemplate, times(1)).delete(key);
