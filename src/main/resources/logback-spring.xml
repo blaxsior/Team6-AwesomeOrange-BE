@@ -1,6 +1,6 @@
 <configuration>
     <!-- 기본 환경 설정 -->
-    <springProfile name="default">
+    <springProfile name="!test">
         <property name="LOG_DIR" value="/var/log/spring-boot" />
 
         <!-- 콘솔 출력 설정 -->
