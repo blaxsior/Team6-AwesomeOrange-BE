@@ -13,13 +13,9 @@ public abstract class IntegrationDataJpaTest {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    // 이 클래스를 상속받는 모든 테스트 클래스는 모든 테스트가 끝나면 모든 테이블의 데이터를 삭제한다.
+    // 이 클래스를 상속받는 모든 통합 테스트 클래스는 테스트가 끝나면 모든 테이블의 데이터를 삭제한다.
     @AfterAll
-    void tearDownAll() {
-        clear();
-    }
-
-    private void clear(){
+    void clearDatabase(){
         jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
         List<String> tableNameList = jdbcTemplate.queryForList("SHOW TABLES", String.class); // 모든 테이블 이름을 가져온다.
         for(String tableName : tableNameList) {
