@@ -45,12 +45,12 @@ public class DrawEventService {
         tryDraw(key);
 
         machine.draw(drawEvent)
-                // 예외가 발생하더라도 추첨이 끝나면 키를 제거해야 함 = release
-                .handleAsync((unused, throwable) -> {
-                    releaseDraw(key);
-                    if(throwable != null) log.error(throwable.getMessage(), throwable);
-                    return null;
-                });
+        // 예외가 발생하더라도 추첨이 끝나면 키를 제거해야 함 = release
+        .handleAsync((unused, throwable) -> {
+            releaseDraw(key);
+            if(throwable != null) log.error(throwable.getMessage(), throwable);
+            return null;
+        });
     }
 
     private void tryDraw(String key) {
@@ -65,7 +65,7 @@ public class DrawEventService {
         redisTemplate.delete(key);
     }
 
-    protected void validateDrawCondition(EventMetadata event, LocalDateTime now) {
+    private void validateDrawCondition(EventMetadata event, LocalDateTime now) {
         // 이벤트가 draw event 인지 검사
         if (event.getEventType() != EventType.draw) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
         // 이벤트가 종료되었는지 검사
