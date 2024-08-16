@@ -1,27 +1,22 @@
 package hyundai.softeer.orange.event.draw.service;
 
+import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.event.common.EventConst;
 import hyundai.softeer.orange.event.common.entity.EventMetadata;
 import hyundai.softeer.orange.event.common.enums.EventType;
 import hyundai.softeer.orange.event.common.exception.EventException;
 import hyundai.softeer.orange.event.common.repository.EventMetadataRepository;
-import hyundai.softeer.orange.event.draw.component.picker.PickTarget;
-import hyundai.softeer.orange.event.draw.component.picker.WinnerPicker;
-import hyundai.softeer.orange.event.draw.component.score.ScoreCalculator;
-import hyundai.softeer.orange.event.draw.dto.DrawEventWinningInfoBulkInsertDto;
 import hyundai.softeer.orange.event.draw.entity.DrawEvent;
-import hyundai.softeer.orange.event.draw.entity.DrawEventMetadata;
+import hyundai.softeer.orange.event.draw.entity.DrawEventWinningInfo;
 import hyundai.softeer.orange.event.draw.exception.DrawEventException;
-import hyundai.softeer.orange.event.draw.repository.DrawEventRepository;
 import hyundai.softeer.orange.event.draw.repository.DrawEventWinningInfoRepository;
-import org.junit.jupiter.api.AfterEach;
+import hyundai.softeer.orange.eventuser.entity.EventUser;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
@@ -32,131 +27,132 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 class DrawEventServiceTest {
-    EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
-    DrawEventDrawMachine machine = mock(DrawEventDrawMachine.class);
-    StringRedisTemplate redisTemplate = mock(StringRedisTemplate.class);
 
-    @AfterEach
-    void afterEach() {
-        reset(emRepository,machine,redisTemplate);
+    @InjectMocks
+    DrawEventService deService;
+
+    @Mock
+    EventMetadataRepository emRepository;
+
+    @Mock
+    DrawEventWinningInfoRepository deWinningInfoRepository;
+
+    @Mock
+    DrawEventDrawMachine machine;
+
+    @Mock
+    StringRedisTemplate redisTemplate;
+
+    String eventId = "test-key";
+
+    private EventMetadata createEventMetadata(String eventId, EventType eventType, LocalDateTime endTime) {
+        return EventMetadata.builder()
+                .eventId(eventId)
+                .eventType(eventType)
+                .endTime(endTime)
+                .build();
+    }
+
+    @BeforeEach
+    void setUp(){
+        MockitoAnnotations.openMocks(this);
     }
 
     @DisplayName("대응되는 이벤트가 존재하지 않으면 예외 반환")
     @Test
     void draw_throwIfDrawEventNotFound() {
-        String eventId = "test-key";
+        // given
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.empty());
 
-        var deService = new DrawEventService(emRepository, machine, redisTemplate);
-
-        assertThatThrownBy(() -> {
-            deService.draw(eventId);
-        });
+        // when & then
+        assertThatThrownBy(() -> deService.draw(eventId))
+                .isInstanceOf(EventException.class)
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
     }
 
     @DisplayName("추첨 이벤트가 아니면 예외 반환")
     @Test
     void draw_throwIfNotDrawType() {
-        String eventId = "test-key";
-        var eventMetadata = EventMetadata.builder()
-                .eventId(eventId)
-                .eventType(EventType.fcfs)
-                .build();
+        // given
+        var eventMetadata = createEventMetadata(eventId, EventType.fcfs, LocalDateTime.now());
+        eventMetadata.updateDrawEvent(new DrawEvent());
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
-        var deService = new DrawEventService(emRepository, machine, redisTemplate);
-        assertThatThrownBy(() -> {
-            deService.draw(eventId);
-        });
+
+        // when & then
+        assertThatThrownBy(() -> deService.draw(eventId))
+                .isInstanceOf(DrawEventException.class)
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
     }
 
 
     @DisplayName("이벤트가 종료되지 않았다면 예외 반환")
     @Test
     void draw_throwIfEventNotEnded() {
-        String eventId = "test-key";
+        // given
         var endTime = LocalDateTime.now().plusDays(10);
-        var eventMetadata = EventMetadata.builder()
-                .eventId(eventId)
-                .eventType(EventType.draw)
-                .endTime(endTime)
-                .build();
+        var eventMetadata = createEventMetadata(eventId, EventType.draw, endTime);
+        eventMetadata.updateDrawEvent(new DrawEvent());
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
 
-        var deService = new DrawEventService(emRepository, machine, redisTemplate);
-        assertThatThrownBy(() -> {
-            deService.draw(eventId);
-        });
+        // when & then
+        assertThatThrownBy(() -> deService.draw(eventId))
+                .isInstanceOf(DrawEventException.class)
+                .hasMessage(ErrorCode.EVENT_NOT_ENDED.getMessage());
     }
 
 
     @DisplayName("추첨 이벤트를 가져올 수 없다면 예외 반환")
     @Test
     void draw_throwIfDrawEventIsNull() {
-        String eventId = "test-key";
+        // given
         var endTime = LocalDateTime.now().plusDays(-10);
-        var eventMetadata = EventMetadata.builder()
-                .eventId(eventId)
-                .eventType(EventType.draw)
-                .endTime(endTime)
-                .build();
+        var eventMetadata = createEventMetadata(eventId, EventType.draw, endTime);
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
 
-        var deService = new DrawEventService(emRepository, machine, redisTemplate);
-        assertThatThrownBy(() -> {
-            deService.draw(eventId);
-        });
+        // when & then
+        assertThatThrownBy(() -> deService.draw(eventId))
+                .isInstanceOf(DrawEventException.class)
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
     }
 
     @DisplayName("추첨 이벤트가 이미 추첨된 상태라면 예외 반환")
     @Test
     void draw_throwIfDrawEventIsAlreadyDrawn() {
-        String eventId = "test-key";
+        // given
         var endTime = LocalDateTime.now().plusDays(-10);
         var drawEvent = new DrawEvent();
         drawEvent.setDrawn(true);
-        var eventMetadata = EventMetadata.builder()
-                .eventId(eventId)
-                .eventType(EventType.draw)
-                .endTime(endTime)
-                .build();
+        var eventMetadata = createEventMetadata(eventId, EventType.draw, endTime);
         eventMetadata.updateDrawEvent(drawEvent);
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
 
-        var deService = new DrawEventService(emRepository, machine, redisTemplate);
-        assertThatThrownBy(() -> {
-            deService.draw(eventId);
-        });
+        // when & then
+        assertThatThrownBy(() -> deService.draw(eventId))
+                .isInstanceOf(DrawEventException.class)
+                .hasMessage(ErrorCode.ALREADY_DRAWN.getMessage());
     }
 
     @DisplayName("이벤트가 현재 추첨 중이라면 예외 반환")
     @Test
     void draw_throwIfDrawEventIsDrawing() {
-        String eventId = "test-key";
+        // given
         String key = EventConst.IS_DRAWING(eventId);
         var endTime = LocalDateTime.now().plusDays(-10);
-        var drawEvent = new DrawEvent();
-        var eventMetadata = EventMetadata.builder()
-                .eventId(eventId)
-                .eventType(EventType.draw)
-                .endTime(endTime)
-                .build();
-        eventMetadata.updateDrawEvent(drawEvent);
+        var eventMetadata = createEventMetadata(eventId, EventType.draw, endTime);
+        eventMetadata.updateDrawEvent(new DrawEvent());
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
         ValueOperations<String, String> ops = mock(ValueOperations.class);
         // 현재 진입 중인 사람이 있음
         when(ops.increment(key)).thenReturn(2L);
         when(redisTemplate.opsForValue()).thenReturn(ops);
 
-        var deService = new DrawEventService(emRepository, machine, redisTemplate);
-
-        assertThatThrownBy(() -> {
-            deService.draw(eventId);
-        });
+        // when & then
+        assertThatThrownBy(() -> deService.draw(eventId))
+                .isInstanceOf(DrawEventException.class)
+                .hasMessage(ErrorCode.EVENT_IS_DRAWING.getMessage());
         verify(ops, times(1)).increment(key);
         verify(redisTemplate, times(1)).opsForValue();
     }
@@ -164,15 +160,11 @@ class DrawEventServiceTest {
     @DisplayName("이벤트 추첨 조건이 된다면 추첨 진행")
     @Test
     void draw_successfullyDraw() throws InterruptedException {
-        String eventId = "test-key";
+        // given
         String key = EventConst.IS_DRAWING(eventId);
         var endTime = LocalDateTime.now().plusDays(-10);
         var drawEvent = new DrawEvent();
-        var eventMetadata = EventMetadata.builder()
-                .eventId(eventId)
-                .eventType(EventType.draw)
-                .endTime(endTime)
-                .build();
+        var eventMetadata = createEventMetadata(eventId, EventType.draw, endTime);
         eventMetadata.updateDrawEvent(drawEvent);
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
         ValueOperations<String, String> ops = mock(ValueOperations.class);
@@ -181,14 +173,38 @@ class DrawEventServiceTest {
         CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
         when(machine.draw(any(DrawEvent.class))).thenReturn(future);
 
-        var deService = new DrawEventService(emRepository, machine, redisTemplate);
-        deService.draw("test-key");
+        // when
+        deService.draw(eventId);
         future.join(); // 비동기 끝날 때까지 대기 -> delete 실행되는지 검사
         TimeUnit.SECONDS.sleep(1L);
 
+        // then
         verify(ops, times(1)).increment(key);
         verify(redisTemplate, times(1)).delete(key);
         verify(redisTemplate, times(1)).opsForValue();
         verify(machine, times(1)).draw(any(DrawEvent.class));
+    }
+
+    @DisplayName("당첨자 목록 조회")
+    @Test
+    void getDrawEventWinner() {
+        // given
+        var eventUser = mock(EventUser.class);
+        when(eventUser.getUserName()).thenReturn("test-user");
+        when(eventUser.getPhoneNumber()).thenReturn("010-1234-5678");
+        var drawEvent = mock(DrawEvent.class);
+        when(drawEvent.getId()).thenReturn(1L);
+        var eventMetadata = createEventMetadata(eventId, EventType.draw, LocalDateTime.now());
+        eventMetadata.updateDrawEvent(drawEvent);
+        when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
+        when(deWinningInfoRepository.findAllById(drawEvent.getId())).thenReturn(List.of(DrawEventWinningInfo.of(1L, drawEvent, eventUser)));
+
+        // when
+        var result = deService.getDrawEventWinner(eventId);
+
+        // then
+        assertThat(result).isNotEmpty();
+        verify(emRepository, times(1)).findFirstByEventId(eventId);
+        verify(deWinningInfoRepository, times(1)).findAllById(drawEvent.getId());
     }
 }
