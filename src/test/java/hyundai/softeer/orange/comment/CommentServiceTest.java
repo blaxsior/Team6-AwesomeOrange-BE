@@ -228,7 +228,7 @@ class CommentServiceTest {
         given(commentRepository.findAllByEventId(any(), any())).willReturn(new PageImpl<>(List.of(Comment.of("test", eventFrame, eventUser, true))));
 
         // when
-        ResponseCommentsDto dto = commentService.searchComments(eventFrameId, 0, 10);
+        ResponseCommentsDto dto = commentService.searchComments(eventFrameId, null,0, 10);
 
         // then
         assertThat(dto.getComments()).hasSize(1);
