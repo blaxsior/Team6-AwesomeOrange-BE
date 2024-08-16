@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   deploy:
@@ -28,10 +29,23 @@ jobs:
       - name: Pull Docker Image
         run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/orange
 
+      - name: AWS credential
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_NAME }}
+          role-session-name: GithubActions
+          aws-region: ${{ secrets.SSM_PARAMETER_REGION }}
+
+      - name: Get Parameter
+        id: get-parameter
+        run: |
+          sudo aws ssm get-parameter --name ${{ secrets.SSM_PARAMETER_NAME }} --with-decryption --region ${{ secrets.SSM_PARAMETER_REGION }} --query "Parameter.Value" --output text > ${{ secrets.ENV_NAME }}
+
       - name: Remove Old Docker Container
         run: sudo docker rm -f orange || true
 
       - name: Run Updated Docker Container
-        run: sudo docker run -t -d --name orange -p 8080:8080 \
-          --env SERVER_SECRET=$(aws ssm get-parameter --name ${{ secrets.SSM_PARAMETER_NAME }} --with-decryption --region ${{ secrets.SSM_PARAMETER_REGION }} --query "Parameter.Value" --output text) \
-          ${{ secrets.DOCKERHUB_USERNAME }}/orange
+        run: |
+          sudo docker run -t -d --name orange -p 8080:8080 \
+            --env-file ${{ secrets.ENV_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/orange
+          rm -f ${{ secrets.ENV_NAME }}
