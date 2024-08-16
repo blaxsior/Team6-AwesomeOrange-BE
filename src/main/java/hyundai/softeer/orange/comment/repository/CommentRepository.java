@@ -5,6 +5,8 @@ import hyundai.softeer.orange.comment.dto.WriteCommentCountDto;
 import hyundai.softeer.orange.comment.entity.Comment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -25,6 +27,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpec
     // 오늘 날짜 기준으로 이미 유저의 기대평이 등록되어 있는지 확인 (JPQL)
     @Query("SELECT (COUNT(c) > 0) FROM Comment c WHERE c.eventUser.id = :eventUserId AND FUNCTION('DATE', c.createdAt) = CURRENT_DATE")
     boolean existsByCreatedDateAndEventUser(@Param("eventUserId") Long eventUserId);
+
+    @EntityGraph(attributePaths = {"eventUser"})
+    Page<Comment> findAll(Specification<Comment> spec, Pageable pageable);
 
     @Query(value = "SELECT c.* FROM comment c " +
             "JOIN event_frame ef ON c.event_frame_id = ef.id " +
