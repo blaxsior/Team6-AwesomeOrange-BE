@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Table(name="fcfs_event_winning_info")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,10 +25,13 @@ public class FcfsEventWinningInfo {
     @JoinColumn(name ="event_user_id")
     private EventUser eventUser;
 
-    public static FcfsEventWinningInfo of(FcfsEvent fcfsEvent, EventUser eventUser) {
+    private LocalDateTime winningTime;
+
+    public static FcfsEventWinningInfo of(FcfsEvent fcfsEvent, EventUser eventUser, LocalDateTime winningTime) {
         FcfsEventWinningInfo fcfsEventWinningInfo = new FcfsEventWinningInfo();
         fcfsEventWinningInfo.fcfsEvent = fcfsEvent;
         fcfsEventWinningInfo.eventUser = eventUser;
+        fcfsEventWinningInfo.winningTime = winningTime;
         return fcfsEventWinningInfo;
     }
 }

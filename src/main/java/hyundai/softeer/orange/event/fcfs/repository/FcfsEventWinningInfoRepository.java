@@ -10,8 +10,8 @@ import java.util.List;
 @Repository
 public interface FcfsEventWinningInfoRepository extends JpaRepository<FcfsEventWinningInfo, Long> {
 
-    // Fetch Join으로 eventUser 정보까지 한번에 가져와서 N+1 문제 방지
-    @Query("select f from FcfsEventWinningInfo f join fetch f.eventUser where f.fcfsEvent.id = :eventSequence")
+    // Fetch Join으로 eventUser 정보까지 한번에 가져와서 N+1 문제 방지하며, 당첨 시각 기준 오름차순 정렬
+    @Query("select f from FcfsEventWinningInfo f join fetch f.eventUser where f.fcfsEvent.id = :eventSequence order by f.winningTime asc")
     List<FcfsEventWinningInfo> findByFcfsEventId(Long eventSequence);
 
     boolean existsByEventUserIdAndFcfsEventId(Long eventUserId, Long fcfsEventId);

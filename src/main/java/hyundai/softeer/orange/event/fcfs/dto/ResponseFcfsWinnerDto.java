@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,4 +15,5 @@ public class ResponseFcfsWinnerDto {
 
     private String name;
     private String phoneNumber;
+    private LocalDateTime winningTime;
 }

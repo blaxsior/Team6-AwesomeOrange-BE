@@ -20,7 +20,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -64,10 +66,9 @@ public class FcfsManageService {
                     .orElseThrow(() -> new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND));
 
             List<EventUser> users = eventUserRepository.findAllByUserId(userIds.stream().toList());
-
             List<FcfsEventWinningInfo> winningInfos = users
                     .stream()
-                    .map(user -> FcfsEventWinningInfo.of(event, user))
+                    .map(user -> FcfsEventWinningInfo.of(event, user, getTimeFromScore(stringRedisTemplate.opsForZSet().score(FcfsUtil.winnerFormatting(eventId), user.getUserId()))))
                     .toList();
 
             fcfsEventWinningInfoRepository.saveAll(winningInfos);
@@ -118,6 +119,7 @@ public class FcfsManageService {
                 .map(winningInfo -> ResponseFcfsWinnerDto.builder()
                         .name(winningInfo.getEventUser().getUserName())
                         .phoneNumber(winningInfo.getEventUser().getPhoneNumber())
+                        .winningTime(winningInfo.getWinningTime())
                         .build())
                 .toList();
     }
@@ -135,7 +137,7 @@ public class FcfsManageService {
         log.info("Registered FCFS event: {}", key);
     }
 
-    public void deleteEventInfo(String eventId) {
+    private void deleteEventInfo(String eventId) {
         stringRedisTemplate.delete(FcfsUtil.startTimeFormatting(eventId));
         stringRedisTemplate.delete(FcfsUtil.answerFormatting(eventId));
         stringRedisTemplate.delete(FcfsUtil.participantFormatting(eventId));
@@ -143,5 +145,13 @@ public class FcfsManageService {
         numberRedisTemplate.delete(FcfsUtil.keyFormatting(eventId));
         booleanRedisTemplate.delete(FcfsUtil.endFlagFormatting(eventId));
         log.info("Deleted Information of FCFS event: {}", eventId);
+    }
+
+    private LocalDateTime getTimeFromScore(Double score) {
+        if(score == null) {
+            throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
+        }
+        long timeMillis = score.longValue();
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), ZoneId.systemDefault());
     }
 }
