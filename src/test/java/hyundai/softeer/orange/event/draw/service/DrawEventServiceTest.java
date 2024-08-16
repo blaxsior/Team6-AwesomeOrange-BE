@@ -103,7 +103,6 @@ class DrawEventServiceTest {
                 .eventId(eventId)
                 .eventType(EventType.draw)
                 .endTime(endTime)
-                .drawEvent(null)
                 .build();
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
 
@@ -124,8 +123,8 @@ class DrawEventServiceTest {
                 .eventId(eventId)
                 .eventType(EventType.draw)
                 .endTime(endTime)
-                .drawEvent(drawEvent)
                 .build();
+        eventMetadata.updateDrawEvent(drawEvent);
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
 
         var deService = new DrawEventService(emRepository, machine, redisTemplate);
@@ -145,8 +144,8 @@ class DrawEventServiceTest {
                 .eventId(eventId)
                 .eventType(EventType.draw)
                 .endTime(endTime)
-                .drawEvent(drawEvent)
                 .build();
+        eventMetadata.updateDrawEvent(drawEvent);
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
         ValueOperations<String, String> ops = mock(ValueOperations.class);
         // 현재 진입 중인 사람이 있음
@@ -173,8 +172,8 @@ class DrawEventServiceTest {
                 .eventId(eventId)
                 .eventType(EventType.draw)
                 .endTime(endTime)
-                .drawEvent(drawEvent)
                 .build();
+        eventMetadata.updateDrawEvent(drawEvent);
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
         ValueOperations<String, String> ops = mock(ValueOperations.class);
         when(ops.increment(key)).thenReturn(1L);

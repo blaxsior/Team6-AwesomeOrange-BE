@@ -24,7 +24,7 @@ public class DrawEvent {
     @Column(nullable = false)
     private boolean isDrawn = false;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="event_metadata_id")
     private EventMetadata eventMetadata;
 

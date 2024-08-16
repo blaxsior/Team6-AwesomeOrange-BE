@@ -73,11 +73,17 @@ public class EventMetadata {
     @JoinColumn(name="event_frame_id")
     private EventFrame eventFrame;
 
-    @OneToOne(mappedBy = "eventMetadata", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private DrawEvent drawEvent;
+    // 원래는 one-to-one 관계이지만, JPA 동작에 의해 강제로 EAGER FETCH로 처리돰 -> one-to-many 로 관리
+    @OneToMany(mappedBy = "eventMetadata", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    private final List<DrawEvent> drawEventList = new ArrayList<>();
 
     public void updateDrawEvent(DrawEvent drawEvent) {
-        this.drawEvent = drawEvent;
+        this.drawEventList.add(drawEvent);
+    }
+
+    public DrawEvent getDrawEvent() {
+        if (drawEventList.isEmpty()) return null;
+        return drawEventList.get(0);
     }
 
     @OneToMany(mappedBy = "eventMetaData", cascade = {CascadeType.PERSIST, CascadeType.MERGE})

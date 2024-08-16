@@ -39,7 +39,7 @@ public class DrawEventService {
         // 이벤트가 존재하는지 검사
         EventMetadata event = emRepository.findFirstByEventId(drawEventId)
                 .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
-        DrawEvent drawEvent = event.getDrawEvent(); // draw event fetch
+        DrawEvent drawEvent = event.getDrawEventList().get(0);
         // 이벤트 검증
         validateDrawCondition(event, LocalDateTime.now());
         String key = EventConst.IS_DRAWING(event.getEventId());
