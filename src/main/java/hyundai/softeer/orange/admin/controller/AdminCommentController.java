@@ -33,10 +33,11 @@ public class AdminCommentController {
     @GetMapping
     public ResponseEntity<ResponseCommentsDto> findEventComments(
             @RequestParam String eventId,
+            @RequestParam(required=false) String search,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size
     ) {
-         var comments = commentService.searchComments(eventId, page, size);
+         var comments = commentService.searchComments(eventId, search, page, size);
          return ResponseEntity.ok(comments);
     }
 

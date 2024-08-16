@@ -6,6 +6,7 @@ import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
 import hyundai.softeer.orange.comment.entity.Comment;
 import hyundai.softeer.orange.comment.exception.CommentException;
 import hyundai.softeer.orange.comment.repository.CommentRepository;
+import hyundai.softeer.orange.comment.repository.CommentSpecification;
 import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,7 +76,6 @@ public class CommentService {
 
         boolean isPositive = commentValidator.analyzeComment(dto.getContent());
 
-        // TODO: 점수정책와 연계하여 기대평 등록 시 점수를 부여 추가해야함
         Comment comment = Comment.of(dto.getContent(), eventFrame, eventUser, isPositive);
         commentRepository.save(comment);
         log.info("created comment: {}", comment.getId());
@@ -108,11 +109,17 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public ResponseCommentsDto searchComments(String eventId, Integer page, Integer size) {
+    public ResponseCommentsDto searchComments(String eventId, String search, Integer page, Integer size) {
         PageRequest pageInfo = PageRequest.of(page, size);
 
-        var comments = commentRepository.findAllByEventId(eventId,pageInfo)
-                .getContent().stream().map(ResponseCommentDto::from).toList();
+        Specification<Comment> matchEventId = CommentSpecification.matchEventId(eventId);
+        Specification<Comment> searchOnContent = CommentSpecification.searchOnContent(search);
+
+        var comments = commentRepository.findAll(
+                matchEventId.and(searchOnContent),
+                pageInfo
+        ).stream().map(ResponseCommentDto::from).toList();
+
         log.info("searched comments: {}", comments);
         return new ResponseCommentsDto(comments);
     }

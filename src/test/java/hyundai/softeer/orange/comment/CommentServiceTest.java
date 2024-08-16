@@ -28,6 +28,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -269,14 +270,14 @@ class CommentServiceTest {
     @Test
     void searchCommentsTest() {
         // given
-        given(commentRepository.findAllByEventId(any(), any())).willReturn(new PageImpl<>(List.of(Comment.of("test", eventFrame, eventUser, true))));
+        given(commentRepository.findAll(any(Specification.class), any(Pageable.class))).willReturn(new PageImpl<>(List.of(Comment.of("test", eventFrame, eventUser, true))));
 
         // when
-        ResponseCommentsDto dto = commentService.searchComments(eventFrameId, 0, 10);
+        ResponseCommentsDto dto = commentService.searchComments("event-key", null,0, 10);
 
         // then
         assertThat(dto.getComments()).hasSize(1);
         assertThat(dto.getComments().get(0).getContent()).isEqualTo("test");
-        verify(commentRepository, times(1)).findAllByEventId(any(), any());
+        verify(commentRepository, times(1)).findAll(any(Specification.class), any(Pageable.class));
     }
 }
