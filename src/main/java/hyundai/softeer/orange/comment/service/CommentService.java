@@ -97,7 +97,8 @@ public class CommentService {
         Specification<Comment> searchOnContent = CommentSpecification.searchOnContent(search);
 
         var comments = commentRepository.findAll(
-                matchEventId.and(searchOnContent)
+                matchEventId.and(searchOnContent),
+                pageInfo
         ).stream().map(ResponseCommentDto::from).toList();
 
         log.info("searched comments: {}", comments);
