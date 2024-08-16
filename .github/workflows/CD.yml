@@ -32,4 +32,6 @@ jobs:
         run: sudo docker rm -f orange || true
 
       - name: Run Updated Docker Container
-        run: sudo docker run -t --env-file ~/.env -d --name orange -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/orange
+        run: sudo docker run -t -d --name orange -p 8080:8080 \
+          --env SERVER_SECRET=$(aws ssm get-parameter --name ${{ secrets.SSM_PARAMETER_NAME }} --with-decryption --region ${{ secrets.SSM_PARAMETER_REGION }} --query "Parameter.Value" --output text) \
+          ${{ secrets.DOCKERHUB_USERNAME }}/orange

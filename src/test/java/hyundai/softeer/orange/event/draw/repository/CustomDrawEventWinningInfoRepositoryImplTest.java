@@ -1,11 +1,10 @@
 package hyundai.softeer.orange.event.draw.repository;
 
 import hyundai.softeer.orange.event.draw.dto.DrawEventWinningInfoBulkInsertDto;
-import hyundai.softeer.orange.support.TCDataJpaTest;
+import hyundai.softeer.orange.support.IntegrationDataJpaTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
@@ -13,9 +12,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Sql(value="classpath:sql/CustomDrawEventWinningInfoRepositoryImplTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
-@TCDataJpaTest
-class CustomDrawEventWinningInfoRepositoryImplTest {
+class CustomDrawEventWinningInfoRepositoryImplTest extends IntegrationDataJpaTest {
     @Autowired // DrawEventWinningInfoRepository로 접근 가능해야 함
     private DrawEventWinningInfoRepository repo;
 

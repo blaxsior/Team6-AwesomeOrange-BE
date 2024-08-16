@@ -1,17 +1,14 @@
 package hyundai.softeer.orange.event.draw.repository;
 
-import hyundai.softeer.orange.support.TCDataJpaTest;
+import hyundai.softeer.orange.support.IntegrationDataJpaTest;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Sql(value = "classpath:sql/EventParticipationInfoRepositoryTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
-@TCDataJpaTest
-class EventParticipationInfoRepositoryTest {
+class EventParticipationInfoRepositoryTest extends IntegrationDataJpaTest {
     @Autowired
     EventParticipationInfoRepository epiRepository;
 

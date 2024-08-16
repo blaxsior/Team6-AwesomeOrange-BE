@@ -1,11 +1,10 @@
 package hyundai.softeer.orange.comment.repository;
 
 import hyundai.softeer.orange.comment.dto.WriteCommentCountDto;
-import hyundai.softeer.orange.support.TCDataJpaTest;
+import hyundai.softeer.orange.support.IntegrationDataJpaTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
@@ -13,9 +12,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Sql(value = "classpath:sql/CommentRepositoryTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
-@TCDataJpaTest
-class CommentRepositoryTest {
+class CommentRepositoryTest extends IntegrationDataJpaTest {
     @Autowired
     CommentRepository commentRepository;
 
