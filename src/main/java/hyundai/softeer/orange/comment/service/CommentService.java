@@ -9,7 +9,6 @@ import hyundai.softeer.orange.comment.repository.CommentRepository;
 import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
-import hyundai.softeer.orange.event.common.exception.EventException;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
 import hyundai.softeer.orange.event.draw.entity.DrawEvent;
 import hyundai.softeer.orange.event.draw.repository.DrawEventRepository;
@@ -66,7 +65,7 @@ public class CommentService {
 
         // 오늘 유저가 인터렉션에 참여하지 않았다면 예외처리
         boolean participated = participationInfoRepository.existsByEventUserAndDrawEventAndDateBetween(eventUser, drawEvent, startOfDay, endOfDay);
-        if(!participated) throw new EventException(ErrorCode.EVENT_NOT_PARTICIPATED);
+        if(!participated) throw new CommentException(ErrorCode.EVENT_NOT_PARTICIPATED);
 
         // 하루에 여러 번의 기대평을 작성하려 할 때 예외처리
         if(commentRepository.existsByCreatedDateAndEventUser(eventUser.getId())) {
