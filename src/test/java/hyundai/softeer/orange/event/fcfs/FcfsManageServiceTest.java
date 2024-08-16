@@ -210,8 +210,9 @@ class FcfsManageServiceTest {
     @Test
     void getFcfsWinnersInfoTest() {
         // given
+        LocalDateTime now = LocalDateTime.now();
         given(fcfsEventWinningInfoRepository.findByFcfsEventId(eventSequence))
-                .willReturn(List.of(FcfsEventWinningInfo.of(fcfsEvent, eventUser)));
+                .willReturn(List.of(FcfsEventWinningInfo.of(fcfsEvent, eventUser, now)));
 
         // when
         List<ResponseFcfsWinnerDto> fcfsWinnersInfo = fcfsManageService.getFcfsWinnersInfo(eventSequence);
@@ -220,5 +221,6 @@ class FcfsManageServiceTest {
         assertThat(fcfsWinnersInfo).hasSize(1);
         assertThat(fcfsWinnersInfo.get(0).getName()).isEqualTo(eventUser.getUserName());
         assertThat(fcfsWinnersInfo.get(0).getPhoneNumber()).isEqualTo(eventUser.getPhoneNumber());
+        assertThat(fcfsWinnersInfo.get(0).getWinningTime()).isEqualTo(now);
     }
 }
