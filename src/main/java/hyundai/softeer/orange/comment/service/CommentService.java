@@ -9,7 +9,11 @@ import hyundai.softeer.orange.comment.repository.CommentRepository;
 import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
+import hyundai.softeer.orange.event.common.exception.EventException;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
+import hyundai.softeer.orange.event.draw.entity.DrawEvent;
+import hyundai.softeer.orange.event.draw.repository.DrawEventRepository;
+import hyundai.softeer.orange.event.draw.repository.EventParticipationInfoRepository;
 import hyundai.softeer.orange.eventuser.entity.EventUser;
 import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +24,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -29,6 +36,8 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final EventFrameRepository eventFrameRepository;
     private final EventUserRepository eventUserRepository;
+    private final EventParticipationInfoRepository participationInfoRepository;
+    private final DrawEventRepository drawEventRepository;
     private final CommentValidator commentValidator;
 
     // 주기적으로 무작위 추출되는 긍정 기대평 목록을 조회한다.
@@ -47,6 +56,17 @@ public class CommentService {
     public Boolean createComment(String userId, String eventFrameId, CreateCommentDto dto) {
         EventUser eventUser = getEventUser(userId);
         EventFrame eventFrame = getEventFrame(eventFrameId);
+        DrawEvent drawEvent = drawEventRepository.findByEventFrameId(eventFrameId)
+                .orElseThrow(() -> new CommentException(ErrorCode.DRAW_EVENT_NOT_FOUND));
+
+        // 오늘의 시작과 끝 시각 계산
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+
+        // 오늘 유저가 인터렉션에 참여하지 않았다면 예외처리
+        boolean participated = participationInfoRepository.existsByEventUserAndDrawEventAndDateBetween(eventUser, drawEvent, startOfDay, endOfDay);
+        if(!participated) throw new EventException(ErrorCode.EVENT_NOT_PARTICIPATED);
 
         // 하루에 여러 번의 기대평을 작성하려 할 때 예외처리
         if(commentRepository.existsByCreatedDateAndEventUser(eventUser.getId())) {
