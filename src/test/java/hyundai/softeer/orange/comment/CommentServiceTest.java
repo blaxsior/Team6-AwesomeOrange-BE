@@ -12,6 +12,9 @@ import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
+import hyundai.softeer.orange.event.draw.entity.DrawEvent;
+import hyundai.softeer.orange.event.draw.repository.DrawEventRepository;
+import hyundai.softeer.orange.event.draw.repository.EventParticipationInfoRepository;
 import hyundai.softeer.orange.eventuser.entity.EventUser;
 import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,6 +54,12 @@ class CommentServiceTest {
 
     @Mock
     private EventUserRepository eventUserRepository;
+
+    @Mock
+    private EventParticipationInfoRepository participationInfoRepository;
+
+    @Mock
+    private DrawEventRepository drawEventRepository;
 
     @Mock
     private EventFrame eventFrame;
@@ -112,6 +121,8 @@ class CommentServiceTest {
         given(eventFrameRepository.findByFrameId(eventFrameId)).willReturn(Optional.of(eventFrame));
         given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.ofNullable(eventUser));
         given(commentValidator.analyzeComment(createCommentDto.getContent())).willReturn(true);
+        given(drawEventRepository.findByEventFrameId(eventFrameId)).willReturn(Optional.of(new DrawEvent()));
+        given(participationInfoRepository.existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any())).willReturn(true);
         given(commentRepository.save(any())).willReturn(Comment.of("test", eventFrame, eventUser, true));
 
         // when
@@ -125,12 +136,29 @@ class CommentServiceTest {
         verify(commentRepository, times(1)).save(any());
     }
 
+    @DisplayName("createComment: 인터렉션에 참여하지 않은 유저가 기대평을 작성하려 할 때 예외가 발생한다.")
+    @Test
+    void createCommentNotParticipatedTest() {
+        // given
+        given(eventFrameRepository.findByFrameId(eventFrameId)).willReturn(Optional.of(eventFrame));
+        given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.of(eventUser));
+        given(drawEventRepository.findByEventFrameId(eventFrameId)).willReturn(Optional.of(new DrawEvent()));
+        given(participationInfoRepository.existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any())).willReturn(false);
+
+        // when & then
+        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
+                .isInstanceOf(CommentException.class)
+                .hasMessage(ErrorCode.EVENT_NOT_PARTICIPATED.getMessage());
+    }
+
     @DisplayName("createComment: 하루에 여러 번의 기대평을 작성하려 할 때 예외가 발생한다.")
     @Test
     void createCommentAlreadyExistsTest() {
         // given
         given(eventFrameRepository.findByFrameId(eventFrameId)).willReturn(Optional.of(eventFrame));
         given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.of(eventUser));
+        given(drawEventRepository.findByEventFrameId(eventFrameId)).willReturn(Optional.of(new DrawEvent()));
+        given(participationInfoRepository.existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any())).willReturn(true);
         given(commentRepository.existsByCreatedDateAndEventUser(any())).willReturn(true);
 
         // when
@@ -164,12 +192,28 @@ class CommentServiceTest {
                 .hasMessage(ErrorCode.EVENT_USER_NOT_FOUND.getMessage());
     }
 
+    @DisplayName("createComment: DrawEvent를 찾을 수 없는 경우 예외가 발생한다.")
+    @Test
+    void createCommentDrawEventNotFoundTest() {
+        // given
+        given(eventFrameRepository.findByFrameId(eventFrameId)).willReturn(Optional.of(eventFrame));
+        given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.of(eventUser));
+        given(drawEventRepository.findByEventFrameId(eventFrameId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
+                .isInstanceOf(CommentException.class)
+                .hasMessage(ErrorCode.DRAW_EVENT_NOT_FOUND.getMessage());
+    }
+
     @DisplayName("createComment: 기대평이 부정적인 경우 예외가 발생한다.")
     @Test
     void createCommentNegativeTest() {
         // given
         given(eventFrameRepository.findByFrameId(eventFrameId)).willReturn(Optional.of(eventFrame));
         given(eventUserRepository.findByUserId(eventUser.getUserId())).willReturn(Optional.ofNullable(eventUser));
+        given(drawEventRepository.findByEventFrameId(eventFrameId)).willReturn(Optional.of(new DrawEvent()));
+        given(participationInfoRepository.existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any())).willReturn(true);
         given(commentValidator.analyzeComment(createCommentDto.getContent())).willThrow(new CommentException(ErrorCode.INVALID_COMMENT));
 
         // when & then
