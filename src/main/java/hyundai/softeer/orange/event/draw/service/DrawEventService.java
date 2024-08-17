@@ -43,7 +43,7 @@ public class DrawEventService {
         // 이벤트가 존재하는지 검사
         EventMetadata event = emRepository.findFirstByEventId(drawEventId)
                 .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
-        DrawEvent drawEvent = event.getDrawEventList().stream().findFirst().orElse(null);
+        DrawEvent drawEvent = event.getDrawEvent();
         if(drawEvent == null) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
         // 이벤트 검증
         validateDrawCondition(event, LocalDateTime.now());
@@ -70,8 +70,7 @@ public class DrawEventService {
         // 이벤트가 존재하는지 검사
         EventMetadata event = emRepository.findFirstByEventId(drawEventId)
                 .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
-        // IndexOutofBoundsException 방지
-        DrawEvent drawEvent = event.getDrawEventList().stream().findFirst().orElse(null);
+        DrawEvent drawEvent = event.getDrawEvent();
         if(drawEvent == null) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
 
         // 당첨자 목록 반환
