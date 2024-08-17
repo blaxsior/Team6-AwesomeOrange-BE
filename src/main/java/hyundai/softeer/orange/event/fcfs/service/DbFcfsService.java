@@ -59,7 +59,7 @@ public class DbFcfsService implements FcfsService{
             return false;
         }
 
-        fcfsEventWinningInfoRepository.save(FcfsEventWinningInfo.of(fcfsEvent, eventUser));
+        fcfsEventWinningInfoRepository.save(FcfsEventWinningInfo.of(fcfsEvent, eventUser, LocalDateTime.now()));
         log.info("Participating Success: {}, User ID: {}", eventSequence, userId);
         return true;
     }

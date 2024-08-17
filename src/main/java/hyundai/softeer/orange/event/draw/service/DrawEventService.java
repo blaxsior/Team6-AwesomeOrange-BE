@@ -6,8 +6,10 @@ import hyundai.softeer.orange.event.common.entity.EventMetadata;
 import hyundai.softeer.orange.event.common.enums.EventType;
 import hyundai.softeer.orange.event.common.exception.EventException;
 import hyundai.softeer.orange.event.common.repository.EventMetadataRepository;
+import hyundai.softeer.orange.event.draw.dto.ResponseDrawWinnerDto;
 import hyundai.softeer.orange.event.draw.entity.DrawEvent;
 import hyundai.softeer.orange.event.draw.exception.DrawEventException;
+import hyundai.softeer.orange.event.draw.repository.DrawEventWinningInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class DrawEventService {
     private static final Logger log = LoggerFactory.getLogger(DrawEventService.class);
     private final EventMetadataRepository emRepository;
+    private final DrawEventWinningInfoRepository deWinningInfoRepository;
     private final DrawEventDrawMachine machine;
     private final StringRedisTemplate redisTemplate;
 
@@ -39,7 +43,8 @@ public class DrawEventService {
         // 이벤트가 존재하는지 검사
         EventMetadata event = emRepository.findFirstByEventId(drawEventId)
                 .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
-        DrawEvent drawEvent = event.getDrawEventList().get(0);
+        DrawEvent drawEvent = event.getDrawEvent();
+        if(drawEvent == null) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
         // 이벤트 검증
         validateDrawCondition(event, LocalDateTime.now());
         String key = EventConst.IS_DRAWING(event.getEventId());
@@ -54,6 +59,25 @@ public class DrawEventService {
             if(throwable != null) log.error(throwable.getMessage(), throwable);
             return null;
         });
+    }
+
+    /**
+     * 추첨 이벤트에 당첨된 사용자들을 반환하는 메서드
+     * @param drawEventId draw event의 id 값
+     */
+    @Transactional(readOnly = true)
+    public List<ResponseDrawWinnerDto> getDrawEventWinner(String drawEventId) {
+        // 이벤트가 존재하는지 검사
+        EventMetadata event = emRepository.findFirstByEventId(drawEventId)
+                .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
+        DrawEvent drawEvent = event.getDrawEvent();
+        if(drawEvent == null) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
+
+        // 당첨자 목록 반환
+        return deWinningInfoRepository.findAllById(drawEvent.getId())
+                .stream()
+                .map(ResponseDrawWinnerDto::new)
+                .toList();
     }
 
     private void tryDraw(String key) {
