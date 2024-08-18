@@ -41,9 +41,6 @@ jobs:
         run: |
           sudo aws ssm get-parameter --name ${{ secrets.SSM_PARAMETER_NAME }} --with-decryption --region ${{ secrets.SSM_PARAMETER_REGION }} --query "Parameter.Value" --output text > ${{ secrets.ENV_NAME }}
 
-      - name: Remove Old Docker Container
-        run: sudo docker rm -f orange || true
-
       # docker-compose 빌드 직전에 promtail-config.yml 내부에 사용하는 환경변수는 미리 설정해두어야 함
       - name: Set environment variables
         run: |
@@ -53,8 +50,6 @@ jobs:
           echo "LOKI_URL=${{ secrets.LOKI_URL }}" >> $GITHUB_ENV
           echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> $GITHUB_ENV
 
-      - name: Run Updated Docker Container
-        run: |
           cd infra
           sudo docker-compose down
           sudo docker-compose up -d
