@@ -15,4 +15,3 @@ scrape_configs:
         labels:
           job: springboot
           __path__: /var/log/spring-boot/*.log
-          stream: stdout
