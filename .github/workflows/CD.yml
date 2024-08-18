@@ -41,16 +41,9 @@ jobs:
         run: |
           sudo aws ssm get-parameter --name ${{ secrets.SSM_PARAMETER_NAME }} --with-decryption --region ${{ secrets.SSM_PARAMETER_REGION }} --query "Parameter.Value" --output text > ${{ secrets.ENV_NAME }}
 
-      # docker-compose 빌드 직전에 promtail-config.yml 내부에 사용하는 환경변수는 미리 설정해두어야 함
-      - name: Set environment variables
+      - name: Deploy with Docker Compose
         run: |
-          echo "ENV_NAME=${{ secrets.ENV_NAME }}" >> $GITHUB_ENV
-          echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" >> $GITHUB_ENV
-          echo "PROMTAIL_PORT=${{ secrets.PROMTAIL_PORT }}" >> $GITHUB_ENV
-          echo "LOKI_URL=${{ secrets.LOKI_URL }}" >> $GITHUB_ENV
-          echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> $GITHUB_ENV
-
           cd infra
-          sudo docker-compose down
-          sudo docker-compose up -d
+          sudo docker-compose --env-file ../${{ secrets.ENV_NAME }} down
+          sudo docker-compose --env-file ../${{ secrets.ENV_NAME }} up -d
           rm -f ../${{ secrets.ENV_NAME }}

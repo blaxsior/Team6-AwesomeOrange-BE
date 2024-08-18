@@ -16,6 +16,8 @@ services:
   promtail:
     image: grafana/promtail
     container_name: promtail
+    env_file:
+      - ../${ENV_NAME}
     ports:
       - "${PROMTAIL_PORT}:${PROMTAIL_PORT}"
     volumes:
@@ -23,6 +25,7 @@ services:
       - /var/log/spring-boot:/var/log/spring-boot
     command:
       - -config.file=/promtail-config.yml
+      - -config.expand-env=true  # 환경 변수 확장 활성화
     networks:
       - my_custom_network
 
