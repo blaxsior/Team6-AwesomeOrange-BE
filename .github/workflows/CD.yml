@@ -44,8 +44,18 @@ jobs:
       - name: Remove Old Docker Container
         run: sudo docker rm -f orange || true
 
+      # docker-compose 빌드 직전에 promtail-config.yml 내부에 사용하는 환경변수는 미리 설정해두어야 함
+      - name: Set environment variables
+        run: |
+          echo "ENV_NAME=${{ secrets.ENV_NAME }}" >> $GITHUB_ENV
+          echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" >> $GITHUB_ENV
+          echo "PROMTAIL_PORT=${{ secrets.PROMTAIL_PORT }}" >> $GITHUB_ENV
+          echo "LOKI_URL=${{ secrets.LOKI_URL }}" >> $GITHUB_ENV
+          echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> $GITHUB_ENV
+
       - name: Run Updated Docker Container
         run: |
-          sudo docker run -t -d --name orange -p 8080:8080 \
-            --env-file ${{ secrets.ENV_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/orange
-          rm -f ${{ secrets.ENV_NAME }}
+          cd infra
+          sudo docker-compose down
+          sudo docker-compose up -d
+          rm -f ../${{ secrets.ENV_NAME }}
