@@ -8,11 +8,11 @@ clients:
   - url: ${LOKI_URL}
 
 scrape_configs:
-  - job_name: system
+  - job_name: spring-boot
     static_configs:
       - targets:
-          - localhost
+        - localhost
         labels:
-          job: varlogs
+          job: springboot
           __path__: /var/log/spring-boot/*.log
           stream: stdout
