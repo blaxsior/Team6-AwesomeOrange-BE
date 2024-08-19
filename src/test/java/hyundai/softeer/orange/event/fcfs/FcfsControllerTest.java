@@ -61,7 +61,7 @@ class FcfsControllerTest {
 
     String userId = "testUserId";
     String answer = "answer";
-    Long eventSequence = 1L;
+    String eventId = "HD_240808_001";
 
     @BeforeEach
     void setUp() throws Exception {
@@ -78,18 +78,18 @@ class FcfsControllerTest {
     void participateTest(boolean isWinner) throws Exception {
         // given
         ResponseFcfsResultDto responseFcfsResultDto = new ResponseFcfsResultDto(true, isWinner);
-        when(fcfsAnswerService.judgeAnswer(eventSequence, answer)).thenReturn(true);
-        when(fcfsService.participate(eventSequence, userId)).thenReturn(isWinner);
+        when(fcfsAnswerService.judgeAnswer(eventId, answer)).thenReturn(true);
+        when(fcfsService.participate(eventId, userId)).thenReturn(isWinner);
         String requestBody = mapper.writeValueAsString(answer);
         String responseBody = mapper.writeValueAsString(responseFcfsResultDto);
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventSequence)
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andExpect(status().isOk())
                 .andExpect(content().json(responseBody));
-        verify(fcfsService, times(1)).participate(eventSequence, userId);
+        verify(fcfsService, times(1)).participate(eventId, userId);
     }
 
     @DisplayName("participate: 정답을 맞히지 못하면 무조건 참여 실패하며 fcfsService에 접근조차 하지 않는다.")
@@ -97,45 +97,49 @@ class FcfsControllerTest {
     void participateWrongAnswerTest() throws Exception {
         // given
         ResponseFcfsResultDto responseFcfsResultDto = new ResponseFcfsResultDto(false, false);
-        when(fcfsAnswerService.judgeAnswer(eventSequence, answer)).thenReturn(false);
+        when(fcfsAnswerService.judgeAnswer(eventId, answer)).thenReturn(false);
         String requestBody = mapper.writeValueAsString(answer);
         String responseBody = mapper.writeValueAsString(responseFcfsResultDto);
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventSequence)
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk())
                 .andExpect(content().json(responseBody));
-        verify(fcfsService, never()).participate(eventSequence, userId);
+        verify(fcfsService, never()).participate(eventId, userId);
     }
 
     @DisplayName("participate: 선착순 이벤트 참여 시 이벤트 시간이 아니어서 예외가 발생하는 경우")
     @Test
     void participate400Test() throws Exception {
         // given
-        when(fcfsAnswerService.judgeAnswer(eventSequence, answer)).thenReturn(true);
-        when(fcfsService.participate(eventSequence, userId)).thenThrow(new FcfsEventException(ErrorCode.INVALID_EVENT_TIME));
+        when(fcfsAnswerService.judgeAnswer(eventId, answer)).thenReturn(true);
+        when(fcfsService.participate(eventId, userId)).thenThrow(new FcfsEventException(ErrorCode.INVALID_EVENT_TIME));
         String requestBody = mapper.writeValueAsString(answer);
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.INVALID_EVENT_TIME));
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventSequence)
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().json(responseBody));
     }
 
-    @DisplayName("participate: 선착순 이벤트 참여 시 요청 형식이 잘못된 경우")
-    @ParameterizedTest(name = "eventSequence: {0}")
+    @DisplayName("participate: 선착순 이벤트 참여 시 eventId가 잘못된 경우")
+    @ParameterizedTest(name = "eventId: {0}")
     @ValueSource(strings = {"a", "1.1", "1.0", "1.1.1"})
-    void participateBadInputTest(String eventSequence) throws Exception {
+    void participateBadInputTest(String eventId) throws Exception {
+        // given
+        when(fcfsAnswerService.judgeAnswer(eventId, answer)).thenReturn(true);
+        when(fcfsService.participate(eventId, userId)).thenThrow(new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND));
+
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventSequence)
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event/fcfs/" + eventId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(answer)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @DisplayName("getFcfsInfo: 선착순 이벤트에 대한 정보(서버 기준 시각, 이벤트의 상태)를 조회한다.")
@@ -143,11 +147,11 @@ class FcfsControllerTest {
     void getFcfsInfoTest() throws Exception {
         // given
         ResponseFcfsInfoDto responseFcfsInfoDto = new ResponseFcfsInfoDto(LocalDateTime.now(), "waiting");
-        when(fcfsManageService.getFcfsInfo(eventSequence)).thenReturn(responseFcfsInfoDto);
+        when(fcfsManageService.getFcfsInfo(eventId)).thenReturn(responseFcfsInfoDto);
         String responseBody = mapper.writeValueAsString(responseFcfsInfoDto);
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/{eventSequence}/info", eventSequence))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/{eventId}/info", eventId))
                 .andExpect(status().isOk())
                 .andExpect(content().json(responseBody));
     }
@@ -156,11 +160,11 @@ class FcfsControllerTest {
     @Test
     void getFcfsInfo404Test() throws Exception {
         // given
-        when(fcfsManageService.getFcfsInfo(eventSequence)).thenThrow(new FcfsEventException(ErrorCode.EVENT_NOT_FOUND));
+        when(fcfsManageService.getFcfsInfo(eventId)).thenThrow(new FcfsEventException(ErrorCode.EVENT_NOT_FOUND));
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.EVENT_NOT_FOUND));
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/{eventSequence}/info", eventSequence))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/{eventId}/info", eventId))
                 .andExpect(status().isNotFound())
                 .andExpect(content().json(responseBody));
     }
@@ -169,10 +173,10 @@ class FcfsControllerTest {
     @Test
     void isParticipatedTest() throws Exception {
         // given
-        when(fcfsManageService.isParticipated(eventSequence, userId)).thenReturn(true);
+        when(fcfsManageService.isParticipated(eventId, userId)).thenReturn(true);
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/" + eventSequence + "/participated"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/" + eventId + "/participated"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
     }
@@ -181,11 +185,11 @@ class FcfsControllerTest {
     @Test
     void isParticipated404Test() throws Exception {
         // given
-        when(fcfsManageService.isParticipated(eventSequence, userId)).thenThrow(new FcfsEventException(ErrorCode.EVENT_NOT_FOUND));
+        when(fcfsManageService.isParticipated(eventId, userId)).thenThrow(new FcfsEventException(ErrorCode.EVENT_NOT_FOUND));
         String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.EVENT_NOT_FOUND));
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/" + eventSequence + "/participated"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/event/fcfs/" + eventId + "/participated"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().json(responseBody));
     }
