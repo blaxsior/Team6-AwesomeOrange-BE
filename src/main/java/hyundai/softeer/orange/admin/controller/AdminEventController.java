@@ -82,7 +82,7 @@ public class AdminEventController {
      * @return 해당 이벤트에 대한 정보
      */
     @GetMapping("{eventId}")
-    @Operation(summary = "이벤트 데이터 획득", description = "이벤트 초기 정보를 받는다", responses = {
+    @Operation(summary = "이벤트 데이터 획득", description = "이벤트 초기 정보를 받는다. 상세 정보, 이벤트 수정 모두에서 사용 가능", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 정보를 정상적으로 받음"),
             @ApiResponse(responseCode = "404", description = "대응되는 이벤트가 존재하지 않음")
     })
