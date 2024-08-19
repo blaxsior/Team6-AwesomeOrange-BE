@@ -48,7 +48,7 @@ public class CommentController {
                     content = @Content(schema = @Schema(implementation = Boolean.class))),
             @ApiResponse(responseCode = "400", description = "기대평 등록 실패, 지나치게 부정적인 표현으로 간주될 때",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "해당 정보를 갖는 유저나 이벤트가 존재하지 않을 때",
+            @ApiResponse(responseCode = "404", description = "해당 정보를 갖는 유저나 이벤트가 존재하지 않거나, 당일 인터렉션에 참여하지 않아 기대평을 등록할 수 없을 때",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "409", description = "하루에 여러 번의 기대평을 작성하려 할 때",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))

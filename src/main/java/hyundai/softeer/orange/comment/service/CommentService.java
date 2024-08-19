@@ -19,6 +19,7 @@ import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -103,6 +104,7 @@ public class CommentService {
     }
 
     @Transactional
+    @CacheEvict(value = "comments", allEntries = true)
     public void deleteComments(List<Long> commentIds) {
         commentRepository.deleteAllById(commentIds);
         log.info("deleted comments: {}", commentIds);
