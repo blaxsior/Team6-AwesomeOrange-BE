@@ -2,6 +2,9 @@ package hyundai.softeer.orange.admin.controller;
 
 import hyundai.softeer.orange.common.ErrorResponse;
 import hyundai.softeer.orange.event.draw.dto.ResponseDrawWinnerDto;
+import hyundai.softeer.orange.core.auth.Auth;
+import hyundai.softeer.orange.core.auth.AuthRole;
+import hyundai.softeer.orange.core.auth.list.AdminAuthRequirement;
 import hyundai.softeer.orange.event.draw.service.DrawEventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,9 +21,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/draw")
 @RestController
+@AdminAuthRequirement @Auth({AuthRole.admin})
 public class AdminDrawEventController {
     private final DrawEventService drawEventService;
-
     /**
      * @param eventId 추첨할 이벤트 id
      */
