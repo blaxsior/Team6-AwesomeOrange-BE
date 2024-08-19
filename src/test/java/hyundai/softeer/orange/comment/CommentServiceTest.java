@@ -1,5 +1,6 @@
 package hyundai.softeer.orange.comment;
 
+import hyundai.softeer.orange.comment.dto.CommentsPageDto;
 import hyundai.softeer.orange.comment.dto.CreateCommentDto;
 import hyundai.softeer.orange.comment.dto.ResponseCommentDto;
 import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
@@ -273,7 +274,7 @@ class CommentServiceTest {
         given(commentRepository.findAll(any(Specification.class), any(Pageable.class))).willReturn(new PageImpl<>(List.of(Comment.of("test", eventFrame, eventUser, true))));
 
         // when
-        ResponseCommentsDto dto = commentService.searchComments("event-key", null,0, 10);
+        CommentsPageDto dto = commentService.searchComments("event-key", null,0, 10);
 
         // then
         assertThat(dto.getComments()).hasSize(1);

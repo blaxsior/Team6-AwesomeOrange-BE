@@ -1,5 +1,6 @@
 package hyundai.softeer.orange.comment.service;
 
+import hyundai.softeer.orange.comment.dto.CommentsPageDto;
 import hyundai.softeer.orange.comment.dto.CreateCommentDto;
 import hyundai.softeer.orange.comment.dto.ResponseCommentDto;
 import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
@@ -111,7 +112,7 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public ResponseCommentsDto searchComments(String eventId, String search, Integer page, Integer size) {
+    public CommentsPageDto searchComments(String eventId, String search, Integer page, Integer size) {
         PageRequest pageInfo = PageRequest.of(page, size);
 
         Specification<Comment> matchEventId = CommentSpecification.matchEventId(eventId);
@@ -120,10 +121,10 @@ public class CommentService {
         var comments = commentRepository.findAll(
                 matchEventId.and(searchOnContent),
                 pageInfo
-        ).stream().map(ResponseCommentDto::from).toList();
+        );
 
         log.info("searched comments: {}", comments);
-        return new ResponseCommentsDto(comments);
+        return CommentsPageDto.from(comments);
     }
 
     private EventUser getEventUser(String userId) {
