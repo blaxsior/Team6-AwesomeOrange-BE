@@ -3,6 +3,7 @@ package hyundai.softeer.orange.event.draw.controller;
 import hyundai.softeer.orange.common.ErrorResponse;
 import hyundai.softeer.orange.core.auth.Auth;
 import hyundai.softeer.orange.core.auth.AuthRole;
+import hyundai.softeer.orange.core.auth.list.EventUserAuthRequirement;
 import hyundai.softeer.orange.event.draw.dto.EventParticipationDatesDto;
 import hyundai.softeer.orange.event.draw.service.EventParticipationService;
 import hyundai.softeer.orange.eventuser.component.EventUserAnnotation;
@@ -14,8 +15,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,11 +22,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/event/draw")
 @RestController
-@Auth({AuthRole.event_user})
+@EventUserAuthRequirement @Auth({AuthRole.event_user})
 public class DrawEventController {
-    private static final Logger log = LoggerFactory.getLogger(DrawEventController.class);
     private final EventParticipationService epService;
-
     /**
      *
      * @param eventId 이벤트의 id

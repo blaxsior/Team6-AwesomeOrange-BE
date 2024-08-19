@@ -6,6 +6,7 @@ import hyundai.softeer.orange.comment.service.CommentService;
 import hyundai.softeer.orange.common.ErrorResponse;
 import hyundai.softeer.orange.core.auth.Auth;
 import hyundai.softeer.orange.core.auth.AuthRole;
+import hyundai.softeer.orange.core.auth.list.EventUserAuthRequirement;
 import hyundai.softeer.orange.eventuser.component.EventUserAnnotation;
 import hyundai.softeer.orange.eventuser.dto.EventUserInfo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,7 +40,7 @@ public class CommentController {
         return ResponseEntity.ok(commentService.getComments(eventFrameId));
     }
 
-    @Auth(AuthRole.event_user)
+    @EventUserAuthRequirement @Auth(AuthRole.event_user)
     @Tag(name = "Comment")
     @PostMapping("/{eventFrameId}")
     @Operation(summary = "기대평 등록", description = "유저가 신규 기대평을 등록한다.", responses = {
@@ -56,7 +57,7 @@ public class CommentController {
         return ResponseEntity.ok(commentService.createComment(userInfo.getUserId(), eventFrameId, dto));
     }
 
-    @Auth(AuthRole.event_user)
+    @EventUserAuthRequirement @Auth(AuthRole.event_user)
     @Tag(name = "Comment")
     @GetMapping("/info")
     @Operation(summary = "기대평 등록 가능 여부 조회", description = "오늘 기대평 등록 가능 여부를 조회한다.", responses = {
