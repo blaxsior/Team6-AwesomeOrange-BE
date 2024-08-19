@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ResponseFcfsInfoDto {
 
-    private LocalDateTime nowDateTime;
+    private LocalDateTime eventStartTime;
 
     private String eventStatus;
 }
