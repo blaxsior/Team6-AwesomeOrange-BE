@@ -21,8 +21,13 @@ public class RedisSetFcfsService implements FcfsService {
     private final StringRedisTemplate stringRedisTemplate;
 
     @Override
-    public boolean participate(Long eventSequence, String userId) {
-        String key = eventSequence.toString();
+    public boolean participate(String eventId, String userId) {
+        String key = stringRedisTemplate.opsForValue().get(eventId);
+        if(key == null) {
+            throw new FcfsEventException(ErrorCode.EVENT_NOT_FOUND);
+        }
+        Long eventSequence = Long.parseLong(key);
+
         // 이벤트 종료 여부 확인
         if(isEventEnded(key)) {
             stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(key), userId);

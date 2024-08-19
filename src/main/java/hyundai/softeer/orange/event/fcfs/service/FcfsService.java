@@ -1,6 +1,6 @@
 package hyundai.softeer.orange.event.fcfs.service;
 
 public interface FcfsService {
-    boolean participate(Long eventSequence, String userId);
+    boolean participate(String eventId, String userId);
 
 }

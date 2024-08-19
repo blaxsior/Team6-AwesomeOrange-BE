@@ -12,6 +12,7 @@ import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,11 +27,17 @@ public class DbFcfsService implements FcfsService{
     private final EventUserRepository eventUserRepository;
     private final FcfsEventWinningInfoRepository fcfsEventWinningInfoRepository;
     private final RedisTemplate<String, Boolean> booleanRedisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Override
     @Transactional
-    public boolean participate(Long eventSequence, String userId){
-        String key = eventSequence.toString();
+    public boolean participate(String eventId, String userId){
+        String key = stringRedisTemplate.opsForValue().get(eventId);
+        if(key == null) {
+            throw new FcfsEventException(ErrorCode.EVENT_NOT_FOUND);
+        }
+        Long eventSequence = Long.parseLong(key);
+
         // 이벤트 종료 여부 확인
         if (isEventEnded(key)) {
             return false;
