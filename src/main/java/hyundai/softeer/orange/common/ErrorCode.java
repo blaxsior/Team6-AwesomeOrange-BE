@@ -14,6 +14,7 @@ public enum ErrorCode {
     INVALID_COMMENT(HttpStatus.BAD_REQUEST, false, "부정적인 표현을 사용하였습니다."),
     INVALID_JSON(HttpStatus.BAD_REQUEST, false, "잘못된 JSON 형식입니다."),
     INVALID_URL(HttpStatus.BAD_REQUEST, false, "유효하지 않은 URL입니다."),
+    INVALID_INPUT_EVENT_TIME(HttpStatus.BAD_REQUEST, false, "입력된 시간 중 일부가 조건에 맞지 않습니다."),
     INVALID_EVENT_TIME(HttpStatus.BAD_REQUEST, false, "이벤트 시간이 아닙니다."),
     INVALID_EVENT_TYPE(HttpStatus.BAD_REQUEST, false, "이벤트 타입이 지원되지 않습니다."),
     EVENT_NOT_ENDED(HttpStatus.BAD_REQUEST, false, "이벤트가 아직 종료되지 않았습니다."),
