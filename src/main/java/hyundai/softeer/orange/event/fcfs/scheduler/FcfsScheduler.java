@@ -1,6 +1,7 @@
 package hyundai.softeer.orange.event.fcfs.scheduler;
 
 import hyundai.softeer.orange.event.fcfs.service.FcfsManageService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -21,5 +22,11 @@ public class FcfsScheduler {
     @Scheduled(cron = "0 0 0 * * *")
     public void registerWinners() {
         fcfsManageService.registerWinners();
+    }
+
+    // FIXME: 빌드 직후 오늘의 선착순 이벤트에 대한 정보를 DB에서 Redis로 이동시킨다. (추후 삭제예정)
+    @PostConstruct
+    public void init() {
+        registerFcfsEvents();
     }
 }
