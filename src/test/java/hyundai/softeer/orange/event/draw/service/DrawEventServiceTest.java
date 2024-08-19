@@ -238,7 +238,7 @@ class DrawEventServiceTest {
     @DisplayName("getDrawEventStatus: 이벤트가 종료되지 않았다면 BEFORE_END")
     @Test
     void getDrawEventStatus_EventNotEnded() {
-        LocalDateTime notEndedTime = LocalDateTime.now().plusDays(-10);
+        LocalDateTime notEndedTime = LocalDateTime.now().plusDays(+10);
         EventMetadata metadata = createEventMetadata(eventId, EventType.draw, notEndedTime);
         metadata.updateDrawEvent(new DrawEvent());
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(metadata));
@@ -253,8 +253,8 @@ class DrawEventServiceTest {
         var drawEvent = new DrawEvent();
         drawEvent.setDrawn(true);
 
-        LocalDateTime notEndedTime = LocalDateTime.now().plusDays(+10);
-        EventMetadata metadata = createEventMetadata(eventId, EventType.draw, notEndedTime);
+        LocalDateTime endedTime = LocalDateTime.now().plusDays(-10);
+        EventMetadata metadata = createEventMetadata(eventId, EventType.draw, endedTime);
         metadata.updateDrawEvent(drawEvent);
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(metadata));
 
@@ -266,8 +266,8 @@ class DrawEventServiceTest {
     @Test
     void getDrawEventStatus_EventIsDrawing() {
         var drawEvent = new DrawEvent();
-        LocalDateTime notEndedTime = LocalDateTime.now().plusDays(+10);
-        EventMetadata metadata = createEventMetadata(eventId, EventType.draw, notEndedTime);
+        LocalDateTime endedTime = LocalDateTime.now().plusDays(-10);
+        EventMetadata metadata = createEventMetadata(eventId, EventType.draw, endedTime);
         metadata.updateDrawEvent(drawEvent);
 
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(metadata));
@@ -284,8 +284,8 @@ class DrawEventServiceTest {
     @Test
     void getDrawEventStatus_EventIsAvailable() {
         var drawEvent = new DrawEvent();
-        LocalDateTime notEndedTime = LocalDateTime.now().plusDays(+10);
-        EventMetadata metadata = createEventMetadata(eventId, EventType.draw, notEndedTime);
+        LocalDateTime endedTime = LocalDateTime.now().plusDays(-10);
+        EventMetadata metadata = createEventMetadata(eventId, EventType.draw, endedTime);
         metadata.updateDrawEvent(drawEvent);
 
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(metadata));

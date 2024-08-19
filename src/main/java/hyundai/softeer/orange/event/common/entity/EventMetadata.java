@@ -70,7 +70,7 @@ public class EventMetadata {
     }
 
     public boolean isEnded(LocalDateTime now) {
-        return this.status == EventStatus.COMPLETE || endTime.isAfter(now);
+        return (this.status == EventStatus.COMPLETE) || endTime.isBefore(now);
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
