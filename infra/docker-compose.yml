@@ -5,9 +5,9 @@ services:
     image: ${DOCKERHUB_USERNAME}/orange
     container_name: orange
     env_file:
-      - ../${ENV_NAME}
+      - ../.env
     ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
+      - "8080:8080"
     volumes:
       - /var/log/spring-boot:/var/log/spring-boot
     networks:
@@ -17,9 +17,9 @@ services:
     image: grafana/promtail
     container_name: promtail
     env_file:
-      - ../${ENV_NAME}
+      - ../.env
     ports:
-      - "${PROMTAIL_PORT}:${PROMTAIL_PORT}"
+      - "9080:9080"
     volumes:
       - ./promtail-config.yml:/promtail-config.yml
       - /var/log/spring-boot:/var/log/spring-boot

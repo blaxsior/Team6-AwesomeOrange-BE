@@ -39,11 +39,11 @@ jobs:
       - name: Get Parameter
         id: get-parameter
         run: |
-          sudo aws ssm get-parameter --name ${{ secrets.SSM_PARAMETER_NAME }} --with-decryption --region ${{ secrets.SSM_PARAMETER_REGION }} --query "Parameter.Value" --output text > ${{ secrets.ENV_NAME }}
+          sudo aws ssm get-parameter --name ${{ secrets.SSM_PARAMETER_NAME }} --with-decryption --region ${{ secrets.SSM_PARAMETER_REGION }} --query "Parameter.Value" --output text > .env
 
       - name: Deploy with Docker Compose
         run: |
           cd infra
-          sudo docker-compose --env-file ../${{ secrets.ENV_NAME }} down
-          sudo docker-compose --env-file ../${{ secrets.ENV_NAME }} up -d
-          rm -f ../${{ secrets.ENV_NAME }}
+          sudo docker-compose --env-file ../.env down
+          sudo docker-compose --env-file ../.env up -d
+          rm -f ../.env
