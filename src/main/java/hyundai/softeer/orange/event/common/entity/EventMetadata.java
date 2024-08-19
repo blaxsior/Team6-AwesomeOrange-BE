@@ -69,6 +69,10 @@ public class EventMetadata {
         this.url = url;
     }
 
+    public boolean isEnded(LocalDateTime now) {
+        return (this.status == EventStatus.COMPLETE) || endTime.isBefore(now);
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="event_frame_id")
     private EventFrame eventFrame;

@@ -8,6 +8,7 @@ import hyundai.softeer.orange.event.common.exception.EventException;
 import hyundai.softeer.orange.event.common.repository.EventMetadataRepository;
 import hyundai.softeer.orange.event.draw.entity.DrawEvent;
 import hyundai.softeer.orange.event.draw.entity.DrawEventWinningInfo;
+import hyundai.softeer.orange.event.draw.enums.DrawEventStatus;
 import hyundai.softeer.orange.event.draw.exception.DrawEventException;
 import hyundai.softeer.orange.event.draw.repository.DrawEventWinningInfoRepository;
 import hyundai.softeer.orange.eventuser.entity.EventUser;
@@ -206,5 +207,94 @@ class DrawEventServiceTest {
         assertThat(result).isNotEmpty();
         verify(emRepository, times(1)).findFirstByEventId(eventId);
         verify(deWinningInfoRepository, times(1)).findAllById(drawEvent.getId());
+    }
+
+    @DisplayName("getDrawEventStatus: 대응되는 이벤트가 존재하지 않으면 예외 반환")
+    @Test
+    void getDrawEventStatus_throwIfDrawEventNotFound() {
+        var fcfsEventMetadata = createEventMetadata(eventId, EventType.fcfs, LocalDateTime.now());
+        var withoutDrawEvent = createEventMetadata(eventId, EventType.draw, LocalDateTime.now());
+
+        when(emRepository.findFirstByEventId(eventId))
+                .thenReturn(Optional.empty()) // 이벤트 없는 경우
+                .thenReturn(Optional.of(fcfsEventMetadata)) // 이벤트가 draw 아닌 경우
+                .thenReturn(Optional.of(withoutDrawEvent));
+
+        // when & then
+        // 이벤트 없음
+        assertThatThrownBy(() -> deService.draw(eventId))
+                .isInstanceOf(EventException.class)
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+        // 이벤트 draw 아님
+        assertThatThrownBy(() -> deService.draw(eventId))
+                .isInstanceOf(DrawEventException.class)
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+        // 대응되는 draw 객체가 없음
+        assertThatThrownBy(() -> deService.draw(eventId))
+                .isInstanceOf(DrawEventException.class)
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+    }
+
+    @DisplayName("getDrawEventStatus: 이벤트가 종료되지 않았다면 BEFORE_END")
+    @Test
+    void getDrawEventStatus_EventNotEnded() {
+        LocalDateTime notEndedTime = LocalDateTime.now().plusDays(+10);
+        EventMetadata metadata = createEventMetadata(eventId, EventType.draw, notEndedTime);
+        metadata.updateDrawEvent(new DrawEvent());
+        when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(metadata));
+
+        var dto = deService.getDrawEventStatus(eventId);
+        assertThat(dto.getStatus()).isEqualTo(DrawEventStatus.BEFORE_END);
+    }
+
+    @DisplayName("getDrawEventStatus: 이벤트가 종료되었다면 COMPLETE")
+    @Test
+    void getDrawEventStatus_EventIsDrawn() {
+        var drawEvent = new DrawEvent();
+        drawEvent.setDrawn(true);
+
+        LocalDateTime endedTime = LocalDateTime.now().plusDays(-10);
+        EventMetadata metadata = createEventMetadata(eventId, EventType.draw, endedTime);
+        metadata.updateDrawEvent(drawEvent);
+        when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(metadata));
+
+        var dto = deService.getDrawEventStatus(eventId);
+        assertThat(dto.getStatus()).isEqualTo(DrawEventStatus.COMPLETE);
+    }
+
+    @DisplayName("getDrawEventStatus: redis에 키가 있다면 추첨 중")
+    @Test
+    void getDrawEventStatus_EventIsDrawing() {
+        var drawEvent = new DrawEvent();
+        LocalDateTime endedTime = LocalDateTime.now().plusDays(-10);
+        EventMetadata metadata = createEventMetadata(eventId, EventType.draw, endedTime);
+        metadata.updateDrawEvent(drawEvent);
+
+        when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(metadata));
+
+        ValueOperations<String, String> valueOperation = mock(ValueOperations.class);
+        when(valueOperation.get(anyString())).thenReturn("2");
+        when(redisTemplate.opsForValue()).thenReturn(valueOperation);
+
+        var dto = deService.getDrawEventStatus(eventId);
+        assertThat(dto.getStatus()).isEqualTo(DrawEventStatus.IS_DRAWING);
+    }
+
+    @DisplayName("getDrawEventStatus: 선행 조건에 매칭되지 않으면 AVAILABLE")
+    @Test
+    void getDrawEventStatus_EventIsAvailable() {
+        var drawEvent = new DrawEvent();
+        LocalDateTime endedTime = LocalDateTime.now().plusDays(-10);
+        EventMetadata metadata = createEventMetadata(eventId, EventType.draw, endedTime);
+        metadata.updateDrawEvent(drawEvent);
+
+        when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(metadata));
+
+        ValueOperations<String, String> valueOperation = mock(ValueOperations.class);
+        when(valueOperation.get(anyString())).thenReturn(null);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperation);
+
+        var dto = deService.getDrawEventStatus(eventId);
+        assertThat(dto.getStatus()).isEqualTo(DrawEventStatus.AVAILABLE);
     }
 }

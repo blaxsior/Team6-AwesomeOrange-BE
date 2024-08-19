@@ -1,6 +1,7 @@
 package hyundai.softeer.orange.admin.controller;
 
 import hyundai.softeer.orange.common.ErrorResponse;
+import hyundai.softeer.orange.event.draw.dto.DrawEventStatusDto;
 import hyundai.softeer.orange.event.draw.dto.ResponseDrawWinnerDto;
 import hyundai.softeer.orange.core.auth.Auth;
 import hyundai.softeer.orange.core.auth.AuthRole;
@@ -47,5 +48,18 @@ public class AdminDrawEventController {
     @GetMapping("{eventId}/winners")
     public ResponseEntity<List<ResponseDrawWinnerDto>> getWinners(@PathVariable("eventId") String eventId) {
         return ResponseEntity.ok(drawEventService.getDrawEventWinner(eventId));
+    }
+
+
+    @Operation(summary = "추첨 이벤트의 현재 상태를 얻는다.", description = "추첨 이벤트의 현재 상태를 얻는다. 추첨 이벤트의 상태는 추첨 불가, 추첨 가능, 추첨 중, 추첨 완료 중 하나의 값을 가진다.", responses = {
+            @ApiResponse(responseCode = "200", description = "추첨 이벤트 현재 상태 조회 성공"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 이벤트", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+    })
+    @GetMapping("/{eventId}/status")
+    public ResponseEntity<DrawEventStatusDto> getEventStatus(
+            @PathVariable("eventId") String eventId
+    ) {
+        DrawEventStatusDto result = drawEventService.getDrawEventStatus(eventId);
+        return ResponseEntity.ok(result);
     }
 }
