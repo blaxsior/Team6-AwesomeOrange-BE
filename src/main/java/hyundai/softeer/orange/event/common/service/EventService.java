@@ -1,5 +1,6 @@
 package hyundai.softeer.orange.event.common.service;
 
+import hyundai.softeer.orange.admin.controller.EventFrameIdListDto;
 import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.core.ParseUtil;
 import hyundai.softeer.orange.event.common.EventConst;
@@ -272,4 +273,8 @@ public class EventService {
         log.info("Created Event Frame: {}", name);
     }
 
+    public EventFrameIdListDto searchFrames(String search) {
+        var frameIds = efRepository.findAllFrameIdsWithLike(search);
+        return EventFrameIdListDto.of(frameIds);
+    }
 }
