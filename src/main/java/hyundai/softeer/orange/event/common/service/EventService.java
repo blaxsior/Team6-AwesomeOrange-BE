@@ -250,6 +250,7 @@ public class EventService {
      * @param search 이벤트 검색어
      * @return 검색을 위한 힌트 정보 ( id, 이름 )
      */
+    @Transactional(readOnly = true)
     public List<EventSearchHintDto> searchHints(String search) {
         var searchOnEventIdDefaultReject = EventSpecification.searchOnEventId(search, false);
         var isDrawEvent = EventSpecification.isEventTypeOf(EventType.draw);
