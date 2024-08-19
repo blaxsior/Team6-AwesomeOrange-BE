@@ -35,6 +35,7 @@ class RedisSetFcfsServiceLoadTest {
 
     Long eventSequence = 1L; // 테스트할 이벤트 시퀀스
     int numberOfWinners = 100; // 당첨자 수
+    String eventId = "HD_240808_001"; // 이벤트 ID
 
     @BeforeEach
     void setUp() {
@@ -47,6 +48,7 @@ class RedisSetFcfsServiceLoadTest {
         booleanRedisTemplate.opsForValue().set(FcfsUtil.endFlagFormatting(eventSequence.toString()), false);
         numberRedisTemplate.opsForValue().set(FcfsUtil.keyFormatting(eventSequence.toString()), numberOfWinners);
         stringRedisTemplate.opsForValue().set(FcfsUtil.startTimeFormatting(eventSequence.toString()), "2021-08-01T00:00:00");
+        stringRedisTemplate.opsForValue().set(eventId, eventSequence.toString());
     }
 
     @AfterEach
@@ -70,7 +72,7 @@ class RedisSetFcfsServiceLoadTest {
             final int index = i;
             executorService.execute(() -> {
                 try {
-                    boolean result = redisSetFcfsService.participate(1L, "user" + index);
+                    boolean result = redisSetFcfsService.participate(eventId, "user" + index);
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {

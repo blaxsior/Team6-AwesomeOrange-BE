@@ -1,5 +1,7 @@
 package hyundai.softeer.orange.load;
 
+import hyundai.softeer.orange.event.common.entity.EventMetadata;
+import hyundai.softeer.orange.event.common.repository.EventMetadataRepository;
 import hyundai.softeer.orange.event.fcfs.entity.FcfsEvent;
 import hyundai.softeer.orange.event.fcfs.repository.FcfsEventRepository;
 import hyundai.softeer.orange.event.fcfs.repository.FcfsEventWinningInfoRepository;
@@ -11,8 +13,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
@@ -45,6 +49,13 @@ class DbFcfsServiceLoadTest {
     Long numberOfWinners = 100L;
     int numberOfThreads = 200; // 스레드 수
     int numberOfUsers = 1000; // 동시 참여 사용자 수
+    String eventId = "HD_240808_001";
+
+    @Autowired
+    private EventMetadataRepository eventMetadataRepository;
+    @Qualifier("stringRedisTemplate")
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @BeforeEach
     void setUp() {
@@ -53,10 +64,16 @@ class DbFcfsServiceLoadTest {
         eventUserRepository.deleteAll();
         fcfsEventRepository.deleteAll();
         booleanRedisTemplate.getConnectionFactory().getConnection().flushAll();
+        stringRedisTemplate.getConnectionFactory().getConnection().flushAll();
 
         // 이벤트 생성
-        FcfsEvent fcfsEvent = FcfsEvent.of(LocalDateTime.now(), LocalDateTime.now().plusDays(1), numberOfWinners, "prizeInfo", null);
+        EventMetadata eventMetadata = EventMetadata.builder()
+                .eventId(eventId)
+                .build();
+        eventMetadataRepository.save(eventMetadata);
+        FcfsEvent fcfsEvent = FcfsEvent.of(LocalDateTime.now(), LocalDateTime.now().plusDays(1), numberOfWinners, "prizeInfo", eventMetadata);
         fcfsEventRepository.save(fcfsEvent);
+        stringRedisTemplate.opsForValue().set(eventId, fcfsEvent.getId().toString());
 
         // 유저 생성
         for (int i = 0; i < numberOfUsers; i++) {
@@ -81,7 +98,7 @@ class DbFcfsServiceLoadTest {
             final int index = i;
             executorService.execute(() -> {
                 try {
-                    boolean result = dbFcfsService.participate(1L, "user" + index);
+                    boolean result = dbFcfsService.participate(eventId, "user" + index);
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
