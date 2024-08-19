@@ -1,6 +1,6 @@
 package hyundai.softeer.orange.admin.controller;
+import hyundai.softeer.orange.comment.dto.CommentsPageDto;
 import hyundai.softeer.orange.comment.dto.DeleteCommentsDto;
-import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
 import hyundai.softeer.orange.comment.service.CommentService;
 import hyundai.softeer.orange.core.auth.Auth;
 import hyundai.softeer.orange.core.auth.AuthRole;
@@ -31,7 +31,7 @@ public class AdminCommentController {
             @ApiResponse(responseCode = "200", description = "이벤트에 대한 댓글 목록 조회 성공")
     })
     @GetMapping
-    public ResponseEntity<ResponseCommentsDto> findEventComments(
+    public ResponseEntity<CommentsPageDto> findEventComments(
             @RequestParam String eventId,
             @RequestParam(required=false) String search,
             @RequestParam(required = false, defaultValue = "0") Integer page,
