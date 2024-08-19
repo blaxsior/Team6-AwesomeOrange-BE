@@ -1,10 +1,13 @@
 package hyundai.softeer.orange.admin.service;
 
+import hyundai.softeer.orange.admin.dto.AdminDto;
 import hyundai.softeer.orange.admin.entity.Admin;
 import hyundai.softeer.orange.admin.exception.AdminException;
 import hyundai.softeer.orange.admin.repository.AdminRepository;
 import hyundai.softeer.orange.common.ErrorCode;
+import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.core.auth.AuthRole;
+import hyundai.softeer.orange.core.jwt.JWTConst;
 import hyundai.softeer.orange.core.jwt.JWTManager;
 import hyundai.softeer.orange.core.security.PasswordManager;
 import lombok.RequiredArgsConstructor;
@@ -31,15 +34,13 @@ public class AdminAuthService {
      */
     public String signIn(String username, String password) {
         Optional<Admin> adminOptional = adminRepository.findFirstByUserName(username);
-        if(adminOptional.isEmpty()) throw new AdminException(ErrorCode.AUTHENTICATION_FAILED);
-
-        Admin admin = adminOptional.get();
+        Admin admin = adminOptional.orElseThrow(() -> new AdminException(ErrorCode.AUTHENTICATION_FAILED));
+        AdminDto dto = AdminDto.of(admin.getId(), admin.getNickName());
         String beforePassword = admin.getPassword();
         boolean loginSuccess = pwManager.verify(password, beforePassword);
         if(!loginSuccess) throw new AdminException(ErrorCode.AUTHENTICATION_FAILED);
 
-        // dto를 넣도록 수정하기.
-        return jwtManager.generateToken("admin", Map.of("admin", admin,"role", AuthRole.admin), 5);
+        return jwtManager.generateToken(ConstantUtil.CLAIMS_ADMIN, Map.of(ConstantUtil.CLAIMS_ADMIN, dto, JWTConst.ROLE, AuthRole.admin), 5);
     }
 
     /**

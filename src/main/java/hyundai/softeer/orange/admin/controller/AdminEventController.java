@@ -1,7 +1,7 @@
 package hyundai.softeer.orange.admin.controller;
 
 import hyundai.softeer.orange.admin.component.AdminAnnotation;
-import hyundai.softeer.orange.admin.entity.Admin;
+import hyundai.softeer.orange.admin.dto.AdminDto;
 import hyundai.softeer.orange.common.ErrorResponse;
 import hyundai.softeer.orange.core.auth.Auth;
 import hyundai.softeer.orange.core.auth.AuthRole;
@@ -68,7 +68,7 @@ public class AdminEventController {
             @ApiResponse(responseCode = "4xx", description = "유저 측 실수로 이벤트 생성 실패")
     })
     public ResponseEntity<Void> createEvent(@Validated @RequestBody EventDto eventDto,
-                                            @Parameter(hidden = true) @AdminAnnotation Admin admin
+                                            @Parameter(hidden = true) @AdminAnnotation AdminDto admin
     ) {
         // 나중에 두개 과정을 통합할 수도 있음.
         eventService.createEvent(eventDto);
@@ -133,7 +133,7 @@ public class AdminEventController {
     @Operation(summary = "임시 저장 된 이벤트 불러오기", description = "관리자가 이벤트 프레임을 새롭게 등록한다", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 불러오기 성공"),
     })
-    public ResponseEntity<EventDto> getTempEvent(@Parameter(hidden = true) @AdminAnnotation Admin admin) {
+    public ResponseEntity<EventDto> getTempEvent(@Parameter(hidden = true) @AdminAnnotation AdminDto admin) {
         Long adminId = admin.getId();
         EventDto eventDto = eventService.getTempEvent(adminId);
         return ResponseEntity.ok(eventDto);
@@ -149,7 +149,7 @@ public class AdminEventController {
 
     })
     public ResponseEntity<Void> saveTempEvent(@RequestBody EventDto eventDto,
-                                              @Parameter(hidden = true) @AdminAnnotation Admin admin) {
+                                              @Parameter(hidden = true) @AdminAnnotation AdminDto admin) {
         Long adminId = admin.getId();
         eventService.saveTempEvent(adminId, eventDto);
         return ResponseEntity.ok().build();
