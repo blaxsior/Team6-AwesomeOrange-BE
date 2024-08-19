@@ -39,17 +39,17 @@ public class AdminAuthController {
     }
 
 
-    /**
-     * @param dto 관리자 유저 생성을 위한 정보
-     */
-    @PostMapping("/signup")
-    @Operation(summary = "관리자 유저를 생성한다.", description = "관리자 유저를 생성한다. (1명 내부적으로 만든 후 막을 예정)", responses = {
-            @ApiResponse(responseCode = "201", description = "관리자 유저 생성"),
-            @ApiResponse(responseCode = "409", description = "이미 존재하는 유저", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "500", description = "서버 내부 에러. 백엔드에 알림 요망", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-    })
-    public ResponseEntity<Void> signUp(@Valid @RequestBody AdminSignupRequest dto) {
-            adminAuthService.signUp(dto.getUserName(), dto.getPassword(), dto.getNickName());
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
+//    /**
+//     * @param dto 관리자 유저 생성을 위한 정보
+//     */
+//    @PostMapping("/signup")
+//    @Operation(summary = "관리자 유저를 생성한다.", description = "관리자 유저를 생성한다. (1명 내부적으로 만든 후 막을 예정)", responses = {
+//            @ApiResponse(responseCode = "201", description = "관리자 유저 생성"),
+//            @ApiResponse(responseCode = "409", description = "이미 존재하는 유저", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//            @ApiResponse(responseCode = "500", description = "서버 내부 에러. 백엔드에 알림 요망", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+//    })
+//    public ResponseEntity<Void> signUp(@Valid @RequestBody AdminSignupRequest dto) {
+//            adminAuthService.signUp(dto.getUserName(), dto.getPassword(), dto.getNickName());
+//            return ResponseEntity.status(HttpStatus.CREATED).build();
+//    }
 }
