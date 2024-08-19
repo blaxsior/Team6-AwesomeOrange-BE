@@ -32,7 +32,7 @@ public class DbFcfsService implements FcfsService{
     @Override
     @Transactional
     public boolean participate(String eventId, String userId){
-        String key = stringRedisTemplate.opsForValue().get(eventId);
+        String key = stringRedisTemplate.opsForValue().get(FcfsUtil.eventIdFormatting(eventId));
         if(key == null) {
             throw new FcfsEventException(ErrorCode.EVENT_NOT_FOUND);
         }

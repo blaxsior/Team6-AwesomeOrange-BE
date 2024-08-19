@@ -17,7 +17,7 @@ public class FcfsAnswerService {
 
     public boolean judgeAnswer(String eventId, String answer) {
         // eventId로부터 FCFS의 key를 가져옴
-        String key = stringRedisTemplate.opsForValue().get(eventId);
+        String key = stringRedisTemplate.opsForValue().get(FcfsUtil.eventIdFormatting(eventId));
         if(key == null) {
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
