@@ -10,6 +10,8 @@ services:
       - "8080:8080"
     volumes:
       - /var/log/spring-boot:/var/log/spring-boot
+    environment:
+      - TZ=Asia/Seoul
     networks:
       - my_custom_network
 
@@ -26,6 +28,8 @@ services:
     command:
       - -config.file=/promtail-config.yml
       - -config.expand-env=true  # 환경 변수 확장 활성화
+    environment:
+      - TZ=Asia/Seoul
     networks:
       - my_custom_network
 
