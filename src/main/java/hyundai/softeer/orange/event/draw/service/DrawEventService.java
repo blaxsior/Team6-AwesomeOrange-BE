@@ -132,7 +132,7 @@ public class DrawEventService {
         else {
             String key = EventConst.IS_DRAWING(event.getEventId());
             String value = redisTemplate.opsForValue().get(key);
-            if (value == null) status = DrawEventStatus.IS_DRAWING;
+            if (value != null) status = DrawEventStatus.IS_DRAWING;
         }
 
         return DrawEventStatusDto.of(event.getEventId(), status);
