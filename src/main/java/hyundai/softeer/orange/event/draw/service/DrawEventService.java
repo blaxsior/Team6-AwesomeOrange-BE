@@ -52,13 +52,15 @@ public class DrawEventService {
         String key = EventConst.IS_DRAWING(event.getEventId());
         tryDraw(key);
 
+        log.info("Event [{}]: start draw", event.getEventId());
         machine.draw(drawEvent)
         // 시간 제한
         .orTimeout(EventConst.DRAW_EVENT_DRAW_TIMEOUT_HOUR, TimeUnit.HOURS)
         // 예외가 발생하더라도 추첨이 끝나면 키를 제거해야 함 = release
         .handleAsync((unused, throwable) -> {
             releaseDraw(key);
-            if(throwable != null) log.error(throwable.getMessage(), throwable);
+            log.info("Event [{}]: finish draw", event.getEventId());
+            if(throwable != null) log.error("Event[{}]", event.getEventId(), throwable);
             return null;
         });
     }
