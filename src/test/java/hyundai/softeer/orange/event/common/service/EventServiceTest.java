@@ -47,15 +47,16 @@ class EventServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @DisplayName("대응되는 eventframe이 없으면 예외 반환")
+    @DisplayName("대응되는 eventframe이 없으면 생성")
     @Test
     void createEvent_throwErrorIFNoMatchedEventFrame() {
         EventDto eventDto = EventDto.builder().build();
 
         assertThatThrownBy(() -> {
             eventService.createEvent(eventDto);
-        }).isInstanceOf(EventException.class)
-                .hasMessage(ErrorCode.EVENT_FRAME_NOT_FOUND.getMessage());
+        }).isInstanceOf(EventException.class);
+
+        verify(efRepo, times(1)).save(any(EventFrame.class));
     }
 
     @DisplayName("이벤트 타입에 매칭되는 매퍼가 없다면 예외 반환")

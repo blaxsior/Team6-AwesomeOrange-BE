@@ -1,5 +1,6 @@
 package hyundai.softeer.orange.event.common.service;
 
+import hyundai.softeer.orange.admin.controller.EventFrameIdListDto;
 import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.core.ParseUtil;
 import hyundai.softeer.orange.event.common.EventConst;
@@ -52,10 +53,12 @@ public class EventService {
      */
     @Transactional
     public void createEvent(EventDto eventDto) {
-        // 1. eventframe을 찾는다. 없으면 작업이 의미 X
+        // 1. eventframe을 찾는다. 없으면 만든다.
         Optional<EventFrame> frameOpt = efRepository.findByFrameId(eventDto.getEventFrameId());
-        EventFrame frame = frameOpt
-                .orElseThrow(() -> new EventException(ErrorCode.EVENT_FRAME_NOT_FOUND));
+        EventFrame frame = frameOpt.orElseGet(() -> {
+            EventFrame newFrame = EventFrame.of(eventDto.getEventFrameId(), eventDto.getEventFrameId());
+            return efRepository.save(newFrame);
+        });
 
         String eventKey = keyGenerator.generate();
 
@@ -144,7 +147,7 @@ public class EventService {
     }
 
     /**
-     * 이벤트에 대한 초기 데이터 정보를 제공한다.
+     * 이벤트에 대한 초기 데이터 정보를 제공한다. 수정 + 상세 조회 모두 사용 가능
      * @param eventId 요청한 이벤트의 id
      * @return 이벤트 내용을 담은 dto
      */
@@ -247,6 +250,7 @@ public class EventService {
      * @param search 이벤트 검색어
      * @return 검색을 위한 힌트 정보 ( id, 이름 )
      */
+    @Transactional(readOnly = true)
     public List<EventSearchHintDto> searchHints(String search) {
         var searchOnEventIdDefaultReject = EventSpecification.searchOnEventId(search, false);
         var isDrawEvent = EventSpecification.isEventTypeOf(EventType.draw);
@@ -270,4 +274,8 @@ public class EventService {
         log.info("Created Event Frame: {}", name);
     }
 
+    public EventFrameIdListDto searchFrames(String search) {
+        var frameIds = efRepository.findAllFrameIdsWithLike(search);
+        return EventFrameIdListDto.of(frameIds);
+    }
 }

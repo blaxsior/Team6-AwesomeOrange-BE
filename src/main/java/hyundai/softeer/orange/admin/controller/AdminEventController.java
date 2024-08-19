@@ -82,7 +82,7 @@ public class AdminEventController {
      * @return 해당 이벤트에 대한 정보
      */
     @GetMapping("{eventId}")
-    @Operation(summary = "이벤트 데이터 획득", description = "이벤트 초기 정보를 받는다", responses = {
+    @Operation(summary = "이벤트 데이터 획득", description = "이벤트 초기 정보를 받는다. 상세 정보, 이벤트 수정 모두에서 사용 가능", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 정보를 정상적으로 받음"),
             @ApiResponse(responseCode = "404", description = "대응되는 이벤트가 존재하지 않음")
     })
@@ -120,11 +120,20 @@ public class AdminEventController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @GetMapping("/frame/hints")
+    @Operation(summary="이벤트 프레임 힌트 목록 얻기",description = "관리자가 이벤트를 생성할 때 존재하는 이벤트 프레임을 검색한다. 매칭되는 프레임 id를 가져온다.", responses = {
+            @ApiResponse(responseCode = "200", description = "매칭되는 이벤트 힌트 목록을 가져온다.")
+    })
+    public ResponseEntity<EventFrameIdListDto> findEventFrameSearchHints(@RequestParam(value = "search", defaultValue = "") String search) {
+        var frameSearchHints = eventService.searchFrames(search);
+        return ResponseEntity.ok(frameSearchHints);
+    }
+
     @GetMapping("/hints")
     @Operation(summary="이벤트 힌트 목록 얻기", description = "관리자가 이벤트 댓글 열람을 위해 검색할 때 반환하는 (이벤트 id / 이름 ) 정보 목록을 얻는다.", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 힌트 목록 획득")
     })
-    public ResponseEntity<List<EventSearchHintDto>> findEventSearchHints(@RequestParam("search") String search) {
+    public ResponseEntity<List<EventSearchHintDto>> findEventSearchHints(@RequestParam(value = "search", required = false) String search) {
         var searchHints = eventService.searchHints(search);
         return ResponseEntity.ok(searchHints);
     }
