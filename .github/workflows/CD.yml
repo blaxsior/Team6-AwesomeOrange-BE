@@ -39,13 +39,11 @@ jobs:
       - name: Get Parameter
         id: get-parameter
         run: |
-          sudo aws ssm get-parameter --name ${{ secrets.SSM_PARAMETER_NAME }} --with-decryption --region ${{ secrets.SSM_PARAMETER_REGION }} --query "Parameter.Value" --output text > ${{ secrets.ENV_NAME }}
+          sudo aws ssm get-parameter --name ${{ secrets.SSM_PARAMETER_NAME }} --with-decryption --region ${{ secrets.SSM_PARAMETER_REGION }} --query "Parameter.Value" --output text > .env
 
-      - name: Remove Old Docker Container
-        run: sudo docker rm -f orange || true
-
-      - name: Run Updated Docker Container
+      - name: Deploy with Docker Compose
         run: |
-          sudo docker run -t -d --name orange -p 8080:8080 \
-            --env-file ${{ secrets.ENV_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/orange
-          rm -f ${{ secrets.ENV_NAME }}
+          cd infra
+          sudo docker-compose --env-file ../.env down
+          sudo docker-compose --env-file ../.env up -d
+          rm -f ../.env

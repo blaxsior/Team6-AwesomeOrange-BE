@@ -1,11 +1,11 @@
 server:
-  http_listen_port: ${PROMTAIL_PORT}
+  http_listen_port: 9080
 
 positions:
   filename: /tmp/positions.yaml
 
 clients:
-  - url: "${LOKI_URL}"
+  - url: ${LOKI_URL}
 
 scrape_configs:
   - job_name: spring-boot
