@@ -6,8 +6,10 @@ import hyundai.softeer.orange.event.common.entity.EventMetadata;
 import hyundai.softeer.orange.event.common.enums.EventType;
 import hyundai.softeer.orange.event.common.exception.EventException;
 import hyundai.softeer.orange.event.common.repository.EventMetadataRepository;
+import hyundai.softeer.orange.event.draw.dto.DrawEventStatusDto;
 import hyundai.softeer.orange.event.draw.dto.ResponseDrawWinnerDto;
 import hyundai.softeer.orange.event.draw.entity.DrawEvent;
+import hyundai.softeer.orange.event.draw.enums.DrawEventStatus;
 import hyundai.softeer.orange.event.draw.exception.DrawEventException;
 import hyundai.softeer.orange.event.draw.repository.DrawEventWinningInfoRepository;
 import lombok.RequiredArgsConstructor;
@@ -96,12 +98,43 @@ public class DrawEventService {
         // 이벤트가 draw event 인지 검사
         if (event.getEventType() != EventType.draw) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
         // 이벤트가 종료되었는지 검사
-        if (now.isBefore(event.getEndTime())) throw new DrawEventException(ErrorCode.EVENT_NOT_ENDED);
+        if (!event.isEnded(now)) throw new DrawEventException(ErrorCode.EVENT_NOT_ENDED);
 
         // draw 이벤트 객체가 있는지 검사
         DrawEvent drawEvent = event.getDrawEvent();
         if (drawEvent == null) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
         // 이벤트가 이미 추첨되었는지 검사
         if (drawEvent.isDrawn()) throw new DrawEventException(ErrorCode.ALREADY_DRAWN);
+    }
+
+    /**
+     * 이벤트의 현재 상태를 얻는다. 이벤트의 상태는 DrawEventStatus에 명시되어 있다.
+     * @param eventId 이벤트의 Id
+     * @return 추첨 이벤트의 현재 상태
+     */
+    public DrawEventStatusDto getDrawEventStatus(String eventId) {
+        // 이벤트가 존재하는지 검사
+        EventMetadata event = emRepository.findFirstByEventId(eventId)
+                .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
+        DrawEvent drawEvent = event.getDrawEvent();
+        if(drawEvent == null) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
+        // 이벤트가 draw event 인지 검사
+        if (event.getEventType() != EventType.draw) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
+
+        DrawEventStatus status = DrawEventStatus.AVAILABLE;
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 이벤트가 종료되었는지 검사
+        if (!event.isEnded(now)) status = DrawEventStatus.BEFORE_END;
+        else if(drawEvent.isDrawn()) status = DrawEventStatus.COMPLETE;
+        // 값이 지정되어 있기만 해도 현재 로직 상 추첨 중
+        else {
+            String key = EventConst.IS_DRAWING(event.getEventId());
+            String value = redisTemplate.opsForValue().get(key);
+            if (value == null) status = DrawEventStatus.IS_DRAWING;
+        }
+
+        return DrawEventStatusDto.of(event.getEventId(), status);
     }
 }
