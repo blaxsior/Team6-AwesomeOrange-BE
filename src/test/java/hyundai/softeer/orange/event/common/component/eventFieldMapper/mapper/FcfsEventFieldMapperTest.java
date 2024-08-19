@@ -60,11 +60,22 @@ class FcfsEventFieldMapperTest {
     @Test
     void setRelationIfFcfsDtoExists() {
         EventMetadata metadata = new EventMetadata();
+        metadata.updateStartTime(LocalDateTime.of(2024, 8, 1, 0, 0));
+        metadata.updateEndTime(LocalDateTime.of(2024, 8, 2, 0, 0));
         EventDto dto = mock(EventDto.class);
-        List<FcfsEventDto> dtos = List.of(
-                new FcfsEventDto(),
-                new FcfsEventDto()
+        List<FcfsEventDto> dtos = new ArrayList<>();
+
+        dtos.add(FcfsEventDto.builder()
+                .startTime(LocalDateTime.of(2024,8,1,0,0))
+                .endTime(LocalDateTime.of(2024,8,1,4,0))
+                .build() // 시작 시간 겹침
         );
+        dtos.add(FcfsEventDto.builder()
+                .startTime(LocalDateTime.of(2024,8,1,4,0))
+                .endTime(LocalDateTime.of(2024,8,1,8,0))
+                .build() // 시간끼리 겹침
+        );
+
         when(dto.getFcfs()).thenReturn(dtos);
 
         mapper.fetchToEventEntity(metadata, dto);
@@ -119,11 +130,6 @@ class FcfsEventFieldMapperTest {
                 .endTime(LocalDateTime.of(2024,8,1,8,0))
                 .build()
         );
-//        dtos.add(FcfsEventDto.builder()
-//                .startTime(LocalDateTime.of(2024,8,1,23,0))
-//                .endTime(LocalDateTime.of(2024,8,2,0,0))
-//                .build()
-//        );
 
         assertThatThrownBy(() -> {
             mapper.validateEventTimes(dtos, startTime, endTime);
