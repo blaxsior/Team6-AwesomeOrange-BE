@@ -4,6 +4,7 @@ import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.common.dto.TokenDto;
 import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.core.auth.AuthRole;
+import hyundai.softeer.orange.core.jwt.JWTConst;
 import hyundai.softeer.orange.core.jwt.JWTManager;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
@@ -82,7 +83,7 @@ public class EventUserService {
 
     // JWT 토큰 생성
     private TokenDto generateToken(EventUser eventUser) {
-        Map<String, Object> claims = Map.of(ConstantUtil.CLAIMS_USER_KEY, eventUser.getUserId(), ConstantUtil.CLAIMS_ROLE_KEY, AuthRole.event_user,
+        Map<String, Object> claims = Map.of(ConstantUtil.CLAIMS_USER_KEY, eventUser.getUserId(), JWTConst.ROLE, AuthRole.event_user,
                 ConstantUtil.CLAIMS_USER_NAME_KEY, eventUser.getUserName());
         String token = jwtManager.generateToken(ConstantUtil.JWT_USER_KEY, claims, ConstantUtil.JWT_LIFESPAN);
         log.info("JWT Token generated for EventUser {}", eventUser.getUserName());

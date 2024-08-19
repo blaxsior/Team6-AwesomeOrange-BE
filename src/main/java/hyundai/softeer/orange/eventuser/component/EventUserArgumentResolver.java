@@ -34,7 +34,7 @@ public class EventUserArgumentResolver implements HandlerMethodArgumentResolver 
         try {
             Jws<Claims> claims = (Jws<Claims>) request.getAttribute(JWTConst.Token);
             String userId = claims.getPayload().get(ConstantUtil.CLAIMS_USER_KEY).toString();
-            String role = claims.getPayload().get(ConstantUtil.CLAIMS_ROLE_KEY).toString();
+            String role = claims.getPayload().get(JWTConst.ROLE).toString();
             return new EventUserInfo(userId, role);
         } catch (Exception e) {
             throw new EventUserException(ErrorCode.UNAUTHORIZED);

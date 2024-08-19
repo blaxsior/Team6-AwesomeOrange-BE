@@ -1,7 +1,9 @@
 package hyundai.softeer.orange.admin.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hyundai.softeer.orange.admin.dto.AdminDto;
 import hyundai.softeer.orange.admin.entity.Admin;
+import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.core.jwt.JWTConst;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -32,12 +34,12 @@ public class AdminArgumentResolver implements HandlerMethodArgumentResolver {
 
     // @Auth에 등록한 클래스라면 아래 코드 정도로 값을 가져올 수 있음
     @Override
-    public Admin resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+    public AdminDto resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
         try {
             Jws<Claims> claims = (Jws<Claims>) request.getAttribute(JWTConst.Token);
-            Object data = claims.getPayload().get("admin");
-            return objectMapper.convertValue(data, Admin.class);
+            Object data = claims.getPayload().get(ConstantUtil.CLAIMS_ADMIN);
+            return objectMapper.convertValue(data, AdminDto.class);
         } catch (Exception e) {
             log.error(e.getMessage());
             return null;
