@@ -153,7 +153,7 @@ public class EventService {
      */
     @Transactional(readOnly = true)
     public EventDto getEventInfo(String eventId) {
-        Optional<EventMetadata> metadataOpt = emRepository.findFirstByEventId(eventId);
+        Optional<EventMetadata> metadataOpt = emRepository.findByEventIdWithEventFrame(eventId);
         EventMetadata metadata = metadataOpt
                 .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
 
@@ -168,6 +168,7 @@ public class EventService {
                 .startTime(metadata.getStartTime())
                 .endTime(metadata.getEndTime())
                 .eventType(metadata.getEventType())
+                .eventFrameId(metadata.getEventFrame().getFrameId())
                 .build();
 
         mapper.fetchToDto(metadata, eventDto);
