@@ -8,6 +8,8 @@ import hyundai.softeer.orange.core.jwt.JWTConst;
 import hyundai.softeer.orange.core.jwt.JWTManager;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
+import hyundai.softeer.orange.eventuser.dto.EventUserOnAdminDto;
+import hyundai.softeer.orange.eventuser.dto.EventUserPageDto;
 import hyundai.softeer.orange.eventuser.dto.RequestAuthCodeDto;
 import hyundai.softeer.orange.eventuser.dto.RequestUserDto;
 import hyundai.softeer.orange.eventuser.entity.EventUser;
@@ -16,6 +18,9 @@ import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +50,14 @@ public class EventUserService {
 
         log.info("EventUser {} found, Login success", eventUser.getUserName());
         return generateToken(eventUser);
+    }
+
+    @Transactional(readOnly = true)
+    public EventUserPageDto getUserBySearch(String search, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        Page<EventUser> userPage = eventUserRepository.findBySearch(search, pageRequest);
+        return EventUserPageDto.from(userPage);
     }
 
     /**
