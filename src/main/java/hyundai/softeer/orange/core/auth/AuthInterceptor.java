@@ -6,6 +6,7 @@ import hyundai.softeer.orange.core.jwt.JWTManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -24,29 +25,19 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 유효하지 않은 요청은 정적 리소스로 간주하여 ResourceHttpRequestHandler가 대신 처리하기에, HandlerMethod가 아닌 경우는 무시
-        if (!(handler instanceof HandlerMethod)) {
-            return true;
+        if (!(handler instanceof HandlerMethod handlerMethod)) return true;
+
+        Auth authAnnotation = AnnotationUtils.findAnnotation(handlerMethod.getMethod(), Auth.class);
+        if (authAnnotation == null) {
+            authAnnotation = AnnotationUtils.findAnnotation(handlerMethod.getBeanType(), Auth.class);
         }
-
-        HandlerMethod handlerMethod = (HandlerMethod) handler;
-
-        Auth classAnnotation = handlerMethod.getBeanType().getAnnotation(Auth.class);
-        Auth methodAnnotation = handlerMethod.getMethod().getAnnotation(Auth.class);
-
-        // 인증 필요한지 검사. 어노테이션 없으면 인증 필요 없음
-        if (classAnnotation == null && methodAnnotation == null) return true;
+        // 어노테이션 없으면 인증 필요 없음
+        if (authAnnotation == null) return true;
 
         Set<String> authRoleStringSet = new HashSet<>();
 
-        // auth는 가장 가까운 하나에 대해서만 동작
-        if (methodAnnotation != null) {
-            for (AuthRole role : methodAnnotation.value()) {
-                authRoleStringSet.add(role.name());
-            }
-        } else {
-            for (AuthRole role : classAnnotation.value()) {
-                authRoleStringSet.add(role.name());
-            }
+        for (AuthRole role : authAnnotation.value()) {
+            authRoleStringSet.add(role.name());
         }
 
         // 헤더 분석 과정
