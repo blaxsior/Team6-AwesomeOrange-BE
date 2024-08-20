@@ -1,7 +1,8 @@
 package hyundai.softeer.orange.event.dto.draw;
 
-import hyundai.softeer.orange.event.dto.group.EventEditGroup;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 /**
@@ -21,17 +22,19 @@ public class DrawEventMetadataDto {
      * 추첨 이벤트 등수
      */
     @NotNull
+    @Positive
     private Long grade;
 
     /**
      * 현재 등수에 대한 최대 당첨 인원 수
      */
     @NotNull
+    @Positive
     private Long count;
 
     /**
      * 상품 정보를 기입하는 영역
      */
-    @NotNull
+    @NotBlank
     private String prizeInfo;
 }

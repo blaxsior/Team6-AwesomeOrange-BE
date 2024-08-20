@@ -4,6 +4,7 @@ import hyundai.softeer.orange.event.draw.enums.DrawEventAction;
 import hyundai.softeer.orange.event.dto.group.EventEditGroup;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 /**
@@ -29,5 +30,6 @@ public class DrawEventScorePolicyDto {
      * action 1회 수행 시 증가하는 점수
      */
     @NotNull
+    @Positive
     private Integer score;
 }

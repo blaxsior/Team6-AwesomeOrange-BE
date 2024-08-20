@@ -7,6 +7,8 @@ import hyundai.softeer.orange.event.common.exception.EventException;
 import hyundai.softeer.orange.event.draw.entity.DrawEvent;
 import hyundai.softeer.orange.event.draw.entity.DrawEventMetadata;
 import hyundai.softeer.orange.event.draw.entity.DrawEventScorePolicy;
+import hyundai.softeer.orange.event.draw.enums.DrawEventAction;
+import hyundai.softeer.orange.event.draw.exception.DrawEventException;
 import hyundai.softeer.orange.event.draw.repository.DrawEventMetadataRepository;
 import hyundai.softeer.orange.event.draw.repository.DrawEventScorePolicyRepository;
 import hyundai.softeer.orange.event.dto.EventDto;
@@ -36,8 +38,7 @@ public class DrawEventFieldMapper implements EventFieldMapper {
     @Override
     public void fetchToEventEntity(EventMetadata metadata, EventDto eventDto) {
         DrawEventDto dto = eventDto.getDraw();
-        // 비어 있으면 안됨.
-        if (dto == null) throw new EventException(ErrorCode.INVALID_JSON);
+        validateDrawEventDto(dto);
 
         DrawEvent event = new DrawEvent();
         metadata.updateDrawEvent(event);
@@ -67,7 +68,7 @@ public class DrawEventFieldMapper implements EventFieldMapper {
     public void fetchToDto(EventMetadata metadata, EventDto eventDto) {
        DrawEvent drawEvent = metadata.getDrawEvent();
         // drawEvent 정보가 있으면 넣기
-        if(drawEvent == null) throw new EventException(ErrorCode.INVALID_JSON);
+
         DrawEventDto drawEventDto = DrawEventDto
                 .builder()
                 .id(drawEvent.getId())
@@ -96,6 +97,7 @@ public class DrawEventFieldMapper implements EventFieldMapper {
         DrawEvent drawEvent = metadata.getDrawEvent();
         if(drawEvent == null) throw new EventException(ErrorCode.EVENT_NOT_FOUND);
         DrawEventDto drawEventDto = dto.getDraw();
+        validateDrawEventDto(drawEventDto);
 
         editDrawEventMetadata(drawEvent, drawEventDto);
         editDrawEventScorePolicy(drawEvent, drawEventDto);
@@ -184,4 +186,23 @@ public class DrawEventFieldMapper implements EventFieldMapper {
         }
     }
 
+    /**
+     * 입력된 정책 / 등수 중 중복된 값이 존재하지는 않는지 검증
+     * @param drawEventDto 검증 대상이 되는 객체
+     */
+    protected void validateDrawEventDto(DrawEventDto drawEventDto) {
+        if(drawEventDto == null) throw new EventException(ErrorCode.INVALID_JSON);
+        Set<DrawEventAction> actionsSet = new HashSet<>();
+        Set<Long> gradeSet = new HashSet<>();
+
+        for(var policy: drawEventDto.getPolicies()) {
+            actionsSet.add(policy.getAction());
+        }
+        if(actionsSet.size() != drawEventDto.getPolicies().size()) throw new DrawEventException(ErrorCode.DUPLICATED_POLICIES);
+
+        for(var metadata: drawEventDto.getMetadata()) {
+            gradeSet.add(metadata.getGrade());
+        }
+        if(gradeSet.size() != drawEventDto.getMetadata().size()) throw new DrawEventException(ErrorCode.DUPLICATED_GRADES);
+    }
 }

@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public enum ErrorCode {
-
     // 400 Bad Request
     BAD_REQUEST(HttpStatus.BAD_REQUEST, false, "잘못된 요청입니다."),
     INVALID_COMMENT(HttpStatus.BAD_REQUEST, false, "부정적인 표현을 사용하였습니다."),
@@ -19,7 +18,9 @@ public enum ErrorCode {
     INVALID_EVENT_TYPE(HttpStatus.BAD_REQUEST, false, "이벤트 타입이 지원되지 않습니다."),
     EVENT_NOT_ENDED(HttpStatus.BAD_REQUEST, false, "이벤트가 아직 종료되지 않았습니다."),
     EVENT_IS_DRAWING(HttpStatus.BAD_REQUEST, false, "현재 추첨이 진행되고 있는 이벤트입니다."),
-
+    DUPLICATED_POLICIES(HttpStatus.BAD_REQUEST,false,"정책에서 중복된 액션이 존재합니다."),
+    DUPLICATED_GRADES(HttpStatus.BAD_REQUEST,false,"추첨 이벤트 정보에 중복된 등수가 존재합니다."),
+    CANNOT_PARTICIPATE(HttpStatus.BAD_REQUEST,false,"현재 유저가 참여할 수 없는 이벤트입니다."),
 
     // 401 Unauthorized
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, false, "인증되지 않은 사용자입니다."),
