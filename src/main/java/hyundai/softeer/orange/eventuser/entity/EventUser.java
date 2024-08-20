@@ -38,6 +38,10 @@ public class EventUser {
     @JoinColumn(name = "event_frame_id")
     private EventFrame eventFrame;
 
+    // eventFrame을 거치지 않고 이벤트를 매칭하기 위해 사용
+    @Column(name = "event_frame_id", updatable = false, insertable = false)
+    private Long eventFrameId;
+
     @OneToMany(mappedBy = "eventUser")
     private List<Comment> commentList = new ArrayList<>();
 
