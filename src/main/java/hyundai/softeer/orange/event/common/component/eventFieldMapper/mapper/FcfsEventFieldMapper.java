@@ -11,6 +11,7 @@ import hyundai.softeer.orange.event.fcfs.repository.FcfsEventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,8 +30,9 @@ public class FcfsEventFieldMapper implements EventFieldMapper {
     @Override
     public void fetchToEventEntity(EventMetadata metadata, EventDto eventDto) {
         List<FcfsEventDto> fcfsDtos = eventDto.getFcfs();
-        // 비어 있으면 안됨
-        if (fcfsDtos == null || fcfsDtos.isEmpty()) throw new EventException(ErrorCode.INVALID_JSON);
+
+        // 이벤트 로직 검증
+        validateEventTimes(fcfsDtos, metadata.getStartTime(), metadata.getEndTime());
 
         List<FcfsEvent> fcfsEventList = fcfsDtos.stream().map(
                 it -> FcfsEvent.builder()
@@ -43,6 +45,30 @@ public class FcfsEventFieldMapper implements EventFieldMapper {
         ).toList();
 
         metadata.addFcfsEvents(fcfsEventList);
+    }
+
+    /**
+     * 이벤트의 시간을 검증하는 함수
+     */
+    protected void validateEventTimes(List<FcfsEventDto> dtos, LocalDateTime startTime, LocalDateTime endTime) {
+        // 비어 있으면 안됨
+        if (dtos == null || dtos.isEmpty()) throw new EventException(ErrorCode.INVALID_JSON);
+        // 시작 순서대로 정렬
+        dtos.sort(Comparator.comparing(FcfsEventDto::getStartTime));
+
+        // 모든 시간이 이벤트 시작 - 끝 범위에 있는지 확인. O(N)
+        for(FcfsEventDto dto : dtos) {
+            if(dto.getStartTime().isBefore(startTime) || dto.getEndTime().isAfter(endTime))
+                throw new EventException(ErrorCode.INVALID_INPUT_EVENT_TIME);
+        }
+
+        // 시작 시간으로 정렬했으므로, 다음 시간대와 겹치지 않는다면 이후 시간대와는 절대 겹치지 않는다. O(N)
+        for(int idx = 0; idx < dtos.size() - 1; idx++) {
+            LocalDateTime nowEnd = dtos.get(idx).getEndTime();
+            LocalDateTime nextStart = dtos.get(idx + 1).getStartTime();
+
+            if(nowEnd.isAfter(nextStart)) throw new EventException(ErrorCode.INVALID_INPUT_EVENT_TIME);
+        }
     }
 
     @Override
@@ -69,6 +95,9 @@ public class FcfsEventFieldMapper implements EventFieldMapper {
         // true이면 created / false이면 updated
         Map<Long, FcfsEventDto> createdDtos = fcfsAllDtos.get(true);
         Map<Long, FcfsEventDto> updatedDtos = fcfsAllDtos.get(false);
+
+        // 저장되는 데이터는 모두 deleted에 존재
+        validateEventTimes(eventDto.getFcfs(), metadata.getStartTime(), metadata.getEndTime());
 
         Set<Long> updated = new HashSet<>(updatedDtos.keySet());
         Set<Long> deleted = fcfsEvents.stream().map(FcfsEvent::getId).collect(Collectors.toSet());

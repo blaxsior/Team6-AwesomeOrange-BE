@@ -40,5 +40,6 @@ out/
 *.sh
 **/resources/*.yml
 *.properties
+!**/resources/errors*.properties
 **/*.env*
 **/.DS_store
