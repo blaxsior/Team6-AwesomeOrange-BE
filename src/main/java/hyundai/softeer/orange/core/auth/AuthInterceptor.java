@@ -32,7 +32,6 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         Auth classAnnotation = handlerMethod.getBeanType().getAnnotation(Auth.class);
         Auth methodAnnotation = handlerMethod.getMethod().getAnnotation(Auth.class);
-        log.info("annotation {} {}", methodAnnotation, classAnnotation);
 
         // 인증 필요한지 검사. 어노테이션 없으면 인증 필요 없음
         if (classAnnotation == null && methodAnnotation == null) return true;
