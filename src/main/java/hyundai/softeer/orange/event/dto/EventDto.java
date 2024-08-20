@@ -1,5 +1,6 @@
 package hyundai.softeer.orange.event.dto;
 
+import hyundai.softeer.orange.event.dto.validator.EventDtoTimeValidation;
 import hyundai.softeer.orange.event.dto.draw.DrawEventDto;
 import hyundai.softeer.orange.event.dto.fcfs.FcfsEventDto;
 import hyundai.softeer.orange.event.dto.group.EventEditGroup;
@@ -20,6 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@EventDtoTimeValidation // 시작 시간이 끝 시간보다 크다는 것을 보장
 public class EventDto {
     /**
      * HD000000_000 형식으로 구성된 id 값. 직접 설정할 필요 없음.

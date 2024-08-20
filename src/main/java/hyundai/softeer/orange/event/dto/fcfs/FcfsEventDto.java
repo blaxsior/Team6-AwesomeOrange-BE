@@ -1,6 +1,6 @@
 package hyundai.softeer.orange.event.dto.fcfs;
 
-import hyundai.softeer.orange.event.dto.group.EventEditGroup;
+import hyundai.softeer.orange.event.dto.validator.FcfsEventDtoTimeValidation;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Getter
+@FcfsEventDtoTimeValidation
 public class FcfsEventDto {
     /**
      * Fcfs 이벤트의 id. 서버 db 측에서 사용하기 위한 값. 직접 설정 X
