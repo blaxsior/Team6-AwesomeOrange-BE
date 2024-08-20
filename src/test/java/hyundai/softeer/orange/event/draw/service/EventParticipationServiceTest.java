@@ -1,5 +1,6 @@
 package hyundai.softeer.orange.event.draw.service;
 
+import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.event.common.entity.EventMetadata;
 import hyundai.softeer.orange.event.common.enums.EventType;
 import hyundai.softeer.orange.event.common.exception.EventException;
@@ -25,14 +26,15 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class EventParticipationServiceTest {
+    EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
+    EventParticipationInfoRepository epiRepository = mock(EventParticipationInfoRepository.class);
+    EventUserRepository euRepository = mock(EventUserRepository.class);
+    Long frameId = 1L;
+
     @DisplayName("이벤트가 존재하지 않으면 예외 반환")
     @Test
     void getParticipationDateList_throwIfEventNotExist() {
-        EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
         when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.empty());
-//        EventParticipationInfoRepository epiRepository = mock(EventParticipationInfoRepository.class);
-//        EventUserRepository euRepository = mock(EventUserRepository.class);
-
         EventParticipationService service = new EventParticipationService(null, emRepository, null);
 
         assertThatThrownBy(() -> {
@@ -43,7 +45,6 @@ class EventParticipationServiceTest {
     @DisplayName("이벤트가 존재해도, draw 이벤트가 아니면 예외 반환")
     @Test
     void getParticipationDateList_EventIsNotDraw() {
-        EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
         when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(
                 EventMetadata.builder().eventType(EventType.fcfs).build()
         ));
@@ -58,7 +59,6 @@ class EventParticipationServiceTest {
     @DisplayName("이벤트가 draw 이벤트여도 drawEvent == null이면 예외 반환")
     @Test
     void getParticipationDateList_EventIsDrawButDrawEventIsNull() {
-        EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
         when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(
                 EventMetadata.builder().eventType(EventType.draw).build()
         ));
@@ -77,15 +77,12 @@ class EventParticipationServiceTest {
                 .eventType(EventType.draw)
                 .build();
         eventMetadata.updateDrawEvent(new DrawEvent());
-        EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
         when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(eventMetadata));
         var mockDto1 = mock(EventParticipationDateDto.class);
         var mockDto2 = mock(EventParticipationDateDto.class);
         when(mockDto1.getDate()).thenReturn(LocalDateTime.now());
         when(mockDto2.getDate()).thenReturn(LocalDateTime.now());
 
-
-        EventParticipationInfoRepository epiRepository = mock(EventParticipationInfoRepository.class);
         when(epiRepository.findByEventUserId(any(), any())).thenReturn(List.of(mockDto1, mockDto2));
 
         EventParticipationService service = new EventParticipationService(epiRepository, emRepository, null);
@@ -97,20 +94,18 @@ class EventParticipationServiceTest {
     @DisplayName("이벤트가 존재하지 않으면 예외 반환")
     @Test
     void participateAtDaily_throwIfEventNotExist() {
-        EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
         when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.empty());
 
         EventParticipationService service = new EventParticipationService(null, emRepository, null);
 
         assertThatThrownBy(() -> {
             service.participateDaily("test", "any");
-        });
+        }).hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
     }
 
     @DisplayName("이벤트가 존재해도, draw 이벤트가 아니면 예외 반환")
     @Test
     void participateAtDaily_EventIsNotDraw() {
-        EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
         when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(
                 EventMetadata.builder().eventType(EventType.fcfs).build()
         ));
@@ -119,14 +114,13 @@ class EventParticipationServiceTest {
 
         assertThatThrownBy(() -> {
             service.participateDaily("test", "any");
-        });
+        }).hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
         verify(emRepository, atLeastOnce()).findFirstByEventId(any());
     }
 
     @DisplayName("이벤트가 draw 이벤트여도 drawEvent == null이면 예외 반환")
     @Test
     void participateDaily_EventIsDrawButDrawEventIsNull() {
-        EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
         when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(
                 EventMetadata.builder().eventType(EventType.draw).build()
         ));
@@ -135,108 +129,114 @@ class EventParticipationServiceTest {
 
         assertThatThrownBy(() -> {
             service.participateDaily("test", "any");
-        });
+        }).isInstanceOf(EventException.class)
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
     }
 
     @DisplayName("이벤트 유저가 없다면 예외 반환")
     @Test
     void participateDaily_throwIfNotEventTime() {
-        EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
-        when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(
-                EventMetadata.builder()
-                        .eventType(EventType.draw)
-                        .build()
-        ));
-        EventParticipationInfoRepository epiRepository = mock(EventParticipationInfoRepository.class);
+        var eventMetadata = EventMetadata.builder()
+                .eventType(EventType.draw)
+                .eventFrameId(frameId)
+                .build();
+        eventMetadata.updateDrawEvent(new DrawEvent());
+        when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(eventMetadata));
 
-        EventUserRepository euRepository = mock(EventUserRepository.class);
         when(euRepository.findByUserId(any())).thenReturn(Optional.empty());
 
         EventParticipationService service = new EventParticipationService(epiRepository, emRepository, euRepository);
         assertThatThrownBy(() -> {
             service.participateDaily("test", "any");
-        }).isInstanceOf(EventUserException.class);
+        }).isInstanceOf(EventUserException.class)
+                .hasMessage(ErrorCode.USER_NOT_FOUND.getMessage());
         verify(euRepository, atLeastOnce()).findByUserId(any());
     }
 
     @DisplayName("이벤트 유저가 있을 때 이벤트 기간이 지났으면 예외 반환")
     @Test
     void participateAtDate_throwIfNotEventTime() {
-        EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
-        when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(
-                EventMetadata.builder()
-                        .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0))
-                        .endTime(LocalDateTime.of(2024, 8, 10, 0, 0, 0))
-                        .eventType(EventType.draw)
-                        .build()
-        ));
+        var eventMetadata = EventMetadata.builder()
+                .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0))
+                .endTime(LocalDateTime.of(2024, 8, 10, 0, 0, 0))
+                .eventType(EventType.draw)
+                .eventFrameId(frameId)
+                .build();
+        eventMetadata.updateDrawEvent(new DrawEvent());
+
+        when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(eventMetadata));
+
         LocalDateTime now = LocalDateTime.of(2024, 9, 1, 0, 0, 0);
 
-        EventParticipationInfoRepository epiRepository = mock(EventParticipationInfoRepository.class);
-
-        EventUserRepository euRepository = mock(EventUserRepository.class);
         // 유저 있음
-        when(euRepository.findByUserId(any())).thenReturn(Optional.of(mock(EventUser.class)));
+        EventUser user = mock(EventUser.class);
+        when(user.getEventFrameId()).thenReturn(frameId);
+        when(euRepository.findByUserId(any())).thenReturn(Optional.of(user));
 
         EventParticipationService service = new EventParticipationService(epiRepository, emRepository, euRepository);
         assertThatThrownBy(() -> {
             service.participateAtDate("test", "any", now);
-        }).isInstanceOf(EventException.class);
+        }).isInstanceOf(EventException.class)
+                .hasMessage(ErrorCode.INVALID_EVENT_TIME.getMessage());
         verify(epiRepository, never()).existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any());
     }
 
     @DisplayName("오늘 참여했다면 예외 반환")
     @Test
     void participateAtDate_throwIfAlreadyParticipated() {
-        EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
-        when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(
-                EventMetadata.builder()
-                        .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0))
-                        .endTime(LocalDateTime.of(2024, 9, 2, 0, 0, 0))
-                        .eventType(EventType.draw)
-                        .build()
-        ));
-        LocalDateTime now = LocalDateTime.of(2024, 9, 1, 0, 0, 0);
+        var eventMetadata = EventMetadata.builder()
+                .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0))
+                .endTime(LocalDateTime.of(2024, 8, 10, 0, 0, 0))
+                .eventType(EventType.draw)
+                .eventFrameId(frameId)
+                .build();
+        eventMetadata.updateDrawEvent(new DrawEvent());
+        when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(eventMetadata));
 
-        EventParticipationInfoRepository epiRepository = mock(EventParticipationInfoRepository.class);
+        // 이벤트 기간 내
+        LocalDateTime now = LocalDateTime.of(2024, 8, 3, 0, 0, 0);
         // 오늘 참여함
         when(epiRepository.existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any())).thenReturn(true);
 
-        EventUserRepository euRepository = mock(EventUserRepository.class);
         // 유저 있음
-        when(euRepository.findByUserId(any())).thenReturn(Optional.of(mock(EventUser.class)));
+        EventUser user = mock(EventUser.class);
+        when(user.getEventFrameId()).thenReturn(frameId);
+        when(euRepository.findByUserId(any())).thenReturn(Optional.of(user));
 
         EventParticipationService service = new EventParticipationService(epiRepository, emRepository, euRepository);
         assertThatThrownBy(() -> {
             service.participateAtDate("test", "any", now);
-        }).isInstanceOf(EventException.class);
+        }).isInstanceOf(EventException.class)
+        .hasMessage(ErrorCode.ALREADY_PARTICIPATED.getMessage());
         verify(epiRepository, atLeastOnce()).existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any());
     }
 
     @DisplayName("오늘 처음 참여했다면 정상적으로 참여")
     @Test
     void participateAtDate_participateSuccessfully() {
-        EventMetadataRepository emRepository = mock(EventMetadataRepository.class);
-        when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(
-                EventMetadata.builder()
-                        .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0))
-                        .endTime(LocalDateTime.of(2024, 9, 2, 0, 0, 0))
-                        .eventType(EventType.draw)
-                        .build()
-        ));
-        LocalDateTime now = LocalDateTime.of(2024, 9, 1, 0, 0, 0);
+        var eventMetadata = EventMetadata.builder()
+                .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0))
+                .endTime(LocalDateTime.of(2024, 8, 10, 0, 0, 0))
+                .eventType(EventType.draw)
+                .eventFrameId(frameId)
+                .build();
+        eventMetadata.updateDrawEvent(new DrawEvent());
+        when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(eventMetadata));
 
-        EventParticipationInfoRepository epiRepository = mock(EventParticipationInfoRepository.class);
-        // 오늘 참여함
+        // 이벤트 기간 내
+        LocalDateTime now = LocalDateTime.of(2024, 8, 3, 0, 0, 0);
+        // 오늘 참여안함
         when(epiRepository.existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any())).thenReturn(false);
 
-        EventUserRepository euRepository = mock(EventUserRepository.class);
         // 유저 있음
-        when(euRepository.findByUserId(any())).thenReturn(Optional.of(mock(EventUser.class)));
+        EventUser user = mock(EventUser.class);
+        when(user.getEventFrameId()).thenReturn(frameId);
+        when(euRepository.findByUserId(any())).thenReturn(Optional.of(user));
+        EventParticipationInfoRepository epiRepository = mock(EventParticipationInfoRepository.class);
 
         EventParticipationService service = new EventParticipationService(epiRepository, emRepository, euRepository);
         service.participateAtDate("test", "any", now);
-        verify(epiRepository, atLeastOnce()).existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any());
-        verify(epiRepository, atLeastOnce()).save(any());
+        verify(epiRepository, times(1)).existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any());
+        verify(epiRepository, times(1)).save(any());
     }
 }

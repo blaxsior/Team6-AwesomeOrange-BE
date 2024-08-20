@@ -77,6 +77,10 @@ public class EventMetadata {
     @JoinColumn(name="event_frame_id")
     private EventFrame eventFrame;
 
+    // eventFrame을 거치지 않고 유저를 확인하기 위해 사용
+    @Column(name = "event_frame_id", updatable = false, insertable = false)
+    private Long eventFrameId;
+
     // 원래는 one-to-one 관계이지만, JPA 동작에 의해 강제로 EAGER FETCH로 처리돰 -> one-to-many 로 관리
     @OneToMany(mappedBy = "eventMetadata", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private final List<DrawEvent> drawEventList = new ArrayList<>();

@@ -76,9 +76,12 @@ public class EventParticipationService {
         if(event.getEventType() != EventType.draw) throw new EventException(ErrorCode.EVENT_NOT_FOUND);
 
         DrawEvent drawEvent = event.getDrawEvent();
+        if(drawEvent == null) throw new EventException(ErrorCode.EVENT_NOT_FOUND);
 
         EventUser eventUser = eventUserRepository.findByUserId(eventUserId)
                 .orElseThrow(() -> new EventUserException(ErrorCode.USER_NOT_FOUND));
+
+        if(!eventUser.getEventFrameId().equals(event.getEventFrameId())) throw new EventException(ErrorCode.CANNOT_PARTICIPATE);
 
         LocalDate today = date.toLocalDate();
 
