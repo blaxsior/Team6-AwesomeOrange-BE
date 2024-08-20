@@ -4,9 +4,7 @@ import hyundai.softeer.orange.comment.dto.CreateCommentDto;
 import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
 import hyundai.softeer.orange.comment.service.CommentService;
 import hyundai.softeer.orange.common.ErrorResponse;
-import hyundai.softeer.orange.core.auth.Auth;
-import hyundai.softeer.orange.core.auth.AuthRole;
-import hyundai.softeer.orange.core.auth.list.EventUserAuthRequirement;
+import hyundai.softeer.orange.core.auth.list.EventUserAuth;
 import hyundai.softeer.orange.eventuser.component.EventUserAnnotation;
 import hyundai.softeer.orange.eventuser.dto.EventUserInfo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/comment")
 @RestController
 public class CommentController {
-
     private final CommentService commentService;
 
     @Tag(name = "Comment")
@@ -40,7 +37,7 @@ public class CommentController {
         return ResponseEntity.ok(commentService.getComments(eventFrameId));
     }
 
-    @EventUserAuthRequirement @Auth(AuthRole.event_user)
+    @EventUserAuth
     @Tag(name = "Comment")
     @PostMapping("/{eventFrameId}")
     @Operation(summary = "기대평 등록", description = "유저가 신규 기대평을 등록한다.", responses = {
@@ -57,7 +54,7 @@ public class CommentController {
         return ResponseEntity.ok(commentService.createComment(userInfo.getUserId(), eventFrameId, dto));
     }
 
-    @EventUserAuthRequirement @Auth(AuthRole.event_user)
+    @EventUserAuth
     @Tag(name = "Comment")
     @GetMapping("/info")
     @Operation(summary = "기대평 등록 가능 여부 조회", description = "오늘 기대평 등록 가능 여부를 조회한다.", responses = {

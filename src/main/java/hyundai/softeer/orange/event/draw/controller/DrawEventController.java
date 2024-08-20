@@ -1,9 +1,7 @@
 package hyundai.softeer.orange.event.draw.controller;
 
 import hyundai.softeer.orange.common.ErrorResponse;
-import hyundai.softeer.orange.core.auth.Auth;
-import hyundai.softeer.orange.core.auth.AuthRole;
-import hyundai.softeer.orange.core.auth.list.EventUserAuthRequirement;
+import hyundai.softeer.orange.core.auth.list.EventUserAuth;
 import hyundai.softeer.orange.event.draw.dto.EventParticipationDatesDto;
 import hyundai.softeer.orange.event.draw.service.EventParticipationService;
 import hyundai.softeer.orange.eventuser.component.EventUserAnnotation;
@@ -22,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/event/draw")
 @RestController
-@EventUserAuthRequirement @Auth({AuthRole.event_user})
+@EventUserAuth
 public class DrawEventController {
     private final EventParticipationService epService;
     /**

@@ -2,9 +2,7 @@ package hyundai.softeer.orange.admin.controller;
 import hyundai.softeer.orange.comment.dto.CommentsPageDto;
 import hyundai.softeer.orange.comment.dto.DeleteCommentsDto;
 import hyundai.softeer.orange.comment.service.CommentService;
-import hyundai.softeer.orange.core.auth.Auth;
-import hyundai.softeer.orange.core.auth.AuthRole;
-import hyundai.softeer.orange.core.auth.list.AdminAuthRequirement;
+import hyundai.softeer.orange.core.auth.list.AdminAuth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/admin/comments")
 @RequiredArgsConstructor
 @RestController
-@AdminAuthRequirement @Auth({AuthRole.admin})
+@AdminAuth
 public class AdminCommentController {
     private final CommentService commentService;
 

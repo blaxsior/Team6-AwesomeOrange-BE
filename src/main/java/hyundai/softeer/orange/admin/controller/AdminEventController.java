@@ -3,9 +3,7 @@ package hyundai.softeer.orange.admin.controller;
 import hyundai.softeer.orange.admin.component.AdminAnnotation;
 import hyundai.softeer.orange.admin.dto.AdminDto;
 import hyundai.softeer.orange.common.ErrorResponse;
-import hyundai.softeer.orange.core.auth.Auth;
-import hyundai.softeer.orange.core.auth.AuthRole;
-import hyundai.softeer.orange.core.auth.list.AdminAuthRequirement;
+import hyundai.softeer.orange.core.auth.list.AdminAuth;
 import hyundai.softeer.orange.event.common.service.EventService;
 import hyundai.softeer.orange.event.dto.*;
 import hyundai.softeer.orange.event.dto.group.EventEditGroup;
@@ -30,7 +28,7 @@ import java.util.List;
  */
 @Tag(name = "admin event", description = "어드민 페이지에서 이벤트 관리에 사용하는 api")
 @Slf4j
-@AdminAuthRequirement @Auth({AuthRole.admin})
+@AdminAuth
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/events")
 @RestController
