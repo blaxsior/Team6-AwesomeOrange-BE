@@ -22,6 +22,9 @@ public class ConstantUtil {
     public static final String WAITING = "waiting";
     public static final String PROGRESS = "progress";
 
+    public static final String DB_TO_REDIS_LOCK = "FCFS_MANAGE_DB_TO_REDIS";
+    public static final String REDIS_TO_DB_LOCK = "FCFS_MANAGE_REDIS_TO_DB";
+
     public static final double LIMIT_NEGATIVE_CONFIDENCE = 99.5;
     public static final int COMMENTS_SIZE = 20;
     public static final int SCHEDULED_TIME = 1000 * 60 * 60 * 2;

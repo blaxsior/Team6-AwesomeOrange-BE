@@ -74,12 +74,21 @@ public class FcfsManageService {
             fcfsEventWinningInfoRepository.saveAll(winningInfos);
             deleteEventInfo(eventId);
         }
+
+        Set<String> eventIds = stringRedisTemplate.keys("*:eventId");
+        if(eventIds != null && !eventIds.isEmpty()) {
+            for(String eventId : eventIds) {
+                stringRedisTemplate.delete(eventId);
+            }
+        }
         log.info("Winners of all FCFS events were registered in DB");
     }
 
     // 특정 선착순 이벤트의 정보 조회
-    public ResponseFcfsInfoDto getFcfsInfo(Long eventSequence) {
-        String startTime = stringRedisTemplate.opsForValue().get(FcfsUtil.startTimeFormatting(eventSequence.toString()));
+    public ResponseFcfsInfoDto getFcfsInfo(String eventId) {
+        String key = getFcfsKeyFromEventId(eventId);
+
+        String startTime = stringRedisTemplate.opsForValue().get(FcfsUtil.startTimeFormatting(key));
         // 선착순 이벤트가 존재하지 않는 경우
         if (startTime == null) {
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
@@ -91,7 +100,7 @@ public class FcfsManageService {
         // 서버시간 < 이벤트시작시간 < 서버시간+3시간 -> countdown
         // 이벤트시작시간 < 서버시간 < 이벤트시작시간+7시간 -> progress
         // 그 외 -> waiting
-        log.info("Checked FCFS event status: {}", eventSequence);
+        log.info("Checked FCFS event status: {}", key);
         if(nowDateTime.isBefore(eventStartTime) && nowDateTime.plusHours(ConstantUtil.FCFS_COUNTDOWN_HOUR).isAfter(eventStartTime)) {
             return new ResponseFcfsInfoDto(eventStartTime, ConstantUtil.COUNTDOWN);
         } else if(eventStartTime.isBefore(nowDateTime) && eventStartTime.plusHours(ConstantUtil.FCFS_AVAILABLE_HOUR).isAfter(nowDateTime)) {
@@ -103,11 +112,12 @@ public class FcfsManageService {
 
     // 특정 유저가 선착순 이벤트의 참여자인지 조회 (정답을 맞힌 경우 참여자로 간주)
     @Transactional(readOnly = true)
-    public Boolean isParticipated(Long eventSequence, String userId) {
-        if(!fcfsEventRepository.existsById(eventSequence)) {
+    public Boolean isParticipated(String eventId, String userId) {
+        String key = getFcfsKeyFromEventId(eventId);
+        if(!fcfsEventRepository.existsById(Long.parseLong(key))) {
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
-        return Boolean.TRUE.equals(stringRedisTemplate.opsForSet().isMember(FcfsUtil.participantFormatting(eventSequence.toString()), userId));
+        return Boolean.TRUE.equals(stringRedisTemplate.opsForSet().isMember(FcfsUtil.participantFormatting(key), userId));
     }
 
     // 특정 선착순 이벤트의 당첨자 조회 - 어드민에서 사용
@@ -126,6 +136,7 @@ public class FcfsManageService {
 
     private void prepareEventInfo(FcfsEvent event) {
         String key = event.getId().toString();
+        stringRedisTemplate.opsForValue().set(FcfsUtil.eventIdFormatting(event.getEventMetaData().getEventId()), key);
         numberRedisTemplate.opsForValue().set(FcfsUtil.keyFormatting(key), event.getParticipantCount().intValue());
         booleanRedisTemplate.opsForValue().set(FcfsUtil.endFlagFormatting(key), false);
         stringRedisTemplate.opsForValue().set(FcfsUtil.startTimeFormatting(key), event.getStartTime().toString());
@@ -153,5 +164,13 @@ public class FcfsManageService {
         }
         long timeMillis = score.longValue();
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), ZoneId.systemDefault());
+    }
+
+    private String getFcfsKeyFromEventId(String eventId) {
+        String key = stringRedisTemplate.opsForValue().get(eventId);
+        if(key == null) {
+            throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
+        }
+        return key;
     }
 }

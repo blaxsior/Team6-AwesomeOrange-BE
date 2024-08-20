@@ -3,7 +3,6 @@ package hyundai.softeer.orange.event.fcfs;
 import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
-import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
 import hyundai.softeer.orange.event.fcfs.dto.ResponseFcfsInfoDto;
 import hyundai.softeer.orange.event.fcfs.dto.ResponseFcfsWinnerDto;
 import hyundai.softeer.orange.event.fcfs.entity.FcfsEvent;
@@ -51,9 +50,6 @@ class FcfsManageServiceTest {
     private FcfsEventWinningInfoRepository fcfsEventWinningInfoRepository;
 
     @Mock
-    private EventFrameRepository eventFrameRepository;
-
-    @Mock
     private StringRedisTemplate stringRedisTemplate;
 
     @Mock
@@ -65,13 +61,8 @@ class FcfsManageServiceTest {
     @Mock
     private ValueOperations<String, String> valueOperations;
 
-    @Mock
-    private RedisTemplate<String, Integer> numberRedisTemplate;
-
-    @Mock
-    private RedisTemplate<String, Boolean> booleanRedisTemplate;
-
-    Long eventSequence = 1L;
+    String eventId = "HD_240808_001";
+    Long fcfsEventId = 1L;
     EventFrame eventFrame = EventFrame.of("the-new-ioniq5","FcfsManageServiceTest");
     EventUser eventUser = EventUser.of("test", "0101234567", eventFrame, "uuid");
     FcfsEvent fcfsEvent = FcfsEvent.builder()
@@ -82,6 +73,8 @@ class FcfsManageServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get(eventId)).willReturn(fcfsEventId.toString());
     }
 
     @DisplayName("registerFcfsEvents: 오늘의 선착순 이벤트 정보(당첨자 수, 시작 시각)를 배치")
@@ -105,9 +98,9 @@ class FcfsManageServiceTest {
         // given
         given(stringRedisTemplate.keys("*:fcfs")).willReturn(Set.of("1:fcfs"));
         given(stringRedisTemplate.opsForZSet()).willReturn(zSetOperations);
-        given(zSetOperations.range(FcfsUtil.winnerFormatting(eventSequence.toString()), 0, -1))
+        given(zSetOperations.range(FcfsUtil.winnerFormatting(fcfsEventId.toString()), 0, -1))
                 .willReturn(Set.of(eventUser.getUserId()));
-        given(fcfsEventRepository.findById(eventSequence)).willReturn(Optional.of(fcfsEvent));
+        given(fcfsEventRepository.findById(fcfsEventId)).willReturn(Optional.of(fcfsEvent));
         given(eventUserRepository.findAllByUserId(List.of(eventUser.getUserId()))).willReturn(List.of(eventUser));
 
         // when
@@ -115,8 +108,8 @@ class FcfsManageServiceTest {
 
         // then
         verify(stringRedisTemplate).keys("*:fcfs");
-        verify(zSetOperations).range(FcfsUtil.winnerFormatting(eventSequence.toString()), 0, -1);
-        verify(fcfsEventRepository).findById(eventSequence);
+        verify(zSetOperations).range(FcfsUtil.winnerFormatting(fcfsEventId.toString()), 0, -1);
+        verify(fcfsEventRepository).findById(fcfsEventId);
         verify(eventUserRepository).findAllByUserId(List.of(eventUser.getUserId()));
         verify(fcfsEventWinningInfoRepository).saveAll(any());
     }
@@ -125,12 +118,14 @@ class FcfsManageServiceTest {
     @ParameterizedTest
     @ValueSource(ints = {0, 1, 2, 200, 418, 419})
     void getFcfsInfoProgressTest(int minute) {
-        // when
+        // given
         given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get(FcfsUtil.startTimeFormatting(eventSequence.toString())))
+        given(valueOperations.get(eventId)).willReturn(fcfsEventId.toString());
+        given(valueOperations.get(FcfsUtil.startTimeFormatting(fcfsEventId.toString())))
                 .willReturn(LocalDateTime.now().minusMinutes(minute).toString());
 
-        ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventSequence);
+        // when
+        ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventId);
 
         // then
         assertThat(fcfsInfo.getEventStatus()).isEqualTo(ConstantUtil.PROGRESS);
@@ -140,12 +135,13 @@ class FcfsManageServiceTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3, 120, 178, 179})
     void getFcfsInfoCountdownTest(int minute) {
-        // when
+        // given
         given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get(FcfsUtil.startTimeFormatting(eventSequence.toString())))
+        given(valueOperations.get(FcfsUtil.startTimeFormatting(fcfsEventId.toString())))
                 .willReturn(LocalDateTime.now().plusMinutes(minute).toString());
 
-        ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventSequence);
+        // when
+        ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventId);
 
         // then
         assertThat(fcfsInfo.getEventStatus()).isEqualTo(ConstantUtil.COUNTDOWN);
@@ -155,12 +151,13 @@ class FcfsManageServiceTest {
     @ParameterizedTest
     @ValueSource(ints = {420, 421, 422})
     void getFcfsInfoWaitingTest(int minute) {
-        // when
+        // given
         given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get(FcfsUtil.startTimeFormatting(eventSequence.toString())))
+        given(valueOperations.get(FcfsUtil.startTimeFormatting(fcfsEventId.toString())))
                 .willReturn(LocalDateTime.now().minusMinutes(minute).toString());
 
-        ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventSequence);
+        // when
+        ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventId);
 
         // then
         assertThat(fcfsInfo.getEventStatus()).isEqualTo(ConstantUtil.WAITING);
@@ -171,10 +168,10 @@ class FcfsManageServiceTest {
     void getFcfsInfoNotFoundTest() {
         // when
         given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get(FcfsUtil.startTimeFormatting(eventSequence.toString())))
+        given(valueOperations.get(FcfsUtil.startTimeFormatting(fcfsEventId.toString())))
                 .willReturn(null);
 
-        assertThatThrownBy(() -> fcfsManageService.getFcfsInfo(eventSequence))
+        assertThatThrownBy(() -> fcfsManageService.getFcfsInfo(eventId))
                 .isInstanceOf(FcfsEventException.class)
                 .hasMessage(ErrorCode.FCFS_EVENT_NOT_FOUND.getMessage());
     }
@@ -183,12 +180,12 @@ class FcfsManageServiceTest {
     @Test
     void isParticipatedTest() {
         // given
-        given(fcfsEventRepository.existsById(eventSequence)).willReturn(true);
+        given(fcfsEventRepository.existsById(fcfsEventId)).willReturn(true);
         given(stringRedisTemplate.opsForSet()).willReturn(setOperations);
-        given(setOperations.isMember(FcfsUtil.participantFormatting(eventSequence.toString()), eventUser.getUserId())).willReturn(true);
+        given(setOperations.isMember(FcfsUtil.participantFormatting(fcfsEventId.toString()), eventUser.getUserId())).willReturn(true);
 
         // when
-        boolean participated = fcfsManageService.isParticipated(eventSequence, eventUser.getUserId());
+        boolean participated = fcfsManageService.isParticipated(eventId, eventUser.getUserId());
 
         // then
         assertThat(participated).isTrue();
@@ -198,10 +195,10 @@ class FcfsManageServiceTest {
     @Test
     void isParticipatedNotFoundTest() {
         // given
-        given(fcfsEventRepository.existsById(eventSequence)).willReturn(false);
+        given(fcfsEventRepository.existsById(fcfsEventId)).willReturn(false);
 
         // when & then
-        assertThatThrownBy(() -> fcfsManageService.isParticipated(eventSequence, eventUser.getUserId()))
+        assertThatThrownBy(() -> fcfsManageService.isParticipated(eventId, eventUser.getUserId()))
                 .isInstanceOf(FcfsEventException.class)
                 .hasMessage(ErrorCode.FCFS_EVENT_NOT_FOUND.getMessage());
     }
@@ -211,11 +208,11 @@ class FcfsManageServiceTest {
     void getFcfsWinnersInfoTest() {
         // given
         LocalDateTime now = LocalDateTime.now();
-        given(fcfsEventWinningInfoRepository.findByFcfsEventId(eventSequence))
+        given(fcfsEventWinningInfoRepository.findByFcfsEventId(fcfsEventId))
                 .willReturn(List.of(FcfsEventWinningInfo.of(fcfsEvent, eventUser, now)));
 
         // when
-        List<ResponseFcfsWinnerDto> fcfsWinnersInfo = fcfsManageService.getFcfsWinnersInfo(eventSequence);
+        List<ResponseFcfsWinnerDto> fcfsWinnersInfo = fcfsManageService.getFcfsWinnersInfo(fcfsEventId);
 
         // then
         assertThat(fcfsWinnersInfo).hasSize(1);

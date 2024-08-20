@@ -15,9 +15,15 @@ public class FcfsAnswerService {
 
     private final StringRedisTemplate stringRedisTemplate;
 
-    public boolean judgeAnswer(Long eventSequence, String answer) {
+    public boolean judgeAnswer(String eventId, String answer) {
+        // eventId로부터 FCFS의 key를 가져옴
+        String key = stringRedisTemplate.opsForValue().get(FcfsUtil.eventIdFormatting(eventId));
+        if(key == null) {
+            throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
+        }
+
         // 잘못된 이벤트 참여 시간
-        String startTime = stringRedisTemplate.opsForValue().get(FcfsUtil.startTimeFormatting(eventSequence.toString()));
+        String startTime = stringRedisTemplate.opsForValue().get(FcfsUtil.startTimeFormatting(key));
         if(startTime == null) {
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
@@ -26,7 +32,7 @@ public class FcfsAnswerService {
         }
 
         // 정답 비교
-        String correctAnswer = stringRedisTemplate.opsForValue().get(FcfsUtil.answerFormatting(eventSequence.toString()));
+        String correctAnswer = stringRedisTemplate.opsForValue().get(FcfsUtil.answerFormatting(key));
         if (correctAnswer == null) {
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
