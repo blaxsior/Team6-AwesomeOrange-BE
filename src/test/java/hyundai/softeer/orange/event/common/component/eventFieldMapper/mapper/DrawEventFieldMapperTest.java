@@ -1,7 +1,11 @@
 package hyundai.softeer.orange.event.common.component.eventFieldMapper.mapper;
 
+import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.event.common.entity.EventMetadata;
 import hyundai.softeer.orange.event.common.enums.EventType;
+import hyundai.softeer.orange.event.common.exception.EventException;
+import hyundai.softeer.orange.event.draw.enums.DrawEventAction;
+import hyundai.softeer.orange.event.draw.exception.DrawEventException;
 import hyundai.softeer.orange.event.draw.repository.DrawEventMetadataRepository;
 import hyundai.softeer.orange.event.draw.repository.DrawEventScorePolicyRepository;
 import hyundai.softeer.orange.event.dto.EventDto;
@@ -55,7 +59,6 @@ class DrawEventFieldMapperTest extends IntegrationDataJpaTest {
         });
     }
 
-
     @DisplayName("정상적인 EventDto가 들어오면 정상적으로 관계를 설정한다.")
     @Test
     void fetchToEventEntity_setRelationIfEventDtoIsValid() {
@@ -91,12 +94,74 @@ class DrawEventFieldMapperTest extends IntegrationDataJpaTest {
         });
     }
 
-    // TODO: repository 통합 테스트 코드 작성
-//    @DisplayName("규칙에 따라 정상적으로 DrawEvent를 갱신해야 한다.")
-//    @Test
-//    void editEventField_testOpIsValid() {
-//        // 1. DrawEvent
-//        EventMetadata metadata = new EventMetadata();
-//        EventDto dto = new EventDto();
-//    }
+    @DisplayName("validateDrawEventDto: 등수에 중복이 있다면 예외 반환")
+    @Test
+    void validateDrawEventDto_throwIfDuplicatedGrade() {
+        DrawEventDto dto = new DrawEventDto();
+        dto.setMetadata(
+                List.of(
+                        DrawEventMetadataDto.builder().grade(1L).build(),
+                        DrawEventMetadataDto.builder().grade(1L).build()
+                )
+        );
+
+        dto.setPolicies(List.of(
+                DrawEventScorePolicyDto.builder()
+                        .action(DrawEventAction.ParticipateEvent)
+                        .score(1)
+                        .build(),
+                DrawEventScorePolicyDto.builder()
+                        .action(DrawEventAction.WriteComment)
+                        .build()
+        ));
+
+        assertThatThrownBy(() -> {
+            mapper.validateDrawEventDto(dto);
+        }).isInstanceOf(DrawEventException.class)
+        .hasMessage(ErrorCode.DUPLICATED_GRADES.getMessage());
+    }
+
+    @DisplayName("validateDrawEventDto: 액션에 중복이 있다면 예외 반환")
+    @Test
+    void validateDrawEventDto_throwIfDuplicatedAction() {
+        DrawEventDto dto = new DrawEventDto();
+        dto.setMetadata(List.of(DrawEventMetadataDto.builder().grade(1L).build()));
+        dto.setPolicies(List.of(
+                DrawEventScorePolicyDto.builder()
+                        .action(DrawEventAction.ParticipateEvent).score(1)
+                        .build(),
+                DrawEventScorePolicyDto.builder()
+                        .action(DrawEventAction.ParticipateEvent).score(5)
+                        .build()
+        ));
+
+        assertThatThrownBy(() -> {
+            mapper.validateDrawEventDto(dto);
+        }).isInstanceOf(DrawEventException.class)
+                .hasMessage(ErrorCode.DUPLICATED_POLICIES.getMessage());
+    }
+
+    @DisplayName("validateDrawEventDto: validation 성공")
+    @Test
+    void validateDrawEventDto_validateSuccessfully() {
+        DrawEventDto dto = new DrawEventDto();
+        dto.setMetadata(List.of(
+                        DrawEventMetadataDto.builder().grade(1L).build(),
+                        DrawEventMetadataDto.builder().grade(2L).build()
+        ));
+
+        dto.setPolicies(List.of(
+                DrawEventScorePolicyDto.builder()
+                        .action(DrawEventAction.ParticipateEvent)
+                        .score(1)
+                        .build(),
+                DrawEventScorePolicyDto.builder()
+                        .action(DrawEventAction.ParticipateEvent)
+                        .build()
+        ));
+        assertThatThrownBy(() -> {
+            mapper.validateDrawEventDto(null);
+        }).isInstanceOf(EventException.class)
+                .hasMessage(ErrorCode.INVALID_JSON.getMessage());
+    }
 }
