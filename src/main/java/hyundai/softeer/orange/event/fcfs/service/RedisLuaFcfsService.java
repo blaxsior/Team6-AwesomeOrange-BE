@@ -29,6 +29,7 @@ public class RedisLuaFcfsService implements FcfsService {
     public boolean participate(String eventId, String userId) {
         String key = stringRedisTemplate.opsForValue().get(FcfsUtil.eventIdFormatting(eventId));
         if(key == null) {
+            log.error("eventId {} 에 해당되는 key를 Redis 상에서 찾을 수 없음", eventId);
             throw new FcfsEventException(ErrorCode.EVENT_NOT_FOUND);
         }
         Long eventSequence = Long.parseLong(key);
@@ -47,6 +48,7 @@ public class RedisLuaFcfsService implements FcfsService {
         // 잘못된 이벤트 참여 시간
         String startTime = stringRedisTemplate.opsForValue().get(FcfsUtil.startTimeFormatting(key));
         if(startTime == null) {
+            log.error("eventId {}의 시작시간을 Redis 상에서 찾을 수 없음", eventId);
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
 
