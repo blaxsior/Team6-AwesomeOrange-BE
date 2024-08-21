@@ -47,3 +47,4 @@ jobs:
           sudo docker-compose --env-file ../.env down
           sudo docker-compose --env-file ../.env up -d
           rm -f ../.env
+          sudo docker image prune -f
