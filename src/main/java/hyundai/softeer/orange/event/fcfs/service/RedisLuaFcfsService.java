@@ -27,6 +27,7 @@ public class RedisLuaFcfsService implements FcfsService {
 
     @Override
     public boolean participate(String eventId, String userId) {
+        long startTimeMillis = System.currentTimeMillis();
         String key = stringRedisTemplate.opsForValue().get(FcfsUtil.eventIdFormatting(eventId));
         if(key == null) {
             log.error("eventId {} 에 해당되는 key를 Redis 상에서 찾을 수 없음", eventId);
@@ -37,6 +38,7 @@ public class RedisLuaFcfsService implements FcfsService {
         // 이벤트 종료 여부 확인
         if (isEventEnded(key)) {
             stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(key), userId);
+            log.info("이벤트가 이미 종료되어 아웃됨, 총 실행시간 {}", System.currentTimeMillis() - startTimeMillis);
             return false;
         }
 
@@ -56,6 +58,7 @@ public class RedisLuaFcfsService implements FcfsService {
             throw new FcfsEventException(ErrorCode.INVALID_EVENT_TIME);
         }
 
+        long timeMillis = System.currentTimeMillis();
         String script = "local count = redis.call('zcard', KEYS[1]) " +
                 "if count < tonumber(ARGV[1]) then " +
                 "    redis.call('zadd', KEYS[1], ARGV[2], ARGV[3]) " +
@@ -71,17 +74,20 @@ public class RedisLuaFcfsService implements FcfsService {
                 String.valueOf(timestamp),
                 userId
         );
+        log.info("LuaScript 소요시간: {}", System.currentTimeMillis() - timeMillis);
 
         if(result == null || result <= 0) {
             log.info("Event Finished: {},", stringRedisTemplate.opsForZSet().zCard(FcfsUtil.winnerFormatting(key)));
             stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(key), userId);
             endEvent(key);
+            log.info("LuaScript 진입은 했으나 이벤트가 종료되어 아웃 {}", System.currentTimeMillis() - startTimeMillis);
             return false;
         }
 
         stringRedisTemplate.opsForZSet().add(FcfsUtil.winnerFormatting(key), userId, System.currentTimeMillis());
         stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(key), userId);
         log.info("Participating Success: {}, User ID: {}, Timestamp: {}", eventSequence, userId, timestamp);
+        log.info("성공까지 걸린 시간: {}", System.currentTimeMillis() - startTimeMillis);
         return true;
     }
 
