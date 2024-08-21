@@ -55,8 +55,8 @@ class EventKeyGeneratorTest {
         // 2024년 8월 1일 11시 25분
         String today = format.format(testDate);
 
-        String expectedKey1 = "HD" + today + "_001";
-        String expectedKey2 = "HD" + today + "_002";
+        String expectedKey1 = "HD_" + today + "_001";
+        String expectedKey2 = "HD_" + today + "_002";
 
         assertThat(key1).isEqualTo(expectedKey1);
         assertThat(key2).isEqualTo(expectedKey2);
