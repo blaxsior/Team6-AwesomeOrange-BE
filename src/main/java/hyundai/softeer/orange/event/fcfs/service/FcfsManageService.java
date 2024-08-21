@@ -115,6 +115,7 @@ public class FcfsManageService {
     public Boolean isParticipated(String eventId, String userId) {
         String key = getFcfsKeyFromEventId(eventId);
         if(!fcfsEventRepository.existsById(Long.parseLong(key))) {
+            log.error("eventId {} 에 해당되는 선착순 이벤트를 DB에서 찾을 수 없음", eventId);
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
         return Boolean.TRUE.equals(stringRedisTemplate.opsForSet().isMember(FcfsUtil.participantFormatting(key), userId));
@@ -160,6 +161,7 @@ public class FcfsManageService {
 
     private LocalDateTime getTimeFromScore(Double score) {
         if(score == null) {
+            log.error("score 값이 null");
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
         long timeMillis = score.longValue();
@@ -167,8 +169,9 @@ public class FcfsManageService {
     }
 
     private String getFcfsKeyFromEventId(String eventId) {
-        String key = stringRedisTemplate.opsForValue().get(eventId);
+        String key = stringRedisTemplate.opsForValue().get(FcfsUtil.eventIdFormatting(eventId));
         if(key == null) {
+            log.error("eventId {} 에 해당되는 key를 Redis 상에서 찾을 수 없음", eventId);
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
         return key;

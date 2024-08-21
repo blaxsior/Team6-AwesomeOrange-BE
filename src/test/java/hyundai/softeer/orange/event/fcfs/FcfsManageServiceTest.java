@@ -74,7 +74,7 @@ class FcfsManageServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get(eventId)).willReturn(fcfsEventId.toString());
+        given(valueOperations.get(FcfsUtil.eventIdFormatting(eventId))).willReturn(fcfsEventId.toString());
     }
 
     @DisplayName("registerFcfsEvents: 오늘의 선착순 이벤트 정보(당첨자 수, 시작 시각)를 배치")
