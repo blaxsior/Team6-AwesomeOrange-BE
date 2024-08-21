@@ -33,6 +33,6 @@ public class EventKeyGenerator {
         if(number != null && number == 1)
             redisTemplate.expireAt(incKey, DateUtil.localDateTimeToDate(nextDay));
 
-        return String.format("HD%s_%03d", dateInfo, number);
+        return String.format("HD_%s_%03d", dateInfo, number);
     }
 }
