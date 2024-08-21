@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,7 +43,7 @@ public class Comment {
         comment.content = content;
         comment.eventFrame = eventFrame;
         comment.eventUser = eventUser;
-        comment.createdAt = LocalDateTime.now(); // FIXME: 현재 테스트 시 자동 생성되지 않고 있음
+//        comment.createdAt = LocalDateTime.now(); // FIXME: 현재 테스트 시 자동 생성되지 않고 있음
         comment.isPositive = isPositive;
         return comment;
     }
