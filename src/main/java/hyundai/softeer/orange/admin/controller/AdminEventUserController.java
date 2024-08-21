@@ -1,12 +1,9 @@
 package hyundai.softeer.orange.admin.controller;
 
-import hyundai.softeer.orange.core.auth.Auth;
-import hyundai.softeer.orange.core.auth.AuthRole;
-import hyundai.softeer.orange.core.auth.list.AdminAuthRequirement;
+import hyundai.softeer.orange.core.auth.list.AdminAuth;
 import hyundai.softeer.orange.eventuser.dto.EventUserPageDto;
 import hyundai.softeer.orange.eventuser.service.EventUserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
@@ -21,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/event-users")
 @RestController
-@AdminAuthRequirement @Auth({AuthRole.admin})
+@AdminAuth
 public class AdminEventUserController {
     private final EventUserService eventUserService;
 

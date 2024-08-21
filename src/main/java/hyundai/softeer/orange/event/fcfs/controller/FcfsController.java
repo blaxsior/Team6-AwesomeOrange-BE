@@ -1,9 +1,7 @@
 package hyundai.softeer.orange.event.fcfs.controller;
 
 import hyundai.softeer.orange.common.ErrorResponse;
-import hyundai.softeer.orange.core.auth.Auth;
-import hyundai.softeer.orange.core.auth.AuthRole;
-import hyundai.softeer.orange.core.auth.list.EventUserAuthRequirement;
+import hyundai.softeer.orange.core.auth.list.EventUserAuth;
 import hyundai.softeer.orange.event.fcfs.dto.RequestAnswerDto;
 import hyundai.softeer.orange.event.fcfs.dto.ResponseFcfsInfoDto;
 import hyundai.softeer.orange.event.fcfs.dto.ResponseFcfsResultDto;
@@ -32,7 +30,7 @@ public class FcfsController {
     private final FcfsAnswerService fcfsAnswerService;
     private final FcfsManageService fcfsManageService;
 
-    @EventUserAuthRequirement @Auth(AuthRole.event_user)
+    @EventUserAuth
     @PostMapping("/{eventId}")
     @Operation(summary = "선착순 이벤트 참여", description = "선착순 이벤트에 참여한 결과(boolean)를 반환한다.", responses = {
             @ApiResponse(responseCode = "200", description = "선착순 이벤트 당첨 성공 혹은 실패",
@@ -57,7 +55,7 @@ public class FcfsController {
         return ResponseEntity.ok(fcfsManageService.getFcfsInfo(eventId));
     }
 
-    @EventUserAuthRequirement @Auth(AuthRole.event_user)
+    @EventUserAuth
     @GetMapping("/{eventId}/participated")
     @Operation(summary = "선착순 이벤트 참여 여부 조회", description = "정답을 맞혀서 선착순 이벤트에 참여했는지 여부를 조회한다. (당첨은 별도)", responses = {
             @ApiResponse(responseCode = "200", description = "선착순 이벤트의 정답을 맞혀서 참여했는지에 대한 결과",
