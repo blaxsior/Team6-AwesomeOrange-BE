@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class FcfsController {
 
+    private static final Logger log = LoggerFactory.getLogger(FcfsController.class);
     private final FcfsService fcfsService;
     private final FcfsAnswerService fcfsAnswerService;
     private final FcfsManageService fcfsManageService;
@@ -39,8 +42,15 @@ public class FcfsController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<ResponseFcfsResultDto> participate(@Parameter(hidden = true) @EventUserAnnotation EventUserInfo userInfo, @PathVariable String eventId, @RequestBody RequestAnswerDto dto) {
+        // 정답 판정 시간 측정
+        long timeMillis = System.currentTimeMillis();
         boolean answerResult = fcfsAnswerService.judgeAnswer(eventId, dto.getAnswer());
+        log.info("judgeAnswer: {}ms", System.currentTimeMillis() - timeMillis);
+
+        // 이벤트 참여 시간 측정
+        long timeMillis2 = System.currentTimeMillis();
         boolean isWin = answerResult && fcfsService.participate(eventId, userInfo.getUserId());
+        log.info("participate: {}ms", System.currentTimeMillis() - timeMillis2);
         return ResponseEntity.ok(new ResponseFcfsResultDto(answerResult, isWin));
     }
 
