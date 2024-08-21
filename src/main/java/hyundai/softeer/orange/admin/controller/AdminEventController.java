@@ -137,8 +137,9 @@ public class AdminEventController {
     }
 
     @GetMapping("/temp")
-    @Operation(summary = "임시 저장 된 이벤트 불러오기", description = "관리자가 이벤트 프레임을 새롭게 등록한다", responses = {
-            @ApiResponse(responseCode = "200", description = "이벤트 불러오기 성공"),
+    @Operation(summary = "임시 저장 된 이벤트 불러오기", description = "관리자가 임시 저장된 개인 이벤트를 불러온다", responses = {
+            @ApiResponse(responseCode = "200", description = "임시 저장 이벤트 불러오기 성공"),
+            @ApiResponse(responseCode = "404", description = "임시 저장된 이벤트가 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<EventDto> getTempEvent(@Parameter(hidden = true) @AdminAnnotation AdminDto admin) {
         Long adminId = admin.getId();

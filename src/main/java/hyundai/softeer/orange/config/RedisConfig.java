@@ -2,7 +2,7 @@ package hyundai.softeer.orange.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hyundai.softeer.orange.comment.dto.ResponseCommentsDto;
-import hyundai.softeer.orange.core.ParseUtil;
+import hyundai.softeer.orange.core.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -27,8 +27,8 @@ public class RedisConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
-    public ParseUtil parseUtil(ObjectMapper objectMapper) {
-        return new ParseUtil(objectMapper);
+    public JsonUtil jsonUtil(ObjectMapper objectMapper) {
+        return new JsonUtil(objectMapper);
     }
 
     @Bean
@@ -53,7 +53,7 @@ public class RedisConfig {
         template.setConnectionFactory(redisConnectionFactory);
 
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
         return template;
     }
 

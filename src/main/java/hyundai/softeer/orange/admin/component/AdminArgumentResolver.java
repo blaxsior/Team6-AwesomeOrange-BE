@@ -28,7 +28,7 @@ public class AdminArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         boolean hasAnnotation = parameter.hasParameterAnnotation(AdminAnnotation.class);
-        boolean hasType = Admin.class.isAssignableFrom(parameter.getParameterType());
+        boolean hasType = AdminDto.class.isAssignableFrom(parameter.getParameterType());
         return hasAnnotation && hasType;
     }
 

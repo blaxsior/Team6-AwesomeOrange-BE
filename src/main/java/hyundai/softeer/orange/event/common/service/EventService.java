@@ -2,7 +2,7 @@ package hyundai.softeer.orange.event.common.service;
 
 import hyundai.softeer.orange.admin.controller.EventFrameIdListDto;
 import hyundai.softeer.orange.common.ErrorCode;
-import hyundai.softeer.orange.core.ParseUtil;
+import hyundai.softeer.orange.core.JsonUtil;
 import hyundai.softeer.orange.event.common.EventConst;
 import hyundai.softeer.orange.event.common.component.eventFieldMapper.EventFieldMapperMatcher;
 import hyundai.softeer.orange.event.common.component.eventFieldMapper.mapper.EventFieldMapper;
@@ -27,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +46,7 @@ public class EventService {
     private final EventFieldMapperMatcher mapperMatcher;
     private final EventKeyGenerator keyGenerator;
     private final RedisTemplate<String, Object> eventDtoRedisTemplate;
-    private final ParseUtil parseUtil;
+    private final JsonUtil jsonUtil;
 
     /**
      * 이벤트를 생성한다.
@@ -103,13 +104,11 @@ public class EventService {
      */
     public EventDto getTempEvent(Long adminId) {
         String key = EventConst.ADMIN_TEMP(adminId);
-        String dto = (String) eventDtoRedisTemplate.opsForValue().get(key);
+        Object json = eventDtoRedisTemplate.opsForValue().get(key);
+        if(json == null) throw new EventException(ErrorCode.TEMP_EVENT_NOT_FOUND);
 
         log.info("Fetched temp event by {}", adminId);
-        EventDto eventDto = parseUtil.parse(dto, EventDto.class);
-        if(eventDto == null) throw new EventException(ErrorCode.TEMP_EVENT_NOT_FOUND);
-
-        return eventDto;
+        return jsonUtil.parseObj(json, EventDto.class);
     }
 
     /**
