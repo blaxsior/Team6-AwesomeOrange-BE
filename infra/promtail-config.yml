@@ -14,4 +14,5 @@ scrape_configs:
         - localhost
         labels:
           job: springboot
+          host: ${HOSTNAME} # hostname을 통해 로그 모니터링 시 각 인스턴스 식별
           __path__: /var/log/spring-boot/*.log
