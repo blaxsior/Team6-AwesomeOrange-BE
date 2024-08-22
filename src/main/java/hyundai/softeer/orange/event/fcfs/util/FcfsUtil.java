@@ -8,38 +8,36 @@ public class FcfsUtil {
 
     private static final String FCFS_PREFIX = "fcfs:";
 
-    // 참여할 선착순 이벤트의 식별자를 간접적으로 보관하는 tag, key는 선착순 이벤트와 연결된 eventMetadata의 eventId이다.
     public static String eventIdFormatting(String key) {
-        return FCFS_PREFIX + key + ":eventId";
+        return formatKey(key, "eventId");
     }
 
-    // 선착순 이벤트 tag
     public static String keyFormatting(String key) {
-        return FCFS_PREFIX + key + ":count";
+        return formatKey(key, "count");
     }
 
-    // 선착순 이벤트 시작 시각 tag
     public static String startTimeFormatting(String key) {
-        return FCFS_PREFIX + key + ":start";
+        return formatKey(key, "start");
     }
 
-    // 선착순 이벤트 마감 여부 tag
     public static String endFlagFormatting(String key) {
-        return FCFS_PREFIX + key + ":end";
+        return formatKey(key, "end");
     }
 
-    // 선착순 이벤트 당첨자 tag
     public static String winnerFormatting(String key) {
-        return FCFS_PREFIX + key + ":winner";
+        return formatKey(key, "winner");
     }
 
-    // 선착순 이벤트 참여자 tag
     public static String participantFormatting(String key) {
-        return FCFS_PREFIX + key + ":participant";
+        return formatKey(key, "participant");
     }
 
-    // 선착순 이벤트 정답 tag
     public static String answerFormatting(String key) {
-        return FCFS_PREFIX + key + ":answer";
+        return formatKey(key, "answer");
+    }
+
+    // 공통 로직을 처리하는 메서드
+    private static String formatKey(String key, String suffix) {
+        return FCFS_PREFIX + key + ":" + suffix;
     }
 }
