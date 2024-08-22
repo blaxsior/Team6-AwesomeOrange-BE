@@ -62,7 +62,7 @@ public class FcfsManageService {
             Set<String> userIds = stringRedisTemplate.opsForZSet().range(FcfsUtil.winnerFormatting(fcfsEventId), 0, -1);
             if(userIds == null || userIds.isEmpty()) {
                 log.info("No winners in FCFS Event {}", fcfsEventId);
-                return;
+                continue;
             }
 
             FcfsEvent event = fcfsEventRepository.findById(Long.parseLong(fcfsEventId))
