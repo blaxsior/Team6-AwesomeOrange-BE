@@ -82,7 +82,7 @@ public class EventMetadata {
     private Long eventFrameId;
 
     // 원래는 one-to-one 관계이지만, JPA 동작에 의해 강제로 EAGER FETCH로 처리돰 -> one-to-many 로 관리
-    @OneToMany(mappedBy = "eventMetadata", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "eventMetadata", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, fetch = FetchType.LAZY)
     private final List<DrawEvent> drawEventList = new ArrayList<>();
 
     public void updateDrawEvent(DrawEvent drawEvent) {
@@ -94,7 +94,7 @@ public class EventMetadata {
         return drawEventList.get(0);
     }
 
-    @OneToMany(mappedBy = "eventMetaData", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "eventMetaData", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, fetch = FetchType.LAZY)
     private final List<FcfsEvent> fcfsEventList = new ArrayList<>();
 
     public void addFcfsEvents(List<FcfsEvent> fcfsEventList) {

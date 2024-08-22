@@ -63,7 +63,7 @@ public class AdminEventController {
     @PostMapping
     @Operation(summary = "이벤트 생성", description = "관리자가 이벤트를 새롭게 등록한다", responses = {
             @ApiResponse(responseCode = "201", description = "이벤트 생성 성공"),
-            @ApiResponse(responseCode = "4xx", description = "유저 측 실수로 이벤트 생성 실패")
+            @ApiResponse(responseCode = "4xx", description = "유저 측 실수로 이벤트 생성 실패",content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<Void> createEvent(@Validated @RequestBody EventDto eventDto,
                                             @Parameter(hidden = true) @AdminAnnotation AdminDto admin
@@ -80,15 +80,33 @@ public class AdminEventController {
      * @return 해당 이벤트에 대한 정보
      */
     @GetMapping("{eventId}")
-    @Operation(summary = "이벤트 데이터 획득", description = "이벤트 초기 정보를 받는다. 상세 정보, 이벤트 수정 모두에서 사용 가능", responses = {
+    @Operation(summary = "이벤트 획득", description = "이벤트 상세 정보를 받는다. 상세 정보, 이벤트 수정 모두에서 사용 가능", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 정보를 정상적으로 받음"),
-            @ApiResponse(responseCode = "404", description = "대응되는 이벤트가 존재하지 않음")
+            @ApiResponse(responseCode = "404", description = "대응되는 이벤트가 존재하지 않음",content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<EventDto> getEventData(
+    public ResponseEntity<EventDto> getEvent(
             @PathVariable("eventId") String eventId
     ) {
         EventDto eventInfo = eventService.getEventInfo(eventId);
         return ResponseEntity.ok(eventInfo);
+    }
+
+    /**
+     *
+     * @param eventId 이벤트 ID. HD000000~로 시작하는 그것
+     * @return 해당 이벤트에 대한 정보
+     */
+    @DeleteMapping("{eventId}")
+    @Operation(summary = "이벤트 제거", description = "이벤트를 제거한다. 시작 전의 이벤트만 삭제할 수 있다.", responses = {
+            @ApiResponse(responseCode = "200", description = "이벤트를 정상적으로 삭제"),
+            @ApiResponse(responseCode = "404", description = "이벤트를 찾을 수 없음",content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "400", description = "이벤트가 진행 중이거나 종료되어 삭제할 수 없음",content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<Void> deleteEvent(
+            @PathVariable("eventId") String eventId
+    ) {
+        eventService.deleteEvent(eventId);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -97,7 +115,7 @@ public class AdminEventController {
     @PostMapping("/edit")
     @Operation(summary = "이벤트 수정", description = "관리자가 이벤트를 수정한다", responses = {
             @ApiResponse(responseCode = "200", description = "이벤트 생성 성공"),
-            @ApiResponse(responseCode = "4xx", description = "유저 측 실수로 이벤트 생성 실패")
+            @ApiResponse(responseCode = "4xx", description = "유저 측 실수로 이벤트 생성 실패",content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<Void> editEvent(
             @Validated({EventEditGroup.class}) @RequestBody EventDto eventDto) {
@@ -111,7 +129,7 @@ public class AdminEventController {
     @PostMapping("/frame")
     @Operation(summary = "이벤트 프레임 생성", description = "관리자가 이벤트 프레임을 새롭게 등록한다", responses = {
             @ApiResponse(responseCode = "201", description = "이벤트 프레임 생성 성공"),
-            @ApiResponse(responseCode = "4xx", description = "이벤트 프레임 생성 실패")
+            @ApiResponse(responseCode = "4xx", description = "이벤트 프레임 생성 실패" ,content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<Void> createEventFrame(@Valid @RequestBody EventFrameCreateRequest req) {
         eventService.createEventFrame(req.getFrameId(), req.getName());

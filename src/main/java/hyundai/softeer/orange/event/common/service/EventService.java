@@ -31,6 +31,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -207,6 +208,28 @@ public class EventService {
         );
 
         return BriefEventPageDto.from(eventPage);
+    }
+
+    /**
+     * 이벤트를 제거한다. 존재하지 않거나, 시작된 이벤트는 제거할 수 없다.
+     * @param eventId 이벤트의 ID 값
+     */
+    @Transactional
+    public void deleteEvent(String eventId) {
+        EventMetadata metadata = emRepository.findFirstByEventId(eventId)
+                .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
+
+        Instant startTime = metadata.getStartTime();
+        Instant endTime = metadata.getEndTime();
+        Instant now = Instant.now();
+
+        if(startTime.isBefore(now)) {
+            // 이벤트 중
+            if (endTime.isAfter(now)) throw new EventException(ErrorCode.CANNOT_DELETE_EVENT_RUNNING);
+            else throw new EventException(ErrorCode.CANNOT_DELETE_EVENT_ENDED);
+        }
+
+        emRepository.delete(metadata);
     }
 
     private Set<EventType> parseTypes(String typeQuery) {
