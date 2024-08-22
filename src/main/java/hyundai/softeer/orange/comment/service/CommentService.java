@@ -27,9 +27,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -64,8 +62,8 @@ public class CommentService {
 
         // 오늘의 시작과 끝 시각 계산
         LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+        Instant startOfDay = today.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+        Instant endOfDay = today.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant();
 
         // 오늘 유저가 인터렉션에 참여하지 않았다면 예외처리
         boolean participated = participationInfoRepository.existsByEventUserAndDrawEventAndDateBetween(eventUser, drawEvent, startOfDay, endOfDay);
@@ -77,7 +75,6 @@ public class CommentService {
         }
 
         boolean isPositive = commentValidator.analyzeComment(dto.getContent());
-
         Comment comment = Comment.of(dto.getContent(), eventFrame, eventUser, isPositive);
         commentRepository.save(comment);
         log.info("created comment: {}", comment.getId());

@@ -32,6 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,7 +88,7 @@ class CommentServiceTest {
                 .id(1L)
                 .content("test")
                 .userName("test")
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now().atZone(ZoneOffset.UTC).toInstant())
                 .build();
         given(commentRepository.findRandomPositiveComments(anyLong(), eq(pageable)))
                 .willReturn(List.of(responseCommentDto));
