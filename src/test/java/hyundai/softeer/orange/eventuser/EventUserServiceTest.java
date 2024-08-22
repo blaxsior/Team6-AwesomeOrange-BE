@@ -12,6 +12,7 @@ import hyundai.softeer.orange.eventuser.entity.EventUser;
 import hyundai.softeer.orange.eventuser.exception.EventUserException;
 import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import hyundai.softeer.orange.eventuser.service.EventUserService;
+import hyundai.softeer.orange.eventuser.service.SmsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,11 +31,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 
 class EventUserServiceTest {
 
     @InjectMocks
     private EventUserService eventUserService;
+
+    @Mock
+    private SmsService smsService;
 
     @Mock
     private EventUserRepository eventUserRepository;
@@ -92,6 +98,53 @@ class EventUserServiceTest {
         assertThatThrownBy(() -> eventUserService.login(requestUserDto))
                 .isInstanceOf(EventUserException.class)
                 .hasMessage(ErrorCode.EVENT_USER_NOT_FOUND.getMessage());
+    }
+
+    @DisplayName("sendAuthCode: 유저가 인증번호를 전송한다.")
+    @Test
+    void sendAuthCodeTest() {
+        // given
+        given(eventFrameRepository.existsByFrameId(eventFrameId))
+                .willReturn(true);
+        given(eventUserRepository.existsByPhoneNumberAndEventFrameFrameId(requestUserDto.getPhoneNumber(), eventFrameId))
+                .willReturn(false);
+        doNothing().when(smsService).sendSms(requestUserDto);
+
+        // when
+        eventUserService.sendAuthCode(requestUserDto, eventFrameId);
+
+        // then
+        verify(eventFrameRepository).existsByFrameId(eventFrameId);
+        verify(eventUserRepository).existsByPhoneNumberAndEventFrameFrameId(requestUserDto.getPhoneNumber(), eventFrameId);
+        verify(smsService).sendSms(requestUserDto);
+    }
+
+    @DisplayName("sendAuthCode: 유저가 인증번호를 전송하려 할 때 이벤트 프레임을 찾을 수 없으면 예외가 발생한다.")
+    @Test
+    void sendAuthCodeNotFoundTest() {
+        // given
+        given(eventFrameRepository.existsByFrameId(eventFrameId))
+                .willReturn(false);
+
+        // when & then
+        assertThatThrownBy(() -> eventUserService.sendAuthCode(requestUserDto, eventFrameId))
+                .isInstanceOf(EventUserException.class)
+                .hasMessage(ErrorCode.EVENT_FRAME_NOT_FOUND.getMessage());
+    }
+
+    @DisplayName("sendAuthCode: 유저가 인증번호를 전송하려 할 때 이미 가입되었음이 확인될 경우 예외가 발생한다.")
+    @Test
+    void sendAuthCodeConflictTest() {
+        // given
+        given(eventFrameRepository.existsByFrameId(eventFrameId))
+                .willReturn(true);
+        given(eventUserRepository.existsByPhoneNumberAndEventFrameFrameId(requestUserDto.getPhoneNumber(), eventFrameId))   // 이미 가입된 유저
+                .willReturn(true);
+
+        // when & then
+        assertThatThrownBy(() -> eventUserService.sendAuthCode(requestUserDto, eventFrameId))
+                .isInstanceOf(EventUserException.class)
+                .hasMessage(ErrorCode.USER_ALREADY_EXISTS.getMessage());
     }
 
     @DisplayName("checkAuthCode: 유저가 전송한 인증번호를 Redis 상에서 확인하고 성공한다.")
