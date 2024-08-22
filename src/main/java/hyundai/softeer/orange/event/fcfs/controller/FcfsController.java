@@ -42,15 +42,8 @@ public class FcfsController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<ResponseFcfsResultDto> participate(@Parameter(hidden = true) @EventUserAnnotation EventUserInfo userInfo, @PathVariable String eventId, @RequestBody RequestAnswerDto dto) {
-        // 정답 판정 시간 측정
-        long timeMillis = System.currentTimeMillis();
         boolean answerResult = fcfsAnswerService.judgeAnswer(eventId, dto.getAnswer());
-        log.info("judgeAnswer: {}ms", System.currentTimeMillis() - timeMillis);
-
-        // 이벤트 참여 시간 측정
-        long timeMillis2 = System.currentTimeMillis();
         boolean isWin = answerResult && fcfsService.participate(eventId, userInfo.getUserId());
-        log.info("participate: {}ms", System.currentTimeMillis() - timeMillis2);
         return ResponseEntity.ok(new ResponseFcfsResultDto(answerResult, isWin));
     }
 
