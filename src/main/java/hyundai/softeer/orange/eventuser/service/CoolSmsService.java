@@ -1,17 +1,15 @@
 package hyundai.softeer.orange.eventuser.service;
 
-import hyundai.softeer.orange.common.ErrorCode;
 import hyundai.softeer.orange.common.util.ConstantUtil;
 import hyundai.softeer.orange.eventuser.config.CoolSmsApiConfig;
 import hyundai.softeer.orange.eventuser.dto.RequestUserDto;
-import hyundai.softeer.orange.eventuser.exception.EventUserException;
-import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.nurigo.sdk.NurigoApp;
 import net.nurigo.sdk.message.model.Message;
 import net.nurigo.sdk.message.request.SingleMessageSendingRequest;
 import net.nurigo.sdk.message.response.SingleMessageSentResponse;
 import net.nurigo.sdk.message.service.DefaultMessageService;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,28 +18,23 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
+@Primary
 @Service
 public class CoolSmsService implements SmsService {
 
     private final DefaultMessageService defaultMessageService;
     private final CoolSmsApiConfig coolSmsApiConfig;
     private final StringRedisTemplate stringRedisTemplate;
-    private final EventUserRepository eventUserRepository;
 
-    public CoolSmsService(CoolSmsApiConfig coolSmsApiConfig, StringRedisTemplate stringRedisTemplate, EventUserRepository eventUserRepository) {
+    public CoolSmsService(CoolSmsApiConfig coolSmsApiConfig, StringRedisTemplate stringRedisTemplate) {
         this.defaultMessageService = NurigoApp.INSTANCE.initialize(coolSmsApiConfig.getApiKey(), coolSmsApiConfig.getApiSecret(), coolSmsApiConfig.getUrl());
         this.coolSmsApiConfig = coolSmsApiConfig;
         this.stringRedisTemplate = stringRedisTemplate;
-        this.eventUserRepository = eventUserRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
     public void sendSms(RequestUserDto dto) {
-        if(eventUserRepository.existsByPhoneNumber(dto.getPhoneNumber())) {
-            throw new EventUserException(ErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
-        }
-
         String authCode = generateAuthCode();
         Message message = new Message();
         message.setFrom(coolSmsApiConfig.getFrom());

@@ -17,6 +17,8 @@ public interface EventUserRepository extends JpaRepository<EventUser, Long>, Cus
 
     Optional<EventUser> findByUserNameAndPhoneNumber(String userName, String phoneNumber);
 
+    boolean existsByPhoneNumberAndEventFrameFrameId(String phoneNumber, String frameId);
+
     Optional<EventUser> findByUserId(String userId);
 
     @Query("SELECT eu FROM EventUser eu WHERE eu.userId IN :userIds")

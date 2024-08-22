@@ -29,8 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -118,13 +117,45 @@ class EventUserControllerTest {
     void sendAuthCodeTest() throws Exception {
         // given
         String requestBody = mapper.writeValueAsString(requestUserDto);
-        doNothing().when(smsService).sendSms(any(RequestUserDto.class));
+        doNothing().when(eventUserService).sendAuthCode(any(RequestUserDto.class), anyString());
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/send-auth")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/send-auth/" + eventFrameId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andExpect(status().isOk());
+    }
+
+    @DisplayName("sendAuthCode: 인증번호 전송 API를 호출할 때 이벤트 프레임이 존재하지 않아 예외가 발생한다.")
+    @Test
+    void sendAuthCode404Test() throws Exception {
+        // given
+        String requestBody = mapper.writeValueAsString(requestUserDto);
+        String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.EVENT_FRAME_NOT_FOUND));
+        doThrow(new EventUserException(ErrorCode.EVENT_FRAME_NOT_FOUND)).when(eventUserService).sendAuthCode(any(RequestUserDto.class), anyString());
+
+        // when & then
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/send-auth/" + eventFrameId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isNotFound())
+                .andExpect(content().json(responseBody));
+    }
+
+    @DisplayName("sendAuthCode: 인증번호 전송 API를 호출할 때 이미 가입된 유저로 간주해 예외가 발생한다.")
+    @Test
+    void sendAuthCode409Test() throws Exception {
+        // given
+        String requestBody = mapper.writeValueAsString(requestUserDto);
+        String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.USER_ALREADY_EXISTS));
+        doThrow(new EventUserException(ErrorCode.USER_ALREADY_EXISTS)).when(eventUserService).sendAuthCode(any(RequestUserDto.class), anyString());
+
+        // when & then
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/send-auth/" + eventFrameId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isConflict())
+                .andExpect(content().json(responseBody));
     }
 
     @DisplayName("checkAuthCode: 인증번호 검증 API를 호출한다.")
