@@ -89,12 +89,14 @@ public class FcfsEventFieldMapper implements EventFieldMapper {
     @Override
     public void editEventField(EventMetadata metadata, EventDto eventDto) {
         List<FcfsEvent> fcfsEvents = metadata.getFcfsEventList();
-        // 집합을 이용해서 created / updated / deleted 를 구분
-        Map<Boolean, Map<Long, FcfsEventDto>> fcfsAllDtos = eventDto.getFcfs().stream()
-                .collect(Collectors.partitioningBy(it -> it.getId() == null, Collectors.toMap(FcfsEventDto::getId, it-> it)));
         // true이면 created / false이면 updated
-        Map<Long, FcfsEventDto> createdDtos = fcfsAllDtos.get(true);
-        Map<Long, FcfsEventDto> updatedDtos = fcfsAllDtos.get(false);
+        List<FcfsEventDto> createdDtos = new ArrayList<>();
+        Map<Long, FcfsEventDto> updatedDtos = new HashMap<>();
+
+        eventDto.getFcfs().forEach(it -> {
+            if(it.getId() == null) createdDtos.add(it);
+            else updatedDtos.put(it.getId(), it);
+        });
 
         // 저장되는 데이터는 모두 deleted에 존재
         validateEventTimes(eventDto.getFcfs(), metadata.getStartTime(), metadata.getEndTime());
@@ -121,7 +123,7 @@ public class FcfsEventFieldMapper implements EventFieldMapper {
         fcfsEvents.removeIf(it -> deleted.contains(it.getId()));
 
         // 객체 생성 처리
-        for(FcfsEventDto createdDto : createdDtos.values()) {
+        for(FcfsEventDto createdDto : createdDtos) {
             FcfsEvent newEvent = FcfsEvent.of(
                     createdDto.getStartTime(),
                     createdDto.getEndTime(),

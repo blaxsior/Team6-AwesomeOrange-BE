@@ -1,6 +1,6 @@
+SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE url;
 TRUNCATE TABLE admin_user;
-
 TRUNCATE TABLE draw_event_score_policy;
 TRUNCATE TABLE draw_event_metadata;
 TRUNCATE TABLE draw_event_winning_info;

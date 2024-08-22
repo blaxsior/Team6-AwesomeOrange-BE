@@ -107,11 +107,13 @@ public class DrawEventFieldMapper implements EventFieldMapper {
     private void editDrawEventMetadata(DrawEvent drawEvent, DrawEventDto drawEventDto) {
         List<DrawEventMetadata> deMetadata = drawEvent.getMetadataList();
 
-        Map<Boolean, Map<Long, DrawEventMetadataDto>> deMetadataDtos = drawEventDto.getMetadata().stream()
-                .collect(Collectors.partitioningBy(it -> it.getId() == null, Collectors.toMap(DrawEventMetadataDto::getId, it-> it)));
-        // true이면 created / false이면 updated
-        Map<Long, DrawEventMetadataDto> createdDtos = deMetadataDtos.get(true);
-        Map<Long, DrawEventMetadataDto> updatedDtos = deMetadataDtos.get(false);
+        List<DrawEventMetadataDto> createdDtos = new ArrayList<>();
+        Map<Long, DrawEventMetadataDto> updatedDtos = new HashMap<>();
+
+        drawEventDto.getMetadata().forEach(it -> {
+            if(it.getId() == null) createdDtos.add(it);
+            else updatedDtos.put(it.getId(), it);
+        });
 
         Set<Long> updated = new HashSet<>(updatedDtos.keySet());
         Set<Long> deleted = deMetadata.stream().map(DrawEventMetadata::getId).collect(Collectors.toSet());
@@ -135,7 +137,7 @@ public class DrawEventFieldMapper implements EventFieldMapper {
         deMetadata.removeIf(it -> deleted.contains(it.getId()));
 
         // 객체 생성 처리
-        for(DrawEventMetadataDto createdDto : createdDtos.values()) {
+        for(DrawEventMetadataDto createdDto : createdDtos) {
             DrawEventMetadata drawEventMetadata = DrawEventMetadata.of(
                     createdDto.getGrade(),
                     createdDto.getCount(),
@@ -149,11 +151,13 @@ public class DrawEventFieldMapper implements EventFieldMapper {
     private void editDrawEventScorePolicy(DrawEvent drawEvent, DrawEventDto drawEventDto) {
         List<DrawEventScorePolicy> policies = drawEvent.getPolicyList();
 
-        Map<Boolean, Map<Long, DrawEventScorePolicyDto>> deMetadataDtos = drawEventDto.getPolicies().stream()
-                .collect(Collectors.partitioningBy(it -> it.getId() == null, Collectors.toMap(DrawEventScorePolicyDto::getId, it-> it)));
-        // true이면 created / false이면 updated
-        Map<Long, DrawEventScorePolicyDto> createdDtos = deMetadataDtos.get(true);
-        Map<Long, DrawEventScorePolicyDto> updatedDtos = deMetadataDtos.get(false);
+        List<DrawEventScorePolicyDto> createdDtos = new ArrayList<>();
+        Map<Long, DrawEventScorePolicyDto> updatedDtos = new HashMap<>();
+
+        drawEventDto.getPolicies().forEach(it -> {
+            if(it.getId() == null) createdDtos.add(it);
+            else updatedDtos.put(it.getId(), it);
+        });
 
         Set<Long> updated = new HashSet<>(updatedDtos.keySet());
         Set<Long> deleted = policies.stream().map(DrawEventScorePolicy::getId).collect(Collectors.toSet());
@@ -176,7 +180,7 @@ public class DrawEventFieldMapper implements EventFieldMapper {
         policies.removeIf(it -> deleted.contains(it.getId()));
 
         // 객체 생성 처리
-        for(DrawEventScorePolicyDto createdDto : createdDtos.values()) {
+        for(DrawEventScorePolicyDto createdDto : createdDtos) {
             DrawEventScorePolicy policy = DrawEventScorePolicy.of(
                     createdDto.getAction(),
                     createdDto.getScore(),
