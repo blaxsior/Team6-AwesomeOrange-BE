@@ -11,7 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -47,13 +47,13 @@ public class EventDto {
      * 이벤트 시작 시간
      */
     @NotNull
-    private LocalDateTime startTime;
+    private Instant startTime;
 
     /**
      * 이벤트 종료 시간
      */
     @NotNull
-    private LocalDateTime endTime;
+    private Instant endTime;
 
     /**
      * 이벤트 페이지의 url

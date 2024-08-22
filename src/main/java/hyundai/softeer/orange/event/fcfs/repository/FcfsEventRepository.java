@@ -7,14 +7,14 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface FcfsEventRepository extends JpaRepository<FcfsEvent, Long> {
 
-    List<FcfsEvent> findByStartTimeBetween(LocalDateTime startTime, LocalDateTime endTime);
+    List<FcfsEvent> findByStartTimeBetween(Instant startTime, Instant endTime);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select e from FcfsEvent e left join fetch e.infos where e.id = :id")

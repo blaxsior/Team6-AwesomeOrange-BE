@@ -17,9 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.List;
 
 /**
@@ -59,7 +57,7 @@ public class EventParticipationService {
      */
     @Transactional
     public void participateDaily(String eventId, String eventUserId) {
-        participateAtDate(eventId, eventUserId, LocalDateTime.now());
+        participateAtDate(eventId, eventUserId, Instant.now());
     }
 
     /**
@@ -68,7 +66,7 @@ public class EventParticipationService {
      * @param eventUserId 이벤트 유저의 id
      * @param date 이벤트에 참여하는 날짜.
      */
-    protected void participateAtDate(String eventId, String eventUserId, LocalDateTime date) {
+    protected void participateAtDate(String eventId, String eventUserId, Instant date) {
         // 이벤트가 존재하는지 검사
         EventMetadata event = emRepository.findFirstByEventId(eventId)
                 .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
@@ -83,15 +81,15 @@ public class EventParticipationService {
 
         if(!eventUser.getEventFrameId().equals(event.getEventFrameId())) throw new EventException(ErrorCode.CANNOT_PARTICIPATE);
 
-        LocalDate today = date.toLocalDate();
+        LocalDate today = LocalDate.ofInstant(date, ZoneId.systemDefault());
 
         // 이벤트 기간 안에 있는지 검사
         if(event.getStartTime().isAfter(date) || event.getEndTime().isBefore(date))
             throw new EventException(ErrorCode.INVALID_EVENT_TIME);
 
         // 오늘 시작 / 끝 시간
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+        Instant startOfDay = today.atStartOfDay().atZone(ZoneOffset.systemDefault()).toInstant();
+        Instant endOfDay = today.atTime(LocalTime.MAX).atZone(ZoneOffset.systemDefault()).toInstant();;
 
         // 오늘 참여 여부 검사
         boolean alreadyParticipated = participationInfoRepository.existsByEventUserAndDrawEventAndDateBetween(eventUser, drawEvent, startOfDay, endOfDay);

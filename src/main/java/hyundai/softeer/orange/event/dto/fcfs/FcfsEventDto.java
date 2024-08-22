@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * 선착순 이벤트를 표현하는 객체
@@ -29,13 +29,13 @@ public class FcfsEventDto {
      * 시작 시간
      */
     @NotNull
-    private LocalDateTime startTime;
+    private Instant startTime;
 
     /**
      * 종료 시간
      */
     @NotNull
-    private LocalDateTime endTime;
+    private Instant endTime;
 
     /**
      * 당첨 인원

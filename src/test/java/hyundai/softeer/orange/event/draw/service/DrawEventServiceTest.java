@@ -21,7 +21,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -49,7 +50,7 @@ class DrawEventServiceTest {
 
     String eventId = "test-key";
 
-    private EventMetadata createEventMetadata(String eventId, EventType eventType, LocalDateTime endTime) {
+    private EventMetadata createEventMetadata(String eventId, EventType eventType, Instant endTime) {
         return EventMetadata.builder()
                 .eventId(eventId)
                 .eventType(eventType)
@@ -78,7 +79,7 @@ class DrawEventServiceTest {
     @Test
     void draw_throwIfNotDrawType() {
         // given
-        var eventMetadata = createEventMetadata(eventId, EventType.fcfs, LocalDateTime.now());
+        var eventMetadata = createEventMetadata(eventId, EventType.fcfs, Instant.now());
         eventMetadata.updateDrawEvent(new DrawEvent());
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
 
@@ -93,7 +94,7 @@ class DrawEventServiceTest {
     @Test
     void draw_throwIfEventNotEnded() {
         // given
-        var endTime = LocalDateTime.now().plusDays(10);
+        var endTime = Instant.now().plus(10, ChronoUnit.DAYS);
         var eventMetadata = createEventMetadata(eventId, EventType.draw, endTime);
         eventMetadata.updateDrawEvent(new DrawEvent());
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
@@ -109,7 +110,7 @@ class DrawEventServiceTest {
     @Test
     void draw_throwIfDrawEventIsNull() {
         // given
-        var endTime = LocalDateTime.now().plusDays(-10);
+        var endTime = Instant.now().minus(10, ChronoUnit.DAYS);
         var eventMetadata = createEventMetadata(eventId, EventType.draw, endTime);
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
 
@@ -123,7 +124,7 @@ class DrawEventServiceTest {
     @Test
     void draw_throwIfDrawEventIsAlreadyDrawn() {
         // given
-        var endTime = LocalDateTime.now().plusDays(-10);
+        var endTime = Instant.now().minus(10, ChronoUnit.DAYS);
         var drawEvent = new DrawEvent();
         drawEvent.setDrawn(true);
         var eventMetadata = createEventMetadata(eventId, EventType.draw, endTime);
@@ -141,7 +142,7 @@ class DrawEventServiceTest {
     void draw_throwIfDrawEventIsDrawing() {
         // given
         String key = EventConst.IS_DRAWING(eventId);
-        var endTime = LocalDateTime.now().plusDays(-10);
+        var endTime = Instant.now().minus(10, ChronoUnit.DAYS);
         var eventMetadata = createEventMetadata(eventId, EventType.draw, endTime);
         eventMetadata.updateDrawEvent(new DrawEvent());
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
@@ -163,7 +164,7 @@ class DrawEventServiceTest {
     void draw_successfullyDraw() throws InterruptedException {
         // given
         String key = EventConst.IS_DRAWING(eventId);
-        var endTime = LocalDateTime.now().plusDays(-10);
+        var endTime = Instant.now().minus(10, ChronoUnit.DAYS);
         var drawEvent = new DrawEvent();
         var eventMetadata = createEventMetadata(eventId, EventType.draw, endTime);
         eventMetadata.updateDrawEvent(drawEvent);
@@ -195,7 +196,7 @@ class DrawEventServiceTest {
         when(eventUser.getPhoneNumber()).thenReturn("010-1234-5678");
         var drawEvent = mock(DrawEvent.class);
         when(drawEvent.getId()).thenReturn(1L);
-        var eventMetadata = createEventMetadata(eventId, EventType.draw, LocalDateTime.now());
+        var eventMetadata = createEventMetadata(eventId, EventType.draw, Instant.now());
         eventMetadata.updateDrawEvent(drawEvent);
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
         when(deWinningInfoRepository.findAllById(drawEvent.getId())).thenReturn(List.of(DrawEventWinningInfo.of(1L, drawEvent, eventUser)));
@@ -212,8 +213,8 @@ class DrawEventServiceTest {
     @DisplayName("getDrawEventStatus: 대응되는 이벤트가 존재하지 않으면 예외 반환")
     @Test
     void getDrawEventStatus_throwIfDrawEventNotFound() {
-        var fcfsEventMetadata = createEventMetadata(eventId, EventType.fcfs, LocalDateTime.now());
-        var withoutDrawEvent = createEventMetadata(eventId, EventType.draw, LocalDateTime.now());
+        var fcfsEventMetadata = createEventMetadata(eventId, EventType.fcfs, Instant.now());
+        var withoutDrawEvent = createEventMetadata(eventId, EventType.draw, Instant.now());
 
         when(emRepository.findFirstByEventId(eventId))
                 .thenReturn(Optional.empty()) // 이벤트 없는 경우
@@ -238,7 +239,7 @@ class DrawEventServiceTest {
     @DisplayName("getDrawEventStatus: 이벤트가 종료되지 않았다면 BEFORE_END")
     @Test
     void getDrawEventStatus_EventNotEnded() {
-        LocalDateTime notEndedTime = LocalDateTime.now().plusDays(+10);
+        var notEndedTime = Instant.now().plus(10, ChronoUnit.DAYS);
         EventMetadata metadata = createEventMetadata(eventId, EventType.draw, notEndedTime);
         metadata.updateDrawEvent(new DrawEvent());
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(metadata));
@@ -252,8 +253,7 @@ class DrawEventServiceTest {
     void getDrawEventStatus_EventIsDrawn() {
         var drawEvent = new DrawEvent();
         drawEvent.setDrawn(true);
-
-        LocalDateTime endedTime = LocalDateTime.now().plusDays(-10);
+        var endedTime = Instant.now().minus(10, ChronoUnit.DAYS);
         EventMetadata metadata = createEventMetadata(eventId, EventType.draw, endedTime);
         metadata.updateDrawEvent(drawEvent);
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(metadata));
@@ -266,7 +266,7 @@ class DrawEventServiceTest {
     @Test
     void getDrawEventStatus_EventIsDrawing() {
         var drawEvent = new DrawEvent();
-        LocalDateTime endedTime = LocalDateTime.now().plusDays(-10);
+        var endedTime = Instant.now().minus(10, ChronoUnit.DAYS);
         EventMetadata metadata = createEventMetadata(eventId, EventType.draw, endedTime);
         metadata.updateDrawEvent(drawEvent);
 
@@ -284,7 +284,7 @@ class DrawEventServiceTest {
     @Test
     void getDrawEventStatus_EventIsAvailable() {
         var drawEvent = new DrawEvent();
-        LocalDateTime endedTime = LocalDateTime.now().plusDays(-10);
+        var endedTime = Instant.now().minus(10, ChronoUnit.DAYS);
         EventMetadata metadata = createEventMetadata(eventId, EventType.draw, endedTime);
         metadata.updateDrawEvent(drawEvent);
 

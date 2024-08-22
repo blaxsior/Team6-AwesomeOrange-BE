@@ -1,7 +1,7 @@
 package hyundai.softeer.orange.event.draw.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public interface EventParticipationDateDto{
-    LocalDateTime getDate();
+    Instant getDate();
 }

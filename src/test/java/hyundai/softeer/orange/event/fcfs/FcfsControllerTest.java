@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import static org.mockito.Mockito.*;
@@ -146,7 +147,7 @@ class FcfsControllerTest {
     @Test
     void getFcfsInfoTest() throws Exception {
         // given
-        ResponseFcfsInfoDto responseFcfsInfoDto = new ResponseFcfsInfoDto(LocalDateTime.now(), "waiting");
+        ResponseFcfsInfoDto responseFcfsInfoDto = new ResponseFcfsInfoDto(Instant.now(), "waiting");
         when(fcfsManageService.getFcfsInfo(eventId)).thenReturn(responseFcfsInfoDto);
         String responseBody = mapper.writeValueAsString(responseFcfsInfoDto);
 

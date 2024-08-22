@@ -4,7 +4,7 @@ import hyundai.softeer.orange.event.common.entity.EventMetadata;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,10 +20,10 @@ public class FcfsEvent {
     private Long id;
 
     @Column
-    private LocalDateTime startTime;
+    private Instant startTime;
 
     @Column
-    private LocalDateTime endTime;
+    private Instant endTime;
 
     @Column
     private Long participantCount;
@@ -38,11 +38,11 @@ public class FcfsEvent {
     @OneToMany(mappedBy = "fcfsEvent")
     private final List<FcfsEventWinningInfo> infos = new ArrayList<>();
 
-    public void updateStartTime(LocalDateTime startTime) {
+    public void updateStartTime(Instant startTime) {
         this.startTime = startTime;
     }
 
-    public void updateEndTime(LocalDateTime endTime) {
+    public void updateEndTime(Instant endTime) {
         this.endTime = endTime;
     }
 
@@ -54,7 +54,7 @@ public class FcfsEvent {
         this.prizeInfo = prizeInfo;
     }
 
-    public static FcfsEvent of(LocalDateTime startTime, LocalDateTime endTime, Long participantCount, String prizeInfo, EventMetadata eventMetadata) {
+    public static FcfsEvent of(Instant startTime, Instant endTime, Long participantCount, String prizeInfo, EventMetadata eventMetadata) {
         FcfsEvent fcfsEvent = new FcfsEvent();
         fcfsEvent.startTime = startTime;
         fcfsEvent.endTime = endTime;
