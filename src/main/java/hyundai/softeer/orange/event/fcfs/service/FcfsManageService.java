@@ -49,13 +49,13 @@ public class FcfsManageService {
     // redis에 저장된 모든 선착순 이벤트의 당첨자 정보를 DB로 이관
     @Transactional
     public void registerWinners() {
-        Set<String> fcfsIds = stringRedisTemplate.keys("*:fcfs");
+        Set<String> fcfsIds = stringRedisTemplate.keys("*:count");
         if (fcfsIds == null || fcfsIds.isEmpty()) {
             return;
         }
 
         for(String fcfsId : fcfsIds) {
-            String eventId = fcfsId.replace(":fcfs", "");
+            String eventId = fcfsId.replace(":count", "").replace("fcfs:", "");
             Set<String> userIds = stringRedisTemplate.opsForZSet().range(FcfsUtil.winnerFormatting(eventId), 0, -1);
             if(userIds == null || userIds.isEmpty()) {
                 return;
