@@ -68,10 +68,10 @@ class EventUserControllerTest {
         requestUserDto = new RequestUserDto(name, phoneNumber);
         String requestBody = mapper.writeValueAsString(requestUserDto);
         String responseBody = mapper.writeValueAsString(tokenDto);
-        when(eventUserService.login(any(RequestUserDto.class))).thenReturn(tokenDto);
+        when(eventUserService.login(any(RequestUserDto.class), anyString())).thenReturn(tokenDto);
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/login")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/login/" + eventFrameId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andExpect(status().isOk())
@@ -91,7 +91,7 @@ class EventUserControllerTest {
         String responseBody = mapper.writeValueAsString(expectedErrors);
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/login")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/login/" + eventFrameId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andExpect(status().isBadRequest())
@@ -103,10 +103,10 @@ class EventUserControllerTest {
     void login404Test() throws Exception {
         // given
         String requestBody = mapper.writeValueAsString(requestUserDto);
-        when(eventUserService.login(any(RequestUserDto.class))).thenThrow(new EventUserException(ErrorCode.USER_NOT_FOUND));
+        when(eventUserService.login(any(RequestUserDto.class), anyString())).thenThrow(new EventUserException(ErrorCode.USER_NOT_FOUND));
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/login")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/login/" + eventFrameId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andExpect(status().isNotFound());

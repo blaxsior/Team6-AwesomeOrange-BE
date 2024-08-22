@@ -58,7 +58,6 @@ public class RedisLuaFcfsService implements FcfsService {
             throw new FcfsEventException(ErrorCode.INVALID_EVENT_TIME);
         }
 
-        long timeMillis = System.currentTimeMillis();
         String script = "local count = redis.call('zcard', KEYS[1]) " +
                 "if count < tonumber(ARGV[1]) then " +
                 "    redis.call('zadd', KEYS[1], ARGV[2], ARGV[3]) " +
@@ -74,7 +73,6 @@ public class RedisLuaFcfsService implements FcfsService {
                 String.valueOf(timestamp),
                 userId
         );
-        log.info("LuaScript 소요시간: {}", System.currentTimeMillis() - timeMillis);
 
         if(result == null || result <= 0) {
             log.info("Event Finished: {},", stringRedisTemplate.opsForZSet().zCard(FcfsUtil.winnerFormatting(key)));
@@ -87,7 +85,6 @@ public class RedisLuaFcfsService implements FcfsService {
         stringRedisTemplate.opsForZSet().add(FcfsUtil.winnerFormatting(key), userId, System.currentTimeMillis());
         stringRedisTemplate.opsForSet().add(FcfsUtil.participantFormatting(key), userId);
         log.info("Participating Success: {}, User ID: {}, Timestamp: {}", eventSequence, userId, timestamp);
-        log.info("성공까지 걸린 시간: {}", System.currentTimeMillis() - startTimeMillis);
         return true;
     }
 

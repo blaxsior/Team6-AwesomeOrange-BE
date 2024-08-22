@@ -25,7 +25,7 @@ public class EventUserController {
 
     // 로그인
     @Tag(name = "EventUser")
-    @PostMapping("/login")
+    @PostMapping("/login/{eventFrameId}")
     @Operation(summary = "로그인", description = "유저의 정보를 입력받아 로그인한다.", responses = {
             @ApiResponse(responseCode = "200", description = "로그인 성공",
                     content = @Content(schema = @Schema(implementation = TokenDto.class))),
@@ -34,8 +34,8 @@ public class EventUserController {
             @ApiResponse(responseCode = "404", description = "해당 정보를 갖는 유저가 존재하지 않을 때",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<TokenDto> login(@RequestBody @Valid RequestUserDto dto) {
-        return ResponseEntity.ok(eventUserService.login(dto));
+    public ResponseEntity<TokenDto> login(@RequestBody @Valid RequestUserDto dto, @PathVariable String eventFrameId) {
+        return ResponseEntity.ok(eventUserService.login(dto, eventFrameId));
     }
 
     // 인증번호 전송
