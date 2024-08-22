@@ -41,7 +41,7 @@ public class FcfsManageService {
     // 오늘의 선착순 이벤트 정보(당첨자 수, 시작 시각)를 Redis에 배치
     @Transactional(readOnly = true)
     public void registerFcfsEvents() {
-        List<FcfsEvent> events = fcfsEventRepository.findByStartTimeBetween(Instant.now(), Instant.now().plus(100, ChronoUnit.DAYS));
+        List<FcfsEvent> events = fcfsEventRepository.findByStartTimeBetween(Instant.now(), Instant.now().plus(1, ChronoUnit.DAYS));
         events.forEach(this::prepareEventInfo);
         log.info("Today's FCFS events were registered in Redis");
     }
