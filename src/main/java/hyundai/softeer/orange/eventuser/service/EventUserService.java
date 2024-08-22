@@ -8,7 +8,6 @@ import hyundai.softeer.orange.core.jwt.JWTConst;
 import hyundai.softeer.orange.core.jwt.JWTManager;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
-import hyundai.softeer.orange.eventuser.dto.EventUserOnAdminDto;
 import hyundai.softeer.orange.eventuser.dto.EventUserPageDto;
 import hyundai.softeer.orange.eventuser.dto.RequestAuthCodeDto;
 import hyundai.softeer.orange.eventuser.dto.RequestUserDto;
@@ -20,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +31,7 @@ import java.util.UUID;
 public class EventUserService {
 
     private static final Logger log = LoggerFactory.getLogger(EventUserService.class);
+    private final SmsService smsService;
     private final EventUserRepository eventUserRepository;
     private final EventFrameRepository eventFrameRepository;
     private final StringRedisTemplate stringRedisTemplate;
@@ -58,6 +57,26 @@ public class EventUserService {
 
         Page<EventUser> userPage = eventUserRepository.findBySearch(search, pageRequest);
         return EventUserPageDto.from(userPage);
+    }
+
+    /**
+     * 1. 유저의 전화번호 및 이벤트 프레임 아이디로 이미 해당 이벤트에 가입된 유저인지 검증
+     * 2. 없다면 인증번호 발송
+     * @param dto
+     * @param eventFrameId
+     */
+    @Transactional(readOnly = true)
+    public void sendAuthCode(RequestUserDto dto, String eventFrameId){
+        // 이벤트 프레임이 존재하지 않는 경우
+        if(!eventFrameRepository.existsByFrameId(eventFrameId)){
+            throw new EventUserException(ErrorCode.EVENT_FRAME_NOT_FOUND);
+        }
+
+        // 이미 해당 이벤트에 가입된 유저인 경우
+        if(eventUserRepository.existsByPhoneNumberAndEventFrameFrameId(dto.getPhoneNumber(), eventFrameId)){
+            throw new EventUserException(ErrorCode.USER_ALREADY_EXISTS);
+        }
+        smsService.sendSms(dto);
     }
 
     /**
