@@ -14,7 +14,11 @@ public interface DrawEventRepository extends JpaRepository<DrawEvent, Long> {
     Optional<DrawEvent> findByEventId(@Param("eventId") String eventId);
 
     // eventframeId로 eventmetadata의 drawevent를 찾는 fetch join 쿼리 (N+1 문제 방지)
-    @Query(value = "SELECT d FROM DrawEvent d JOIN FETCH d.eventMetadata em JOIN FETCH em.eventFrame ef WHERE ef.frameId = :eventFrameId")
+    @Query(value = "SELECT d.* FROM draw_event d " +
+            "JOIN event_metadata em ON d.event_metadata_id = em.id " +
+            "JOIN event_frame ef ON em.event_frame_id = ef.id " +
+            "WHERE ef.frame_id = :eventFrameId " +
+            "LIMIT 1", nativeQuery = true)
     Optional<DrawEvent> findByEventFrameId(@Param("eventFrameId") String eventFrameId);
 
 //    @Modifying // 수정 쿼리는 Modifying 필요
