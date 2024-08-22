@@ -8,21 +8,17 @@ import hyundai.softeer.orange.core.jwt.JWTConst;
 import hyundai.softeer.orange.core.jwt.JWTManager;
 import hyundai.softeer.orange.event.common.entity.EventFrame;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
-import hyundai.softeer.orange.eventuser.dto.EventUserOnAdminDto;
 import hyundai.softeer.orange.eventuser.dto.EventUserPageDto;
 import hyundai.softeer.orange.eventuser.dto.RequestAuthCodeDto;
 import hyundai.softeer.orange.eventuser.dto.RequestUserDto;
 import hyundai.softeer.orange.eventuser.entity.EventUser;
 import hyundai.softeer.orange.eventuser.exception.EventUserException;
 import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
-import hyundai.softeer.orange.eventuser.repository.EventUserSpecification;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,13 +53,7 @@ public class EventUserService {
     @Transactional(readOnly = true)
     public EventUserPageDto getUserBySearch(String search, String field, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-
-        Specification<EventUser> searchSpec = EventUserSpecification.search(search, field);
-
-        Page<EventUser> userPage = eventUserRepository.findBy(
-                searchSpec,
-                (q) -> q.page(pageRequest)
-        );
+        Page<EventUser> userPage = eventUserRepository.findBySearch(search, field, pageRequest);
 
         return EventUserPageDto.from(userPage);
     }
