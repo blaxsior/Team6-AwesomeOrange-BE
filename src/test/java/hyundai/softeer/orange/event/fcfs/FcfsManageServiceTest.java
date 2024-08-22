@@ -25,7 +25,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.*;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +97,7 @@ class FcfsManageServiceTest {
     @Test
     void registerWinnersTest() {
         // given
-        given(stringRedisTemplate.keys("*:fcfs")).willReturn(Set.of("1:fcfs"));
+        given(stringRedisTemplate.keys("*:count")).willReturn(Set.of("1:count"));
         given(stringRedisTemplate.opsForZSet()).willReturn(zSetOperations);
         given(zSetOperations.range(FcfsUtil.winnerFormatting(fcfsEventId.toString()), 0, -1))
                 .willReturn(Set.of(eventUser.getUserId()));
@@ -109,7 +108,7 @@ class FcfsManageServiceTest {
         fcfsManageService.registerWinners();
 
         // then
-        verify(stringRedisTemplate).keys("*:fcfs");
+        verify(stringRedisTemplate).keys("*:count");
         verify(zSetOperations).range(FcfsUtil.winnerFormatting(fcfsEventId.toString()), 0, -1);
         verify(fcfsEventRepository).findById(fcfsEventId);
         verify(eventUserRepository).findAllByUserId(List.of(eventUser.getUserId()));
