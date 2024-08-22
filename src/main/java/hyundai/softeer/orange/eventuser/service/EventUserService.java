@@ -52,10 +52,10 @@ public class EventUserService {
     }
 
     @Transactional(readOnly = true)
-    public EventUserPageDto getUserBySearch(String search, int page, int size) {
+    public EventUserPageDto getUserBySearch(String search, String field, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
+        Page<EventUser> userPage = eventUserRepository.findBySearch(search, field, pageRequest);
 
-        Page<EventUser> userPage = eventUserRepository.findBySearch(search, pageRequest);
         return EventUserPageDto.from(userPage);
     }
 

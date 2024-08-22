@@ -33,10 +33,11 @@ public class AdminEventUserController {
     @GetMapping
     public ResponseEntity<EventUserPageDto> getEventUsers(
             @RequestParam(name="search", required = false, defaultValue = "") String search,
+            @RequestParam(name="field", required = false, defaultValue = "userName") String field,
             @RequestParam(name="page", required = false, defaultValue = "0") @Min(0) Integer page,
             @RequestParam(name="size", required = false, defaultValue = "10") @Min(1) Integer size
     ) {
-        var userPageDto = eventUserService.getUserBySearch(search, page, size);
+        var userPageDto = eventUserService.getUserBySearch(search, field, page, size);
         return ResponseEntity.ok(userPageDto);
     }
 
