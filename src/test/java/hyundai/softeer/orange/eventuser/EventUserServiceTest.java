@@ -77,11 +77,11 @@ class EventUserServiceTest {
     @Test
     void loginTest() {
         // given
-        given(eventUserRepository.findByUserNameAndPhoneNumber(requestUserDto.getName(), requestUserDto.getPhoneNumber()))
+        given(eventUserRepository.findByUserNameAndPhoneNumberAndEventFrameFrameId(requestUserDto.getName(), requestUserDto.getPhoneNumber(), eventFrameId))
                 .willReturn(Optional.of(eventUser));
 
         // when
-        TokenDto result = eventUserService.login(requestUserDto);
+        TokenDto result = eventUserService.login(requestUserDto, eventFrameId);
 
         // then
         assertThat(result).isNotNull();
@@ -91,11 +91,11 @@ class EventUserServiceTest {
     @Test
     void loginNotFoundTest() {
         // given
-        given(eventUserRepository.findByUserNameAndPhoneNumber(requestUserDto.getName(), requestUserDto.getPhoneNumber()))
+        given(eventUserRepository.findByUserNameAndPhoneNumberAndEventFrameFrameId(requestUserDto.getName(), requestUserDto.getPhoneNumber(), eventFrameId))
                 .willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> eventUserService.login(requestUserDto))
+        assertThatThrownBy(() -> eventUserService.login(requestUserDto, eventFrameId))
                 .isInstanceOf(EventUserException.class)
                 .hasMessage(ErrorCode.EVENT_USER_NOT_FOUND.getMessage());
     }
