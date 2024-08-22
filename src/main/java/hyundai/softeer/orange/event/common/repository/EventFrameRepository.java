@@ -16,6 +16,8 @@ public interface EventFrameRepository extends JpaRepository<EventFrame, Long> {
 
     Optional<EventFrame> findByFrameId(String frameId);
 
+    boolean existsByFrameId(String frameId);
+
     @Query("SELECT ef.frameId FROM EventFrame ef WHERE ef.frameId LIKE %:search%")
     List<String> findAllFrameIdsWithLike(@Param("search") String search);
 }
