@@ -29,12 +29,12 @@ public class DrawEvent {
     private EventMetadata eventMetadata;
 
     @OneToMany(mappedBy ="drawEvent",
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
             fetch = FetchType.EAGER) // 추첨 이벤트는 항상 policy와 함께 사용되므로 EAGER로 설정
     private List<DrawEventScorePolicy> policyList = new ArrayList<>();
 
     @OneToMany(mappedBy ="drawEvent",
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
             fetch = FetchType.EAGER) // 추첨 이벤트는 항상 metadata와 함께 사용되므로 EAGER로 설정
     private List<DrawEventMetadata> metadataList = new ArrayList<>();
 
