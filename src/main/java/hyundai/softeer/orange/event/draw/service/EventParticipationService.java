@@ -81,7 +81,8 @@ public class EventParticipationService {
 
         if(!eventUser.getEventFrameId().equals(event.getEventFrameId())) throw new EventException(ErrorCode.CANNOT_PARTICIPATE);
 
-        LocalDate today = LocalDate.ofInstant(date, ZoneId.systemDefault());
+        // TODO: 이벤트 정보를 저장할 때 타임존을 함께 저장하도록 변경. 현재는 서버 배포 환경 시간을 기반으로 동작하도록 설정
+        LocalDate today = LocalDate.ofInstant(date, ZoneOffset.systemDefault());
 
         // 이벤트 기간 안에 있는지 검사
         if(event.getStartTime().isAfter(date) || event.getEndTime().isBefore(date))

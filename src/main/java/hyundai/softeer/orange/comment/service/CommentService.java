@@ -62,8 +62,8 @@ public class CommentService {
 
         // 오늘의 시작과 끝 시각 계산
         LocalDate today = LocalDate.now();
-        Instant startOfDay = today.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
-        Instant endOfDay = today.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant();
+        Instant startOfDay = today.atStartOfDay().atZone(ZoneOffset.systemDefault()).toInstant();
+        Instant endOfDay = today.atTime(LocalTime.MAX).atZone(ZoneOffset.systemDefault()).toInstant();
 
         // 오늘 유저가 인터렉션에 참여하지 않았다면 예외처리
         boolean participated = participationInfoRepository.existsByEventUserAndDrawEventAndDateBetween(eventUser, drawEvent, startOfDay, endOfDay);
