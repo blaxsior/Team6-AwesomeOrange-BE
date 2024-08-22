@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,48 +40,48 @@ class EventServiceSearchEventsTest extends IntegrationDataJpaTest {
         EventMetadata em1 = EventMetadata.builder()
                 .eventId("HD240805_001")
                 .name("hyundai car event")
-                .startTime(LocalDateTime.of(2024,8,1,15,0))
-                .endTime(LocalDateTime.of(2024,8,2,15,0))
+                .startTime(LocalDateTime.of(2024,8,1,15,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,2,15,0).atZone(ZoneOffset.UTC).toInstant())
                 .eventFrame(ef)
                 .build();
 
         EventMetadata em2 = EventMetadata.builder()
                 .eventId("HD240805_002")
                 .name("hello bye")
-                .startTime(LocalDateTime.of(2024,8,1,15,0))
-                .endTime(LocalDateTime.of(2024,8,2,17,0))
+                .startTime(LocalDateTime.of(2024,8,1,15,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,2,17,0).atZone(ZoneOffset.UTC).toInstant())
                 .eventFrame(ef)
                 .build();
 
         EventMetadata em3 = EventMetadata.builder()
                 .eventId("HD240805_003")
                 .name("hyundai car event")
-                .startTime(LocalDateTime.of(2024,8,1,18,0))
-                .endTime(LocalDateTime.of(2024,8,1,20,0))
+                .startTime(LocalDateTime.of(2024,8,1,18,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,20,0).atZone(ZoneOffset.UTC).toInstant())
                 .eventFrame(ef)
                 .build();
 
         EventMetadata em4 = EventMetadata.builder()
                 .eventId("HD240805_004")
                 .name("25 always opened")
-                .startTime(LocalDateTime.of(2024,8,1,19,0))
-                .endTime(LocalDateTime.of(2024,8,1,20,0))
+                .startTime(LocalDateTime.of(2024,8,1,19,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,20,0).atZone(ZoneOffset.UTC).toInstant())
                 .eventFrame(ef)
                 .build();
 
         EventMetadata em5 = EventMetadata.builder()
                 .eventId("HD240805_005")
                 .name("zebra car event")
-                .startTime(LocalDateTime.of(2024,8,1,21,0))
-                .endTime(LocalDateTime.of(2024,8,1,22,0))
+                .startTime(LocalDateTime.of(2024,8,1,21,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,22,0).atZone(ZoneOffset.UTC).toInstant())
                 .eventFrame(ef)
                 .build();
 
         EventMetadata em6 = EventMetadata.builder()
                 .eventId("HD240805_006")
                 .name("25 always opened")
-                .startTime(LocalDateTime.of(2024,8,1,22,0))
-                .endTime(LocalDateTime.of(2024,8,1,23,0))
+                .startTime(LocalDateTime.of(2024,8,1,22,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,23,0).atZone(ZoneOffset.UTC).toInstant())
                 .eventFrame(ef)
                 .build();
 

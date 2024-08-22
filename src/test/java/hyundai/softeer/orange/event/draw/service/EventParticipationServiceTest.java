@@ -15,7 +15,9 @@ import hyundai.softeer.orange.eventuser.repository.EventUserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,8 +82,8 @@ class EventParticipationServiceTest {
         when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(eventMetadata));
         var mockDto1 = mock(EventParticipationDateDto.class);
         var mockDto2 = mock(EventParticipationDateDto.class);
-        when(mockDto1.getDate()).thenReturn(LocalDateTime.now());
-        when(mockDto2.getDate()).thenReturn(LocalDateTime.now());
+        when(mockDto1.getDate()).thenReturn(Instant.now());
+        when(mockDto2.getDate()).thenReturn(Instant.now());
 
         when(epiRepository.findByEventUserId(any(), any())).thenReturn(List.of(mockDto1, mockDto2));
 
@@ -157,8 +159,8 @@ class EventParticipationServiceTest {
     @Test
     void participateAtDate_throwIfNotEventTime() {
         var eventMetadata = EventMetadata.builder()
-                .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0))
-                .endTime(LocalDateTime.of(2024, 8, 10, 0, 0, 0))
+                .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024, 8, 10, 0, 0, 0).atZone(ZoneOffset.UTC).toInstant())
                 .eventType(EventType.draw)
                 .eventFrameId(frameId)
                 .build();
@@ -166,7 +168,7 @@ class EventParticipationServiceTest {
 
         when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(eventMetadata));
 
-        LocalDateTime now = LocalDateTime.of(2024, 9, 1, 0, 0, 0);
+        Instant now = LocalDateTime.of(2024, 9, 1, 0, 0, 0).atZone(ZoneOffset.UTC).toInstant();
 
         // 유저 있음
         EventUser user = mock(EventUser.class);
@@ -185,8 +187,8 @@ class EventParticipationServiceTest {
     @Test
     void participateAtDate_throwIfAlreadyParticipated() {
         var eventMetadata = EventMetadata.builder()
-                .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0))
-                .endTime(LocalDateTime.of(2024, 8, 10, 0, 0, 0))
+                .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024, 8, 10, 0, 0, 0).atZone(ZoneOffset.UTC).toInstant())
                 .eventType(EventType.draw)
                 .eventFrameId(frameId)
                 .build();
@@ -194,7 +196,7 @@ class EventParticipationServiceTest {
         when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(eventMetadata));
 
         // 이벤트 기간 내
-        LocalDateTime now = LocalDateTime.of(2024, 8, 3, 0, 0, 0);
+        Instant now = LocalDateTime.of(2024, 8, 3, 0, 0, 0).atZone(ZoneOffset.UTC).toInstant();
         // 오늘 참여함
         when(epiRepository.existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any())).thenReturn(true);
 
@@ -215,8 +217,8 @@ class EventParticipationServiceTest {
     @Test
     void participateAtDate_participateSuccessfully() {
         var eventMetadata = EventMetadata.builder()
-                .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0))
-                .endTime(LocalDateTime.of(2024, 8, 10, 0, 0, 0))
+                .startTime(LocalDateTime.of(2024, 8, 1, 0, 0, 0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024, 8, 10, 0, 0, 0).atZone(ZoneOffset.UTC).toInstant())
                 .eventType(EventType.draw)
                 .eventFrameId(frameId)
                 .build();
@@ -224,7 +226,7 @@ class EventParticipationServiceTest {
         when(emRepository.findFirstByEventId(anyString())).thenReturn(Optional.of(eventMetadata));
 
         // 이벤트 기간 내
-        LocalDateTime now = LocalDateTime.of(2024, 8, 3, 0, 0, 0);
+        Instant now = LocalDateTime.of(2024, 8, 3, 0, 0, 0).atZone(ZoneOffset.UTC).toInstant();
         // 오늘 참여안함
         when(epiRepository.existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any())).thenReturn(false);
 

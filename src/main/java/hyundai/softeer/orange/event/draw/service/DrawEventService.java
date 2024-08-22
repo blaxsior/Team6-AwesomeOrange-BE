@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -48,7 +48,7 @@ public class DrawEventService {
         DrawEvent drawEvent = event.getDrawEvent();
         if(drawEvent == null) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
         // 이벤트 검증
-        validateDrawCondition(event, LocalDateTime.now());
+        validateDrawCondition(event, Instant.now());
         String key = EventConst.IS_DRAWING(event.getEventId());
         tryDraw(key);
 
@@ -96,7 +96,7 @@ public class DrawEventService {
         redisTemplate.delete(key);
     }
 
-    private void validateDrawCondition(EventMetadata event, LocalDateTime now) {
+    private void validateDrawCondition(EventMetadata event, Instant now) {
         // 이벤트가 draw event 인지 검사
         if (event.getEventType() != EventType.draw) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
         // 이벤트가 종료되었는지 검사
@@ -125,7 +125,7 @@ public class DrawEventService {
 
         DrawEventStatus status = DrawEventStatus.AVAILABLE;
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
 
         // 이벤트가 종료되었는지 검사
         if (!event.isEnded(now)) status = DrawEventStatus.BEFORE_END;

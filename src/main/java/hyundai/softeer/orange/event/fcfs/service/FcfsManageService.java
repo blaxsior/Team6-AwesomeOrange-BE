@@ -21,8 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -42,7 +41,7 @@ public class FcfsManageService {
     // 오늘의 선착순 이벤트 정보(당첨자 수, 시작 시각)를 Redis에 배치
     @Transactional(readOnly = true)
     public void registerFcfsEvents() {
-        List<FcfsEvent> events = fcfsEventRepository.findByStartTimeBetween(LocalDateTime.now(), LocalDateTime.now().plusDays(1));
+        List<FcfsEvent> events = fcfsEventRepository.findByStartTimeBetween(Instant.now(), Instant.now().plus(100, ChronoUnit.DAYS));
         events.forEach(this::prepareEventInfo);
         log.info("Today's FCFS events were registered in Redis");
     }
@@ -94,16 +93,16 @@ public class FcfsManageService {
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
 
-        LocalDateTime nowDateTime = LocalDateTime.now();
-        LocalDateTime eventStartTime = LocalDateTime.parse(startTime);
+        Instant nowDateTime = Instant.now();
+        Instant eventStartTime = Instant.parse(startTime);
 
         // 서버시간 < 이벤트시작시간 < 서버시간+3시간 -> countdown
         // 이벤트시작시간 < 서버시간 < 이벤트시작시간+7시간 -> progress
         // 그 외 -> waiting
         log.info("Checked FCFS event status: {}", key);
-        if(nowDateTime.isBefore(eventStartTime) && nowDateTime.plusHours(ConstantUtil.FCFS_COUNTDOWN_HOUR).isAfter(eventStartTime)) {
+        if(nowDateTime.isBefore(eventStartTime) && nowDateTime.plus(ConstantUtil.FCFS_COUNTDOWN_HOUR, ChronoUnit.HOURS).isAfter(eventStartTime)) {
             return new ResponseFcfsInfoDto(eventStartTime, ConstantUtil.COUNTDOWN);
-        } else if(eventStartTime.isBefore(nowDateTime) && eventStartTime.plusHours(ConstantUtil.FCFS_AVAILABLE_HOUR).isAfter(nowDateTime)) {
+        } else if(eventStartTime.isBefore(nowDateTime) && eventStartTime.plus(ConstantUtil.FCFS_AVAILABLE_HOUR, ChronoUnit.HOURS).isAfter(nowDateTime)) {
             return new ResponseFcfsInfoDto(eventStartTime, ConstantUtil.PROGRESS);
         } else {
             return new ResponseFcfsInfoDto(eventStartTime, ConstantUtil.WAITING);
@@ -159,13 +158,13 @@ public class FcfsManageService {
         log.info("Deleted Information of FCFS event: {}", eventId);
     }
 
-    private LocalDateTime getTimeFromScore(Double score) {
+    private Instant getTimeFromScore(Double score) {
         if(score == null) {
             log.error("score 값이 null");
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
         long timeMillis = score.longValue();
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), ZoneId.systemDefault());
+        return Instant.ofEpochMilli(timeMillis);
     }
 
     private String getFcfsKeyFromEventId(String eventId) {

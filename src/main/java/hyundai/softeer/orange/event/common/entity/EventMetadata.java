@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,10 +35,10 @@ public class EventMetadata {
     private String description;
 
     @Column
-    private LocalDateTime startTime;
+    private Instant startTime;
 
     @Column
-    private LocalDateTime endTime;
+    private Instant endTime;
 
     @Column
     private EventType eventType;
@@ -57,11 +57,11 @@ public class EventMetadata {
         this.description = description;
     }
 
-    public void updateStartTime(LocalDateTime startTime) {
+    public void updateStartTime(Instant startTime) {
         this.startTime = startTime;
     }
 
-    public void updateEndTime(LocalDateTime endTime) {
+    public void updateEndTime(Instant endTime) {
         this.endTime = endTime;
     }
 
@@ -69,7 +69,7 @@ public class EventMetadata {
         this.url = url;
     }
 
-    public boolean isEnded(LocalDateTime now) {
+    public boolean isEnded(Instant now) {
         return (this.status == EventStatus.COMPLETE) || endTime.isBefore(now);
     }
 

@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Repository
@@ -27,5 +27,5 @@ public interface EventParticipationInfoRepository extends JpaRepository<EventPar
             "AND info.draw_event_id = :drawEventId", nativeQuery = true)
     List<EventParticipationDateDto> findByEventUserId(@Param("eventUserId") String eventUserId, @Param("drawEventId") Long drawEventId);
 
-    boolean existsByEventUserAndDrawEventAndDateBetween(EventUser eventUser, DrawEvent drawEvent, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+    boolean existsByEventUserAndDrawEventAndDateBetween(EventUser eventUser, DrawEvent drawEvent, @Param("from") Instant from, @Param("to") Instant to);
 }

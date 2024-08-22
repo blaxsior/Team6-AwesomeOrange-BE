@@ -12,7 +12,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,19 +62,19 @@ class FcfsEventFieldMapperTest {
     @Test
     void setRelationIfFcfsDtoExists() {
         EventMetadata metadata = new EventMetadata();
-        metadata.updateStartTime(LocalDateTime.of(2024, 8, 1, 0, 0));
-        metadata.updateEndTime(LocalDateTime.of(2024, 8, 2, 0, 0));
+        metadata.updateStartTime(LocalDateTime.of(2024, 8, 1, 0, 0).atZone(ZoneOffset.UTC).toInstant());
+        metadata.updateEndTime(LocalDateTime.of(2024, 8, 2, 0, 0).atZone(ZoneOffset.UTC).toInstant());
         EventDto dto = mock(EventDto.class);
         List<FcfsEventDto> dtos = new ArrayList<>();
 
         dtos.add(FcfsEventDto.builder()
-                .startTime(LocalDateTime.of(2024,8,1,0,0))
-                .endTime(LocalDateTime.of(2024,8,1,4,0))
+                .startTime(LocalDateTime.of(2024,8,1,0,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,4,0).atZone(ZoneOffset.UTC).toInstant())
                 .build() // 시작 시간 겹침
         );
         dtos.add(FcfsEventDto.builder()
-                .startTime(LocalDateTime.of(2024,8,1,4,0))
-                .endTime(LocalDateTime.of(2024,8,1,8,0))
+                .startTime(LocalDateTime.of(2024,8,1,4,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,8,0).atZone(ZoneOffset.UTC).toInstant())
                 .build() // 시간끼리 겹침
         );
 
@@ -89,22 +91,22 @@ class FcfsEventFieldMapperTest {
     @DisplayName("하나라도 기간 외 이벤트 시간대가 있다면 예외 반환")
     @Test
     void validationEventTimes_throwIfThereIsTimeOverBoundary() {
-        LocalDateTime startTime = LocalDateTime.of(2024, 8, 1, 0, 0);
-        LocalDateTime endTime = LocalDateTime.of(2024, 8, 2, 0, 0);
+        Instant startTime = LocalDateTime.of(2024, 8, 1, 0, 0).atZone(ZoneOffset.UTC).toInstant();
+        Instant endTime = LocalDateTime.of(2024, 8, 2, 0, 0).atZone(ZoneOffset.UTC).toInstant();
         List<FcfsEventDto> dtos = new ArrayList<>();
         dtos.add(FcfsEventDto.builder()
-                .startTime(LocalDateTime.of(2024,8,1,0,0))
-                .endTime(LocalDateTime.of(2024,8,1,4,0))
+                .startTime(LocalDateTime.of(2024,8,1,0,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,4,0).atZone(ZoneOffset.UTC).toInstant())
                 .build()
         );
         dtos.add(FcfsEventDto.builder()
-                .startTime(LocalDateTime.of(2024,8,1,4,0))
-                .endTime(LocalDateTime.of(2024,8,1,8,0))
+                .startTime(LocalDateTime.of(2024,8,1,4,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,8,0).atZone(ZoneOffset.UTC).toInstant())
                 .build()
         );
         dtos.add(FcfsEventDto.builder()
-                .startTime(LocalDateTime.of(2024,8,1,23,0))
-                .endTime(LocalDateTime.of(2024,8,2,0,1))
+                .startTime(LocalDateTime.of(2024,8,1,23,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,2,0,1).atZone(ZoneOffset.UTC).toInstant())
                 .build()
         );
 
@@ -117,17 +119,17 @@ class FcfsEventFieldMapperTest {
     @DisplayName("겹치는 시간대가 있다면 예외 반환")
     @Test
     void validationEventTimes_throwIfFcfsHasOverlay() {
-        LocalDateTime startTime = LocalDateTime.of(2024, 8, 1, 0, 0);
-        LocalDateTime endTime = LocalDateTime.of(2024, 8, 2, 0, 0);
+        Instant startTime = LocalDateTime.of(2024, 8, 1, 0, 0).atZone(ZoneOffset.UTC).toInstant();
+        Instant endTime = LocalDateTime.of(2024, 8, 2, 0, 0).atZone(ZoneOffset.UTC).toInstant();
         List<FcfsEventDto> dtos = new ArrayList<>();
         dtos.add(FcfsEventDto.builder()
-                .startTime(LocalDateTime.of(2024,8,1,0,0))
-                .endTime(LocalDateTime.of(2024,8,1,4,0))
+                .startTime(LocalDateTime.of(2024,8,1,0,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,4,0).atZone(ZoneOffset.UTC).toInstant())
                 .build()
         );
         dtos.add(FcfsEventDto.builder()
-                .startTime(LocalDateTime.of(2024,8,1,3,0))
-                .endTime(LocalDateTime.of(2024,8,1,8,0))
+                .startTime(LocalDateTime.of(2024,8,1,3,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,8,0).atZone(ZoneOffset.UTC).toInstant())
                 .build()
         );
 
@@ -140,22 +142,22 @@ class FcfsEventFieldMapperTest {
     @DisplayName("겹치는 시간대가 없다면 정상적으로 실행")
     @Test
     void validationEventTimes_validateSuccessfully() {
-        LocalDateTime startTime = LocalDateTime.of(2024, 8, 1, 0, 0);
-        LocalDateTime endTime = LocalDateTime.of(2024, 8, 2, 0, 0);
+        Instant startTime = LocalDateTime.of(2024, 8, 1, 0, 0).atZone(ZoneOffset.UTC).toInstant();
+        Instant endTime = LocalDateTime.of(2024, 8, 2, 0, 0).atZone(ZoneOffset.UTC).toInstant();
         List<FcfsEventDto> dtos = new ArrayList<>();
         dtos.add(FcfsEventDto.builder()
-                .startTime(LocalDateTime.of(2024,8,1,8,0))
-                .endTime(LocalDateTime.of(2024,8,2,0,0))
+                .startTime(LocalDateTime.of(2024,8,1,8,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,2,0,0).atZone(ZoneOffset.UTC).toInstant())
                 .build() // 끝 시간 겹침
         );
         dtos.add(FcfsEventDto.builder()
-                .startTime(LocalDateTime.of(2024,8,1,0,0))
-                .endTime(LocalDateTime.of(2024,8,1,4,0))
+                .startTime(LocalDateTime.of(2024,8,1,0,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,4,0).atZone(ZoneOffset.UTC).toInstant())
                 .build() // 시작 시간 겹침
         );
         dtos.add(FcfsEventDto.builder()
-                .startTime(LocalDateTime.of(2024,8,1,4,0))
-                .endTime(LocalDateTime.of(2024,8,1,8,0))
+                .startTime(LocalDateTime.of(2024,8,1,4,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,1,8,0).atZone(ZoneOffset.UTC).toInstant())
                 .build() // 시간끼리 겹침
         );
         // 점에서 겹치는 것은 겹친다고 취급 안한다.

@@ -12,7 +12,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collections;
 
 @RequiredArgsConstructor
@@ -54,7 +54,7 @@ public class RedisLuaFcfsService implements FcfsService {
             throw new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND);
         }
 
-        if (LocalDateTime.now().isBefore(LocalDateTime.parse(startTime))){
+        if (Instant.now().isBefore(Instant.parse(startTime))){
             throw new FcfsEventException(ErrorCode.INVALID_EVENT_TIME);
         }
 

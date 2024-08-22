@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,8 +43,8 @@ class EventServiceSearchHintsTest extends IntegrationDataJpaTest {
         EventMetadata em1 = EventMetadata.builder()
                 .eventId("HD240805_001")
                 .name("hyundai car event")
-                .startTime(LocalDateTime.of(2024,8,1,15,0))
-                .endTime(LocalDateTime.of(2024,8,2,15,0))
+                .startTime(LocalDateTime.of(2024,8,1,15,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,2,15,0).atZone(ZoneOffset.UTC).toInstant())
                 .eventFrame(ef)
                 .eventType(EventType.draw)
                 .build();
@@ -51,8 +52,8 @@ class EventServiceSearchHintsTest extends IntegrationDataJpaTest {
         EventMetadata em2 = EventMetadata.builder()
                 .eventId("HD240905_002")
                 .name("hyundai car event")
-                .startTime(LocalDateTime.of(2024,8,1,15,0))
-                .endTime(LocalDateTime.of(2024,8,2,15,0))
+                .startTime(LocalDateTime.of(2024,8,1,15,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,2,15,0).atZone(ZoneOffset.UTC).toInstant())
                 .eventFrame(ef)
                 .eventType(EventType.draw)
                 .build();
@@ -60,8 +61,8 @@ class EventServiceSearchHintsTest extends IntegrationDataJpaTest {
         EventMetadata em3 = EventMetadata.builder()
                 .eventId("HD240805_003")
                 .name("hyundai car event")
-                .startTime(LocalDateTime.of(2024,8,1,15,0))
-                .endTime(LocalDateTime.of(2024,8,2,15,0))
+                .startTime(LocalDateTime.of(2024,8,1,15,0).atZone(ZoneOffset.UTC).toInstant())
+                .endTime(LocalDateTime.of(2024,8,2,15,0).atZone(ZoneOffset.UTC).toInstant())
                 .eventFrame(ef)
                 .eventType(EventType.fcfs)
                 .build();

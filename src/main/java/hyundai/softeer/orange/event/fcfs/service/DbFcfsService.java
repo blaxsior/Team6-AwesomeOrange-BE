@@ -16,7 +16,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -49,8 +49,9 @@ public class DbFcfsService implements FcfsService{
         EventUser eventUser = eventUserRepository.findByUserId(userId)
                 .orElseThrow(() -> new FcfsEventException(ErrorCode.EVENT_USER_NOT_FOUND));
 
-        // 잘못된 이벤트 참여 시간인지 검증
-        if(LocalDateTime.now().isBefore(fcfsEvent.getStartTime()) || LocalDateTime.now().isAfter(fcfsEvent.getEndTime())){
+        Instant now = Instant.now();
+        // 잘못된 벤트 참여 시간인지 검증
+        if(now.isBefore(fcfsEvent.getStartTime()) || now.isAfter(fcfsEvent.getEndTime())){
             throw new FcfsEventException(ErrorCode.INVALID_EVENT_TIME);
         }
 
@@ -66,7 +67,7 @@ public class DbFcfsService implements FcfsService{
             return false;
         }
 
-        fcfsEventWinningInfoRepository.save(FcfsEventWinningInfo.of(fcfsEvent, eventUser, LocalDateTime.now()));
+        fcfsEventWinningInfoRepository.save(FcfsEventWinningInfo.of(fcfsEvent, eventUser, Instant.now()));
         log.info("Participating Success: {}, User ID: {}", eventSequence, userId);
         return true;
     }

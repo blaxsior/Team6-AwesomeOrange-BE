@@ -19,7 +19,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.TestPropertySource;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -71,7 +72,7 @@ class DbFcfsServiceLoadTest {
                 .eventId(eventId)
                 .build();
         eventMetadataRepository.save(eventMetadata);
-        FcfsEvent fcfsEvent = FcfsEvent.of(LocalDateTime.now(), LocalDateTime.now().plusDays(1), numberOfWinners, "prizeInfo", eventMetadata);
+        FcfsEvent fcfsEvent = FcfsEvent.of(Instant.now(), Instant.now().plus(24, ChronoUnit.HOURS), numberOfWinners, "prizeInfo", eventMetadata);
         fcfsEventRepository.save(fcfsEvent);
         stringRedisTemplate.opsForValue().set(eventId, fcfsEvent.getId().toString());
 

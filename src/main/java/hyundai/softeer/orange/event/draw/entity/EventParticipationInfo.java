@@ -4,7 +4,7 @@ import hyundai.softeer.orange.eventuser.entity.EventUser;
 import jakarta.persistence.*;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Table(name="event_participation_info")
 @Getter
@@ -15,7 +15,7 @@ public class EventParticipationInfo {
     private Long id;
 
     @Column
-    private LocalDateTime date;
+    private Instant date;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="event_user_id")
@@ -25,7 +25,7 @@ public class EventParticipationInfo {
     @JoinColumn(name="draw_event_id")
     private DrawEvent drawEvent;
 
-    public static EventParticipationInfo of(LocalDateTime date, EventUser eventUser, DrawEvent drawEvent) {
+    public static EventParticipationInfo of(Instant date, EventUser eventUser, DrawEvent drawEvent) {
         EventParticipationInfo participationInfo = new EventParticipationInfo();
         participationInfo.date = date;
         participationInfo.eventUser = eventUser;

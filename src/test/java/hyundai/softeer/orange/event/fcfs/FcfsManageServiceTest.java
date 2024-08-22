@@ -24,7 +24,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,7 +68,7 @@ class FcfsManageServiceTest {
     EventFrame eventFrame = EventFrame.of("the-new-ioniq5","FcfsManageServiceTest");
     EventUser eventUser = EventUser.of("test", "0101234567", eventFrame, "uuid");
     FcfsEvent fcfsEvent = FcfsEvent.builder()
-            .startTime(LocalDateTime.now().plusSeconds(10))
+            .startTime(Instant.now().plus(10, ChronoUnit.SECONDS))
             .participantCount(100L)
             .build();
 
@@ -81,7 +83,7 @@ class FcfsManageServiceTest {
     @Test
     void registerFcfsEventsTest() {
         // given
-        given(fcfsEventRepository.findByStartTimeBetween(LocalDateTime.now(), LocalDateTime.now().plusDays(1)))
+        given(fcfsEventRepository.findByStartTimeBetween(Instant.now(), Instant.now().plus(1, ChronoUnit.DAYS)))
                 .willReturn(new ArrayList<>(List.of(fcfsEvent)));
 
         // when
@@ -122,7 +124,7 @@ class FcfsManageServiceTest {
         given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
         given(valueOperations.get(eventId)).willReturn(fcfsEventId.toString());
         given(valueOperations.get(FcfsUtil.startTimeFormatting(fcfsEventId.toString())))
-                .willReturn(LocalDateTime.now().minusMinutes(minute).toString());
+                .willReturn(Instant.now().minus(minute, ChronoUnit.MINUTES).toString());
 
         // when
         ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventId);
@@ -138,7 +140,7 @@ class FcfsManageServiceTest {
         // given
         given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
         given(valueOperations.get(FcfsUtil.startTimeFormatting(fcfsEventId.toString())))
-                .willReturn(LocalDateTime.now().plusMinutes(minute).toString());
+                .willReturn(Instant.now().plus(minute, ChronoUnit.MINUTES).toString());
 
         // when
         ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventId);
@@ -154,7 +156,7 @@ class FcfsManageServiceTest {
         // given
         given(stringRedisTemplate.opsForValue()).willReturn(valueOperations);
         given(valueOperations.get(FcfsUtil.startTimeFormatting(fcfsEventId.toString())))
-                .willReturn(LocalDateTime.now().minusMinutes(minute).toString());
+                .willReturn(Instant.now().plus(minute, ChronoUnit.MINUTES).toString());
 
         // when
         ResponseFcfsInfoDto fcfsInfo = fcfsManageService.getFcfsInfo(eventId);
@@ -207,7 +209,7 @@ class FcfsManageServiceTest {
     @Test
     void getFcfsWinnersInfoTest() {
         // given
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         given(fcfsEventWinningInfoRepository.findByFcfsEventId(fcfsEventId))
                 .willReturn(List.of(FcfsEventWinningInfo.of(fcfsEvent, eventUser, now)));
 

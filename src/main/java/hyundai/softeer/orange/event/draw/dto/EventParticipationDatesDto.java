@@ -1,6 +1,6 @@
 package hyundai.softeer.orange.event.draw.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
-public record EventParticipationDatesDto(List<LocalDateTime> dates) {}
+public record EventParticipationDatesDto(List<Instant> dates) {}

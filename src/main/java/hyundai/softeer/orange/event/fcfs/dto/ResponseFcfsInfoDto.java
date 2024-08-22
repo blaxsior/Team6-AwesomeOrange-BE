@@ -4,14 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResponseFcfsInfoDto {
 
-    private LocalDateTime eventStartTime;
+    private Instant eventStartTime;
 
     private String eventStatus;
 }

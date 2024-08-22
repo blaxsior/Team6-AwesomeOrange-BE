@@ -1,9 +1,8 @@
 package hyundai.softeer.orange.event.dto;
 
 import hyundai.softeer.orange.event.common.enums.EventType;
-import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * 이벤트 리스트를 위한 정보만 담고 있는 객체
@@ -21,12 +20,12 @@ public interface BriefEventDto {
     /**
      * 이벤트 시작 시간
      */
-    LocalDateTime getStartTime();
+    Instant getStartTime();
 
     /**
      * 이벤트 종료 시간
      */
-    LocalDateTime getEndTime();
+    Instant getEndTime();
 
     /**
      * 이벤트의 타입
