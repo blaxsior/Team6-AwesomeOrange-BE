@@ -4,12 +4,9 @@ import hyundai.softeer.orange.eventuser.dto.EventUserScoreDto;
 import hyundai.softeer.orange.eventuser.entity.EventUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.FluentQuery;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -17,9 +14,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EventUserRepository extends JpaRepository<EventUser, Long>, CustomEventUserRepository, JpaSpecificationExecutor<EventUser> {
+public interface EventUserRepository extends JpaRepository<EventUser, Long>, CustomEventUserRepository {
 
-    Optional<EventUser> findByUserNameAndPhoneNumber(String userName, String phoneNumber);
+    @EntityGraph(attributePaths = {"eventFrame"})
+    Optional<EventUser> findByUserNameAndPhoneNumberAndEventFrameFrameId(String userName, String phoneNumber, String eventFrameId);
 
     boolean existsByPhoneNumberAndEventFrameFrameId(String phoneNumber, String frameId);
 
@@ -38,4 +36,4 @@ public interface EventUserRepository extends JpaRepository<EventUser, Long>, Cus
             "JOIN event_metadata e ON e.event_frame_id = ef.id " +
             "WHERE e.id = :rawEventId", nativeQuery = true)
     List<EventUserScoreDto> findAllUserScoreByDrawEventId(@Param("rawEventId") long rawEventId);
- }
+}

@@ -43,8 +43,8 @@ public class EventUserService {
      * 3. 유저 uuid 기반 JWT 토큰 발급
      */
     @Transactional(readOnly = true)
-    public TokenDto login(RequestUserDto dto) {
-        EventUser eventUser = eventUserRepository.findByUserNameAndPhoneNumber(dto.getName(), dto.getPhoneNumber())
+    public TokenDto login(RequestUserDto dto, String eventFrameId) {
+        EventUser eventUser = eventUserRepository.findByUserNameAndPhoneNumberAndEventFrameFrameId(dto.getName(), dto.getPhoneNumber(), eventFrameId)
                 .orElseThrow(() -> new EventUserException(ErrorCode.EVENT_USER_NOT_FOUND));
 
         log.info("EventUser {} found, Login success", eventUser.getUserName());
