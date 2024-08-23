@@ -78,7 +78,7 @@ public class DrawEventService {
         if(drawEvent == null) throw new DrawEventException(ErrorCode.EVENT_NOT_FOUND);
 
         // 당첨자 목록 반환
-        return deWinningInfoRepository.findAllById(drawEvent.getId())
+        return deWinningInfoRepository.findAllByDrawEventId(drawEvent.getId())
                 .stream()
                 .map(ResponseDrawWinnerDto::new)
                 .toList();

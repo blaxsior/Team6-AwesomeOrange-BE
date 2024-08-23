@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface DrawEventWinningInfoRepository extends JpaRepository<DrawEventWinningInfo, Long>, CustomDrawEventWinningInfoRepository {
     @EntityGraph(attributePaths = {"eventUser"})
-    List<DrawEventWinningInfo> findAllById(Long id);
+    List<DrawEventWinningInfo> findAllByDrawEventId(Long eventId);
 }
