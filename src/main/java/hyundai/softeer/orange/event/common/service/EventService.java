@@ -128,6 +128,7 @@ public class EventService {
         Optional<EventMetadata> metadataOpt = emRepository.findFirstByEventId(eventId);
         EventMetadata eventMetadata = metadataOpt
                 .orElseThrow(() -> new EventException(ErrorCode.EVENT_NOT_FOUND));
+        if(eventDto.getEventType() != eventMetadata.getEventType()) throw new EventException(ErrorCode.EDIT_TO_DIFFERENT_EVENT_TYPE_NOT_ALLOWED);
         eventMetadata.updateName(eventDto.getName());
         eventMetadata.updateDescription(eventDto.getDescription());
         eventMetadata.updateStartTime(eventDto.getStartTime());

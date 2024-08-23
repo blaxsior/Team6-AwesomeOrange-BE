@@ -59,6 +59,7 @@ public enum ErrorCode {
     ALREADY_PARTICIPATED(HttpStatus.CONFLICT, "이미 참여한 사용자입니다."),
     PHONE_NUMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 전화번호입니다."),
     ALREADY_DRAWN(HttpStatus.CONFLICT, "이미 추첨된 이벤트입니다."),
+    EDIT_TO_DIFFERENT_EVENT_TYPE_NOT_ALLOWED(HttpStatus.CONFLICT,"생성된 이벤트를 다른 타입으로 수정할 수 없습니다"),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에 오류가 발생하였습니다.");
