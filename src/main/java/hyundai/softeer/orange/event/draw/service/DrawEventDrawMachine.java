@@ -33,6 +33,12 @@ public class DrawEventDrawMachine {
     @Async
     @Transactional
     public CompletableFuture<Void> draw(DrawEvent drawEvent) {
+        try{
+            Thread.sleep(1000 * 60 * 1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         long drawEventRawId = drawEvent.getId();
         // 점수 계산. 추후 추첨 과정과 분리될 수도 있음.
         List<DrawEventScorePolicy> policies = drawEvent.getPolicyList();
