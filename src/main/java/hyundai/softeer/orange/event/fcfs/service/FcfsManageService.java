@@ -49,38 +49,44 @@ public class FcfsManageService {
     // redis에 저장된 모든 선착순 이벤트의 당첨자 정보를 DB로 이관
     @Transactional
     public void registerWinners() {
-        Set<String> fcfsIds = stringRedisTemplate.keys("*:count");
-        if (fcfsIds == null || fcfsIds.isEmpty()) {
+        Set<String> fcfsKeys = stringRedisTemplate.keys("*:count");
+        if (fcfsKeys == null || fcfsKeys.isEmpty()) {
+            log.info("There are no FCFS events in yesterday");
             return;
         }
 
-        for(String fcfsId : fcfsIds) {
-            String eventId = fcfsId.replace(":count", "").replace("fcfs:", "");
-            Set<String> userIds = stringRedisTemplate.opsForZSet().range(FcfsUtil.winnerFormatting(eventId), 0, -1);
+        // 당첨자 관련 정보 조합하여 Entity 생성
+        log.info("keys for FCFS Events: {}", fcfsKeys);
+        for(String key : fcfsKeys) {
+            String fcfsEventId = key.replace(":count", "").replace("fcfs:", "");
+            Set<String> userIds = stringRedisTemplate.opsForZSet().range(FcfsUtil.winnerFormatting(fcfsEventId), 0, -1);
             if(userIds == null || userIds.isEmpty()) {
-                return;
+                log.info("No winners in FCFS Event {}", fcfsEventId);
+                continue;
             }
 
-            FcfsEvent event = fcfsEventRepository.findById(Long.parseLong(eventId))
+            FcfsEvent event = fcfsEventRepository.findById(Long.parseLong(fcfsEventId))
                     .orElseThrow(() -> new FcfsEventException(ErrorCode.FCFS_EVENT_NOT_FOUND));
 
             List<EventUser> users = eventUserRepository.findAllByUserId(userIds.stream().toList());
             List<FcfsEventWinningInfo> winningInfos = users
                     .stream()
-                    .map(user -> FcfsEventWinningInfo.of(event, user, getTimeFromScore(stringRedisTemplate.opsForZSet().score(FcfsUtil.winnerFormatting(eventId), user.getUserId()))))
+                    .map(user -> FcfsEventWinningInfo.of(event, user, getTimeFromScore(stringRedisTemplate.opsForZSet().score(FcfsUtil.winnerFormatting(fcfsEventId), user.getUserId()))))
                     .toList();
 
+            log.info("Winners of FCFS event {} were registered in DB", fcfsEventId);
             fcfsEventWinningInfoRepository.saveAll(winningInfos);
-            deleteEventInfo(eventId);
+            deleteEventInfo(fcfsEventId);
         }
 
+        // PK를 간접적으로 보관하던 eventId 제거
         Set<String> eventIds = stringRedisTemplate.keys("*:eventId");
         if(eventIds != null && !eventIds.isEmpty()) {
             for(String eventId : eventIds) {
                 stringRedisTemplate.delete(eventId);
             }
         }
-        log.info("Winners of all FCFS events were registered in DB");
+        log.info("Registering winners of FCFS events in DB is completed");
     }
 
     // 특정 선착순 이벤트의 정보 조회
