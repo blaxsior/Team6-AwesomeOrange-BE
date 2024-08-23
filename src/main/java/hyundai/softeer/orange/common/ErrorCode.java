@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     // 400 Bad Request
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
-    INVALID_COMMENT(HttpStatus.BAD_REQUEST, "부정적인 표현을 사용하였습니다."),
+    INVALID_COMMENT(HttpStatus.BAD_REQUEST, "긍정적인 기대평을 작성해주세요."),
     INVALID_JSON(HttpStatus.BAD_REQUEST, "잘못된 JSON 형식입니다."),
     INVALID_URL(HttpStatus.BAD_REQUEST, "유효하지 않은 URL입니다."),
     INVALID_INPUT_EVENT_TIME(HttpStatus.BAD_REQUEST, "입력된 시간 중 일부가 조건에 맞지 않습니다."),
