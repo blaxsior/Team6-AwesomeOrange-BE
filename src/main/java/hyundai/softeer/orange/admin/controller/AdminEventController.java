@@ -109,6 +109,8 @@ public class AdminEventController {
         return ResponseEntity.ok().build();
     }
 
+    public ResponseEntity<Void>
+
     /**
      * @param eventDto 수정된 이벤트 정보
      */
