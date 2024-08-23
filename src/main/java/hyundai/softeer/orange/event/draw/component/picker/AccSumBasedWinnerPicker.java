@@ -12,8 +12,9 @@ public class AccSumBasedWinnerPicker implements WinnerPicker {
     @Override
     public List<PickTarget> pick(List<PickTarget> items, long count) {
         long maxPickCount = Math.min(items.size(), count);
-        // TODO: 둘 중 하나를 선택하는 최적 조건 분석하기.
-        if (count - maxPickCount <= 10 || // 두 값 차이가 작을 때
+        // pick count = 0이면 아무 것도 안하게 수정
+        if(maxPickCount == 0) return Collections.emptyList();
+        if (count - maxPickCount <= 10 ||// 두 값 차이가 작을 때
                 ((double) count / maxPickCount) <= 1.1 ) {
             return pickMany(items, maxPickCount);
         } else {
@@ -50,6 +51,7 @@ public class AccSumBasedWinnerPicker implements WinnerPicker {
         // 가중합 배열
         RandomItem[] items = getAccumulatedItems(targets);
         List<PickTarget> pickedTargets = new ArrayList<>();
+        if(items.length == 0) return pickedTargets;
         long bound = items[items.length - 1].score;
         // 이미 선택된 대상이 존재하는 공간
         Set<Integer> pickedIdxSet = new HashSet<>();
