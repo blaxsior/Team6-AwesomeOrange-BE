@@ -265,7 +265,9 @@ public class EventService {
             deleteList.add(metadata);
         }
 
-        emRepository.deleteAllInBatch(deleteList);
+        // deleteAllInBatch는 연관관계를 고려하지 않고 raw Delete 문을 날림. 현재 연관된 DrawEvent / FcfsEvent를 함께 제거해줘야 하므로
+        // 성능이 모자르더라도 연관 관계를 함께 삭제해주는 deleteAll을 이용
+        emRepository.deleteAll(deleteList);
         return errorResponse;
     }
 
