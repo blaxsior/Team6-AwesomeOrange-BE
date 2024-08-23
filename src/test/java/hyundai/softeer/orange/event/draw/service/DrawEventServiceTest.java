@@ -199,7 +199,7 @@ class DrawEventServiceTest {
         var eventMetadata = createEventMetadata(eventId, EventType.draw, Instant.now());
         eventMetadata.updateDrawEvent(drawEvent);
         when(emRepository.findFirstByEventId(eventId)).thenReturn(Optional.of(eventMetadata));
-        when(deWinningInfoRepository.findAllById(drawEvent.getId())).thenReturn(List.of(DrawEventWinningInfo.of(1L, drawEvent, eventUser)));
+        when(deWinningInfoRepository.findAllByDrawEventId(drawEvent.getId())).thenReturn(List.of(DrawEventWinningInfo.of(1L, drawEvent, eventUser)));
 
         // when
         var result = deService.getDrawEventWinner(eventId);
@@ -207,7 +207,7 @@ class DrawEventServiceTest {
         // then
         assertThat(result).isNotEmpty();
         verify(emRepository, times(1)).findFirstByEventId(eventId);
-        verify(deWinningInfoRepository, times(1)).findAllById(drawEvent.getId());
+        verify(deWinningInfoRepository, times(1)).findAllByDrawEventId(drawEvent.getId());
     }
 
     @DisplayName("getDrawEventStatus: 대응되는 이벤트가 존재하지 않으면 예외 반환")
