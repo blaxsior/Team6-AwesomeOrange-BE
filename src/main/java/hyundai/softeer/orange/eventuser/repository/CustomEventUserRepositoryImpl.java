@@ -1,5 +1,6 @@
 package hyundai.softeer.orange.eventuser.repository;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hyundai.softeer.orange.event.common.entity.QEventFrame;
 import hyundai.softeer.orange.eventuser.dto.EventUserScoreDto;
@@ -47,16 +48,29 @@ public class CustomEventUserRepositoryImpl implements CustomEventUserRepository 
         QEventUser user = QEventUser.eventUser;
         QEventFrame eventFrame = QEventFrame.eventFrame;
 
-        var query =  queryFactory.select(user)
+        BooleanExpression condition = null;
+
+        if("userName".equals(field)) condition = user.userName.contains(search);
+        else if("phoneNumber".equals(field)) condition = user.phoneNumber.contains(search);
+        else if("frameId".equals(field)) condition = user.eventFrame.frameId.contains(search);
+
+        var data =  queryFactory.select(user)
                 .from(user)
                 .leftJoin(user.eventFrame, eventFrame)
-                .fetchJoin();
+                .fetchJoin()
+                .where(condition)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
 
-        if("userName".equals(field)) query.where(user.userName.contains(search));
-        else if("phoneNumber".equals(field))query.where(user.phoneNumber.contains(search));
-        else if("frameId".equals(field)) query.where(user.eventFrame.frameId.contains(search));
+        var count = queryFactory.select(user.count())
+                .from(user)
+                .leftJoin(user.eventFrame, eventFrame)
+                .where(condition)
+                .fetchOne();
 
-        var data = query.offset(pageable.getOffset()).limit(pageable.getPageSize()).fetch();
-        return new PageImpl<>(data, pageable, data.size());
+        assert count != null;
+
+        return new PageImpl<>(data, pageable, count);
     }
 }

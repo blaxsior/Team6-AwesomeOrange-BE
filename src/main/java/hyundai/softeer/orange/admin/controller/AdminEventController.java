@@ -94,7 +94,6 @@ public class AdminEventController {
     /**
      *
      * @param eventId 이벤트 ID. HD000000~로 시작하는 그것
-     * @return 해당 이벤트에 대한 정보
      */
     @DeleteMapping("{eventId}")
     @Operation(summary = "이벤트 제거", description = "이벤트를 제거한다. 시작 전의 이벤트만 삭제할 수 있다.", responses = {
@@ -107,6 +106,17 @@ public class AdminEventController {
     ) {
         eventService.deleteEvent(eventId);
         return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping
+    @Operation(summary = "이벤트 목록 제거", description = "이벤트 목록을 제거한다. 시작 전의 이벤트만 삭제할 수 있다.", responses = {
+            @ApiResponse(responseCode = "200", description = "이벤트를 정상적으로 삭제",content = @Content(schema = @Schema(implementation = Void.class))),
+            @ApiResponse(responseCode = "400", description = "삭제하지 못한 이벤트 존재", content = @Content(schema = @Schema(implementation = DeleteEventNotAllowedReasonDto[].class)))
+    })
+    public ResponseEntity<List<DeleteEventNotAllowedReasonDto>> deleteEvents(@Valid @RequestBody DeleteEventsDto dto) {
+        var result = eventService.deleteEvents(dto.getEventIds());
+        if(result == null) return ResponseEntity.ok().build();
+        return ResponseEntity.badRequest().body(result);
     }
 
     /**

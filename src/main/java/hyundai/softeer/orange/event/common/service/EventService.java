@@ -16,10 +16,7 @@ import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
 import hyundai.softeer.orange.event.common.repository.EventMetadataRepository;
 import hyundai.softeer.orange.event.common.repository.EventSpecification;
 import hyundai.softeer.orange.event.component.EventKeyGenerator;
-import hyundai.softeer.orange.event.dto.BriefEventDto;
-import hyundai.softeer.orange.event.dto.BriefEventPageDto;
-import hyundai.softeer.orange.event.dto.EventDto;
-import hyundai.softeer.orange.event.dto.EventSearchHintDto;
+import hyundai.softeer.orange.event.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +24,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -230,6 +226,47 @@ public class EventService {
         }
 
         emRepository.delete(metadata);
+    }
+
+    /**
+     * 이벤트를 제거한다. 존재하지 않거나, 시작된 이벤트는 제거할 수 없다.
+     * @param eventIds 이벤트의 ID 값
+     * @return  삭제 안된 이벤트에 대한 정보
+     */
+    @Transactional
+    public List<DeleteEventNotAllowedReasonDto> deleteEvents(List<String> eventIds) {
+        List<EventMetadata> metadataList = emRepository.findByEventIdIn(eventIds);
+        List<DeleteEventNotAllowedReasonDto> errorResponse = new ArrayList<>();
+
+        List<EventMetadata> deleteList = new ArrayList<>();
+
+        for(var metadata: metadataList) {
+            Instant startTime = metadata.getStartTime();
+            Instant endTime = metadata.getEndTime();
+            Instant now = Instant.now();
+
+            if(startTime.isBefore(now)) {
+                // 이벤트 중
+                if (endTime.isAfter(now)) {
+                    errorResponse.add(new DeleteEventNotAllowedReasonDto(
+                            metadata.getEventId(),
+                            ErrorCode.CANNOT_DELETE_EVENT_RUNNING.getMessage())
+                    );
+                    continue;
+                }
+                else {
+                    errorResponse.add(new DeleteEventNotAllowedReasonDto(
+                            metadata.getEventId(),
+                            ErrorCode.CANNOT_DELETE_EVENT_ENDED.getMessage()
+                    ));
+                    continue;
+                }
+            }
+            deleteList.add(metadata);
+        }
+
+        emRepository.deleteAllInBatch(deleteList);
+        return errorResponse;
     }
 
     private Set<EventType> parseTypes(String typeQuery) {
