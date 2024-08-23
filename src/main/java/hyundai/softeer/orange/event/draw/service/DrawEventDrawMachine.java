@@ -34,7 +34,7 @@ public class DrawEventDrawMachine {
     @Transactional
     public CompletableFuture<Void> draw(DrawEvent drawEvent) {
         try{
-            Thread.sleep(1000 * 60 * 1);
+            Thread.sleep(1000 * 5 * 1);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
