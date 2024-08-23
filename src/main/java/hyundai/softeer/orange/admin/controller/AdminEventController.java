@@ -115,7 +115,7 @@ public class AdminEventController {
     })
     public ResponseEntity<List<DeleteEventNotAllowedReasonDto>> deleteEvents(@Valid @RequestBody DeleteEventsDto dto) {
         var result = eventService.deleteEvents(dto.getEventIds());
-        if(result == null) return ResponseEntity.ok().build();
+        if(result.isEmpty()) return ResponseEntity.ok().build();
         return ResponseEntity.badRequest().body(result);
     }
 
