@@ -1,13 +1,11 @@
 package hyundai.softeer.orange.event.common.component.query;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class EventSearchQueryParserTest {
     @DisplayName("query parser이 정상적으로 동작하는지 검사")

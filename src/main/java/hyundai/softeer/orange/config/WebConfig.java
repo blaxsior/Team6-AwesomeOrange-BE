@@ -4,7 +4,6 @@ import hyundai.softeer.orange.admin.component.AdminArgumentResolver;
 import hyundai.softeer.orange.core.auth.AuthInterceptor;
 import hyundai.softeer.orange.eventuser.component.EventUserArgumentResolver;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;

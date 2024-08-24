@@ -5,10 +5,8 @@ import hyundai.softeer.orange.event.common.EventConst;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class EventKeyGenerator {

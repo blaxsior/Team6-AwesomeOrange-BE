@@ -1,10 +1,8 @@
 package hyundai.softeer.orange.core.jwt;
 
 import hyundai.softeer.orange.admin.entity.Admin;
-import hyundai.softeer.orange.core.jwt.JWTManager;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.jackson.io.JacksonDeserializer;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;
