@@ -1,18 +1,16 @@
 package hyundai.softeer.orange.event.common.component.query;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class EventSearchQueryParserTest {
     @DisplayName("query parser이 정상적으로 동작하는지 검사")
     @Test
-    public void testParser() {
+    void testParser() {
         // 1. key:value,key:value,key 형식으로 표현됨
         // 2. :으로 구분되는 부분은 1개 또는 2개여야 함.
 

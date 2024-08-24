@@ -9,11 +9,8 @@ import hyundai.softeer.orange.event.draw.dto.EventParticipateCountDto;
 import hyundai.softeer.orange.event.draw.entity.DrawEventScorePolicy;
 import hyundai.softeer.orange.event.draw.enums.DrawEventAction;
 import hyundai.softeer.orange.event.draw.repository.EventParticipationInfoRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;

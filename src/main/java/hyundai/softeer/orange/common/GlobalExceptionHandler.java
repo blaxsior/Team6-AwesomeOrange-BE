@@ -1,6 +1,5 @@
 package hyundai.softeer.orange.common;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import hyundai.softeer.orange.admin.exception.AdminException;
 import hyundai.softeer.orange.comment.exception.CommentException;
 

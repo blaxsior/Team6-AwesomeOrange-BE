@@ -16,7 +16,7 @@ class AccSumBasedWinnerPickerTest {
 
     @DisplayName("정상적으로 N개의 서로 다른 아이템을 뽑는지 검사")
     @Test
-    public void test_pickMany() {
+    void test_pickMany() {
         AccSumBasedWinnerPicker picker = new AccSumBasedWinnerPicker();
         List<PickTarget> pickTargets = new ArrayList<>();
 
@@ -38,7 +38,7 @@ class AccSumBasedWinnerPickerTest {
 
     @DisplayName("정상적으로 N개의 서로 다른 아이템을 뽑는지 검사")
     @Test
-    public void test_pickManyUsingSet() {
+    void test_pickManyUsingSet() {
         AccSumBasedWinnerPicker picker = new AccSumBasedWinnerPicker();
         List<PickTarget> pickTargets = new ArrayList<>();
 
@@ -60,7 +60,7 @@ class AccSumBasedWinnerPickerTest {
 
     @DisplayName("binary search가 제대로 동작하는지 테스트")
     @Test
-    public void test_binarySearch() {
+    void test_binarySearch() {
         AccSumBasedWinnerPicker picker = new AccSumBasedWinnerPicker();
         AccSumBasedWinnerPicker.RandomItem[] items = new AccSumBasedWinnerPicker.RandomItem[5];
 
@@ -89,7 +89,7 @@ class AccSumBasedWinnerPickerTest {
 
     @DisplayName("정상적으로 누적합을 만드는지 검사")
     @Test
-    public void test_getAccumulatedItems() {
+    void test_getAccumulatedItems() {
 
         List<PickTarget> pickTargets = new ArrayList<>();
 

@@ -1,9 +1,7 @@
 package hyundai.softeer.orange.core.jwt;
 
 import hyundai.softeer.orange.admin.entity.Admin;
-import hyundai.softeer.orange.core.jwt.JWTManager;
 import io.jsonwebtoken.JwtException;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

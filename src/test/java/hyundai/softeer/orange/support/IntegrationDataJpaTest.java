@@ -20,7 +20,6 @@ public abstract class IntegrationDataJpaTest {
         List<String> tableNameList = jdbcTemplate.queryForList("SHOW TABLES", String.class); // 모든 테이블 이름을 가져온다.
         for(String tableName : tableNameList) {
             jdbcTemplate.execute("TRUNCATE TABLE " + tableName); // 모든 테이블의 데이터를 삭제한다.
-            jdbcTemplate.execute("ALTER TABLE " + tableName + " AUTO_INCREMENT = 1"); // AUTO_INCREMENT 초기화
         }
         jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
     }
