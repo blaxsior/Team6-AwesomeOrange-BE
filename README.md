@@ -1,5 +1,7 @@
 # 🍊 Team6-AwesomeOrange
 
+> 프런트엔드 레포는 여기로! => [프런트엔드 레포](https://github.com/softeerbootcamp4th/Team6-AwesomeOrange-FE)
+> 
 > 백엔드 레포는 여기로! => [백엔드 레포](https://github.com/softeerbootcamp4th/Team6-AwesomeOrange-BE)
 
 ## 🎉 Project Introduction
@@ -56,6 +58,9 @@
 
 [Convention](https://github.com/softeerbootcamp4th/Team6-AwesomeOrange-BE/wiki/%08%5BTeam-Convention%5D)
 
+### 협업 방식
+[팀 협업 방식](https://github.com/softeerbootcamp4th/Team6-AwesomeOrange-BE/wiki/%EC%96%B4%EC%8D%B8-%EC%98%A4%EB%A0%8C%EC%A7%80%EC%9D%98-%ED%98%91%EC%97%85-%EB%B0%A9%EC%8B%9D)
+
 ## 🎨 Plan & Design Link
 [Plan & Design Link(Figma)](https://www.figma.com/design/XieJv765qFmU9dFuQAG7tQ/%EC%96%B4%EC%8D%B8%EC%98%A4%EB%A0%8C%EC%A7%80_Hand-off_%EC%B5%9C%EC%A2%85(07%2F24)?node-id=33-1157)
 
@@ -87,8 +92,11 @@
 ![image](https://github.com/user-attachments/assets/d7444775-cbad-48a2-a278-fd73368a1b6e)
 
 ## 🤔 Issue & TroubleShooting
-- [프론트엔드 트러블슈팅](https://github.com/softeerbootcamp4th/Team6-AwesomeOrange-FE/wiki)
-- [백엔드 트러블슈팅](https://github.com/softeerbootcamp4th/Team6-AwesomeOrange-BE/wiki/%5BIssue-&-TroubleShooting%5D)
+- [프론트엔드 예상 트러블슈팅](https://github.com/softeerbootcamp4th/Team6-AwesomeOrange-FE/wiki)
+- [백엔드 예상 트러블슈팅](https://github.com/softeerbootcamp4th/Team6-AwesomeOrange-BE/wiki/%5BIssue-&-TroubleShooting%5D)
+- [트러블슈팅 - 이희준](https://github.com/softeerbootcamp4th/Team6-AwesomeOrange-BE/wiki/%ED%8A%B8%EB%9F%AC%EB%B8%94%EC%8A%88%ED%8C%85-%E2%80%90-%EC%9D%B4%ED%9D%AC%EC%A4%80)
+- [트러블슈팅 - 채승운](https://github.com/softeerbootcamp4th/Team6-AwesomeOrange-BE/wiki/%ED%8A%B8%EB%9F%AC%EB%B8%94%EC%8A%88%ED%8C%85-%E2%80%90-%EC%B1%84%EC%8A%B9%EC%9A%B4)
+
 
 ## ⚙️ Tech Stack & Architecture
 
@@ -98,7 +106,7 @@
 <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=black"><img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=black"><img src="https://img.shields.io/badge/TailwindCSS-06B6D4?style=for-the-badge&logo=Tailwind CSS&logoColor=white"><img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=Vite&logoColor=purple"><img src="https://img.shields.io/badge/Zustand-DDA0DD?style=for-the-badge&logo=Zustand&logoColor=purple">
 
 #### Back-End
-<img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=for-the-badge&logo=Spring Boot&logoColor=black"><img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=MySQL&logoColor=black"><img src="https://img.shields.io/badge/Redis-FF4438?style=for-the-badge&logo=Redis&logoColor=black"><img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker&logoColor=black"><img src="https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=Grafana&logoColor=black"><img src="https://img.shields.io/badge/Apache JMeter-D22128?style=for-the-badge&logo=Apache JMeter&logoColor=black">
+<img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=for-the-badge&logo=Spring Boot&logoColor=black"><img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=MySQL&logoColor=black"><img src="https://img.shields.io/badge/Redis-FF4438?style=for-the-badge&logo=Redis&logoColor=black"><img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker&logoColor=black"><img src="https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=Grafana&logoColor=black"><img src="https://img.shields.io/badge/Apache JMeter-D22128?style=for-the-badge&logo=Apache JMeter&logoColor=black"><img src="https://img.shields.io/badge/k6-7D64FF?style=for-the-badge&logo=k6&logoColor=black">
 
 ### 🗂️ 폴더 구조
 **피처 기반 폴더 구조**를 채용하고 있습니다. 각각의 feature 폴더 내에 컴포넌트, 훅, 상수 등이 정의되어 있는 형태로, 분류 기반 폴더 구조에 비해 유사한 기능을 가진 파일을 찾기 매우 빠르기 때문에 채용했습니다.
@@ -133,6 +141,12 @@
 
 
 ### 🏗️ 백엔드 아키텍처
+![image](https://github.com/user-attachments/assets/3df8b220-bd4d-4900-9bb2-dd572218d0b2)
+
+
+## CI/CD workflow
+![image](https://github.com/user-attachments/assets/c5014c58-7f6d-4e47-9380-87785704bae0)
+![image](https://github.com/user-attachments/assets/6b828058-a6d0-4d1e-a358-05f50ae54dd9)
 
 
 ### 🗄️ ERD
