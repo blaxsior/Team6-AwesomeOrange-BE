@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/orange
+#    write username / password in secrets yml
+#    username: test
+#    password: test
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  config:
+    import: optional:secrets.yml
+
+naver:
+  client-id: testtest
+  client-secret: testtest
+  url: https://naveropenapi.apigw.ntruss.com/sentiment-analysis/v1/analyze
+
+jwt:
+  secret: PP92X6YBH7lSREAQcd+8dZhgx7/XGy8XvcPGKjZrDYs=
+
+cool-sms:
+  api-key: testtest
+  api-secret: testtest
+  from: 01000000000
+  url: https://api.coolsms.co.kr
