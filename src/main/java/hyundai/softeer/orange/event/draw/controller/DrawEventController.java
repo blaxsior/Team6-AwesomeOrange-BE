@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class DrawEventController {
     private final EventParticipationService epService;
     /**
-     *
+     * 오늘의 인터렉션에 참여한다. 서버 시간 기준으로 참여를 정하며, 당일 중복 참여는 불가능하다.
      * @param eventId 이벤트의 id
      */
     @Operation(summary = "오늘의 인터렉션 이벤트에 참여한다.", description = "오늘의 인터렉션 이벤트에 참여한다. 서버 시간 기준으로 참여를 정하며, 당일 중복 참여는 불가능하다.", responses = {

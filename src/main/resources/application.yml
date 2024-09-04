@@ -17,6 +17,13 @@ spring:
         format_sql: false
   config:
     import: optional:secrets.yml
+  messages:
+    basename: messages,errors
+
+springdoc:
+  swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alph
 
 naver:
   client-id: testtest

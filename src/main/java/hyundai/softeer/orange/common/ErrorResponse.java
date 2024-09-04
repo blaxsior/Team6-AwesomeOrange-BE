@@ -17,4 +17,11 @@ public class ErrorResponse {
         response.errorMessage = errorCode.getMessage();
         return response;
     }
+
+    public static ErrorResponse from(String error, String errorMessage) {
+        ErrorResponse response = new ErrorResponse();
+        response.error = error;
+        response.errorMessage = errorMessage;
+        return response;
+    }
 }

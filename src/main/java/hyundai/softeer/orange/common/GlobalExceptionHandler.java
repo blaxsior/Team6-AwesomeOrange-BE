@@ -65,13 +65,17 @@ public class GlobalExceptionHandler {
         return Map.of(fieldName, errorMessage);
     }
 
-    @ExceptionHandler({CommentException.class, AdminException.class, EventUserException.class, FcfsEventException.class, UrlException.class, InternalServerException.class})
-    public ResponseEntity<ErrorResponse> handleException(BaseException e) {
-        return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ErrorResponse.from(e.getErrorCode()));
-    }
-
     @ExceptionHandler({BaseException.class})
     public ResponseEntity<ErrorResponse> handleAllBaseException(BaseException e) {
-        return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ErrorResponse.from(e.getErrorCode()));
+        var code = e.getErrorCode();
+        var status = code.getHttpStatus();
+        var message = code.getMessage();
+
+        Locale locale = LocaleContextHolder.getLocale(); // 현재 스레드의 로케일 정보를 가져온다.
+        String errorMessage = messageSource.getMessage(message, null, locale); // 국제화 된 메시지를 가져온다.
+
+        return ResponseEntity
+                .status(status)
+                .body(ErrorResponse.from(code.name(), errorMessage));
     }
 }
