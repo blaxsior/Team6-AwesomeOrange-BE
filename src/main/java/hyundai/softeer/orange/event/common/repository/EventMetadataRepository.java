@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EventMetadataRepository extends JpaRepository<EventMetadata, Long>, JpaSpecificationExecutor<EventMetadata> {
+public interface EventMetadataRepository extends JpaRepository<EventMetadata, Long>, CustomEventMetadataRepository {
     Optional<EventMetadata> findFirstByEventId(String eventId);
 
     List<EventMetadata> findByEventIdIn(List<String> eventIds);

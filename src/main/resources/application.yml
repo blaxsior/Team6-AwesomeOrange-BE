@@ -11,7 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         format_sql: false
@@ -23,7 +23,7 @@ spring:
 springdoc:
   swagger-ui:
     operations-sorter: alpha
-    tags-sorter: alph
+    tags-sorter: alpha
 
 naver:
   client-id: testtest

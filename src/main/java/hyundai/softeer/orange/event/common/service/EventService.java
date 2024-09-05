@@ -189,20 +189,10 @@ public class EventService {
 
         PageRequest pageInfo = PageRequest.of(
                 page != null ? page : EventConst.EVENT_DEFAULT_PAGE,
-                size != null ? size : EventConst.EVENT_DEFAULT_SIZE
+                size != null ? size : EventConst.EVENT_DEFAULT_SIZE,
+                sort
         );
-
-        var searchOnName = EventSpecification.searchOnName(search);
-        var searchOnEventId = EventSpecification.searchOnEventId(search);
-        var eventTypeIn = EventSpecification.isEventTypeIn(types);
-
-        Page<BriefEventDto> eventPage = emRepository.findBy(
-                searchOnName.or(searchOnEventId)
-                        .and(eventTypeIn),
-                (p) -> p.as(BriefEventDto.class)
-                        .sortBy(sort)
-                        .page(pageInfo)
-        );
+        Page<BriefEventDto> eventPage = emRepository.findBriefsBySearch(search, types, pageInfo);
 
         return BriefEventPageDto.from(eventPage);
     }
@@ -315,15 +305,7 @@ public class EventService {
      */
     @Transactional(readOnly = true)
     public List<EventSearchHintDto> searchHints(String search) {
-        var searchOnEventIdDefaultReject = EventSpecification.searchOnEventId(search, false);
-        var isDrawEvent = EventSpecification.isEventTypeOf(EventType.draw);
-        // 내부적으로는 모든 데이터를 fetch하는 문제가 여전히 존재.
-
-        log.info("searching hints for {}", search);
-        return emRepository.findBy(
-                searchOnEventIdDefaultReject.and(isDrawEvent),
-                (q) -> q.as(EventSearchHintDto.class).all()
-        );
+        return emRepository.findHintsBySearch(search);
     }
 
     /**

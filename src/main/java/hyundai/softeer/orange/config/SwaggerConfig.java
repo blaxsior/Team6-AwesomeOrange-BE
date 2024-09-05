@@ -21,8 +21,6 @@ public class SwaggerConfig {
                         .addSecuritySchemes(AuthConst.ADMIN_AUTH, createAPIKeyScheme())
                         .addSecuritySchemes(AuthConst.EVENT_USER_AUTH, createAPIKeyScheme())
                 )
-//                 모든 경로에 등록하면 안됨.
-//                .addSecurityItem(createAPIKeyRequirement())
                 .info(apiInfo());
     }
 
