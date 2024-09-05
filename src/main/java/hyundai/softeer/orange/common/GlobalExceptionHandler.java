@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
         String code = e.getErrorCode();
         String fieldName = e.getName();
         Locale locale = LocaleContextHolder.getLocale(); // 현재 스레드의 로케일 정보를 가져온다.
-        String errorMessage = messageSource.getMessage(code, null, locale); // 국제화 된 메시지를 가져온다.
+        String errorMessage = messageSource.getMessage(code, null, code, locale); // 국제화 된 메시지를 가져온다.
 
         return Map.of(fieldName, errorMessage);
     }
@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
         var message = code.getMessage();
 
         Locale locale = LocaleContextHolder.getLocale(); // 현재 스레드의 로케일 정보를 가져온다.
-        String errorMessage = messageSource.getMessage(message, null, locale); // 국제화 된 메시지를 가져온다.
+        String errorMessage = messageSource.getMessage(message, null, message, locale); // 국제화 된 메시지를 가져온다.
 
         return ResponseEntity
                 .status(status)
