@@ -102,7 +102,7 @@ class EventParticipationServiceTest {
 
         assertThatThrownBy(() -> {
             service.participateDaily("test", "any");
-        }).hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+        }).hasMessage(ErrorCode.EVENT_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("이벤트가 존재해도, draw 이벤트가 아니면 예외 반환")
@@ -116,7 +116,7 @@ class EventParticipationServiceTest {
 
         assertThatThrownBy(() -> {
             service.participateDaily("test", "any");
-        }).hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+        }).hasMessage(ErrorCode.EVENT_NOT_FOUND.getErrorCode());
         verify(emRepository, atLeastOnce()).findFirstByEventId(any());
     }
 
@@ -132,7 +132,7 @@ class EventParticipationServiceTest {
         assertThatThrownBy(() -> {
             service.participateDaily("test", "any");
         }).isInstanceOf(EventException.class)
-                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("이벤트 유저가 없다면 예외 반환")
@@ -151,7 +151,7 @@ class EventParticipationServiceTest {
         assertThatThrownBy(() -> {
             service.participateDaily("test", "any");
         }).isInstanceOf(EventUserException.class)
-                .hasMessage(ErrorCode.USER_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_USER_NOT_FOUND.getErrorCode());
         verify(euRepository, atLeastOnce()).findByUserId(any());
     }
 
@@ -179,7 +179,7 @@ class EventParticipationServiceTest {
         assertThatThrownBy(() -> {
             service.participateAtDate("test", "any", now);
         }).isInstanceOf(EventException.class)
-                .hasMessage(ErrorCode.INVALID_EVENT_TIME.getMessage());
+                .hasMessage(ErrorCode.INVALID_EVENT_TIME.getErrorCode());
         verify(epiRepository, never()).existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any());
     }
 
@@ -209,7 +209,7 @@ class EventParticipationServiceTest {
         assertThatThrownBy(() -> {
             service.participateAtDate("test", "any", now);
         }).isInstanceOf(EventException.class)
-        .hasMessage(ErrorCode.ALREADY_PARTICIPATED.getMessage());
+        .hasMessage(ErrorCode.ALREADY_PARTICIPATED.getErrorCode());
         verify(epiRepository, atLeastOnce()).existsByEventUserAndDrawEventAndDateBetween(any(), any(), any(), any());
     }
 

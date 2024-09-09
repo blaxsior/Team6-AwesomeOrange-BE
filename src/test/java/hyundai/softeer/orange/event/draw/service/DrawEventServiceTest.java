@@ -72,7 +72,7 @@ class DrawEventServiceTest {
         // when & then
         assertThatThrownBy(() -> deService.draw(eventId))
                 .isInstanceOf(EventException.class)
-                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("추첨 이벤트가 아니면 예외 반환")
@@ -86,7 +86,7 @@ class DrawEventServiceTest {
         // when & then
         assertThatThrownBy(() -> deService.draw(eventId))
                 .isInstanceOf(DrawEventException.class)
-                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getErrorCode());
     }
 
 
@@ -102,7 +102,7 @@ class DrawEventServiceTest {
         // when & then
         assertThatThrownBy(() -> deService.draw(eventId))
                 .isInstanceOf(DrawEventException.class)
-                .hasMessage(ErrorCode.EVENT_NOT_ENDED.getMessage());
+                .hasMessage(ErrorCode.EVENT_NOT_ENDED.getErrorCode());
     }
 
 
@@ -117,7 +117,7 @@ class DrawEventServiceTest {
         // when & then
         assertThatThrownBy(() -> deService.draw(eventId))
                 .isInstanceOf(DrawEventException.class)
-                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("추첨 이벤트가 이미 추첨된 상태라면 예외 반환")
@@ -134,7 +134,7 @@ class DrawEventServiceTest {
         // when & then
         assertThatThrownBy(() -> deService.draw(eventId))
                 .isInstanceOf(DrawEventException.class)
-                .hasMessage(ErrorCode.ALREADY_DRAWN.getMessage());
+                .hasMessage(ErrorCode.ALREADY_DRAWN.getErrorCode());
     }
 
     @DisplayName("이벤트가 현재 추첨 중이라면 예외 반환")
@@ -154,7 +154,7 @@ class DrawEventServiceTest {
         // when & then
         assertThatThrownBy(() -> deService.draw(eventId))
                 .isInstanceOf(DrawEventException.class)
-                .hasMessage(ErrorCode.EVENT_IS_DRAWING.getMessage());
+                .hasMessage(ErrorCode.EVENT_IS_DRAWING.getErrorCode());
         verify(ops, times(1)).increment(key);
         verify(redisTemplate, times(1)).opsForValue();
     }
@@ -225,15 +225,15 @@ class DrawEventServiceTest {
         // 이벤트 없음
         assertThatThrownBy(() -> deService.draw(eventId))
                 .isInstanceOf(EventException.class)
-                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getErrorCode());
         // 이벤트 draw 아님
         assertThatThrownBy(() -> deService.draw(eventId))
                 .isInstanceOf(DrawEventException.class)
-                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getErrorCode());
         // 대응되는 draw 객체가 없음
         assertThatThrownBy(() -> deService.draw(eventId))
                 .isInstanceOf(DrawEventException.class)
-                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("getDrawEventStatus: 이벤트가 종료되지 않았다면 BEFORE_END")

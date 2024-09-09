@@ -59,7 +59,7 @@ class UrlServiceTest {
         // when & then
         assertThatThrownBy(() -> urlService.generateUrl(originalUrl))
                 .isInstanceOf(UrlException.class)
-                .hasMessage(ErrorCode.INVALID_URL.getMessage());
+                .hasMessage(ErrorCode.INVALID_URL.getErrorCode());
     }
 
     @DisplayName("getOriginalUrl: 단축 URL에 해당하는 원본 URL을 조회한다.")
@@ -84,6 +84,6 @@ class UrlServiceTest {
         // when & then
         assertThatThrownBy(() -> urlService.getOriginalUrl(shortUrl))
                 .isInstanceOf(UrlException.class)
-                .hasMessage(ErrorCode.SHORT_URL_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.SHORT_URL_NOT_FOUND.getErrorCode());
     }
 }

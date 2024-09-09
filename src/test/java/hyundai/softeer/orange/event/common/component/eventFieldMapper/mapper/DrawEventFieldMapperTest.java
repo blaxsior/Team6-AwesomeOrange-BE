@@ -118,7 +118,7 @@ class DrawEventFieldMapperTest extends IntegrationDataJpaTest {
         assertThatThrownBy(() -> {
             mapper.validateDrawEventDto(dto);
         }).isInstanceOf(DrawEventException.class)
-        .hasMessage(ErrorCode.DUPLICATED_GRADES.getMessage());
+        .hasMessage(ErrorCode.DUPLICATED_GRADES.getErrorCode());
     }
 
     @DisplayName("validateDrawEventDto: 액션에 중복이 있다면 예외 반환")
@@ -138,7 +138,7 @@ class DrawEventFieldMapperTest extends IntegrationDataJpaTest {
         assertThatThrownBy(() -> {
             mapper.validateDrawEventDto(dto);
         }).isInstanceOf(DrawEventException.class)
-                .hasMessage(ErrorCode.DUPLICATED_POLICIES.getMessage());
+                .hasMessage(ErrorCode.DUPLICATED_POLICIES.getErrorCode());
     }
 
     @DisplayName("validateDrawEventDto: validation 성공")
@@ -162,6 +162,6 @@ class DrawEventFieldMapperTest extends IntegrationDataJpaTest {
         assertThatThrownBy(() -> {
             mapper.validateDrawEventDto(null);
         }).isInstanceOf(EventException.class)
-                .hasMessage(ErrorCode.INVALID_JSON.getMessage());
+                .hasMessage(ErrorCode.INVALID_JSON.getErrorCode());
     }
 }

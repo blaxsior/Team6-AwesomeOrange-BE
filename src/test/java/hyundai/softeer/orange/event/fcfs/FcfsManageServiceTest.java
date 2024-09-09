@@ -174,7 +174,7 @@ class FcfsManageServiceTest {
 
         assertThatThrownBy(() -> fcfsManageService.getFcfsInfo(eventId))
                 .isInstanceOf(FcfsEventException.class)
-                .hasMessage(ErrorCode.FCFS_EVENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.FCFS_EVENT_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("isParticipated: 특정 선착순 이벤트에 참여한 유저임을 확인한다.")
@@ -201,7 +201,7 @@ class FcfsManageServiceTest {
         // when & then
         assertThatThrownBy(() -> fcfsManageService.isParticipated(eventId, eventUser.getUserId()))
                 .isInstanceOf(FcfsEventException.class)
-                .hasMessage(ErrorCode.FCFS_EVENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.FCFS_EVENT_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("getFcfsWinnersInfo: 특정 선착순 이벤트의 당첨자 조회 - 어드민에서 사용")

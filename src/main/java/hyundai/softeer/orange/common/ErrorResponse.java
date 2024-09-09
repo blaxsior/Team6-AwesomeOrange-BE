@@ -14,7 +14,7 @@ public class ErrorResponse {
     public static ErrorResponse from(ErrorCode errorCode) {
         ErrorResponse response = new ErrorResponse();
         response.error = errorCode.name();
-        response.errorMessage = errorCode.getMessage();
+        response.errorMessage = errorCode.getErrorCode();
         return response;
     }
 

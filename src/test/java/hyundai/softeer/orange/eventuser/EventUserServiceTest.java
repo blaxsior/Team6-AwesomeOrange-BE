@@ -97,7 +97,7 @@ class EventUserServiceTest {
         // when & then
         assertThatThrownBy(() -> eventUserService.login(requestUserDto, eventFrameId))
                 .isInstanceOf(EventUserException.class)
-                .hasMessage(ErrorCode.EVENT_USER_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_USER_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("sendAuthCode: 유저가 인증번호를 전송한다.")
@@ -129,7 +129,7 @@ class EventUserServiceTest {
         // when & then
         assertThatThrownBy(() -> eventUserService.sendAuthCode(requestUserDto, eventFrameId))
                 .isInstanceOf(EventUserException.class)
-                .hasMessage(ErrorCode.EVENT_FRAME_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_FRAME_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("sendAuthCode: 유저가 인증번호를 전송하려 할 때 이미 가입되었음이 확인될 경우 예외가 발생한다.")
@@ -144,7 +144,7 @@ class EventUserServiceTest {
         // when & then
         assertThatThrownBy(() -> eventUserService.sendAuthCode(requestUserDto, eventFrameId))
                 .isInstanceOf(EventUserException.class)
-                .hasMessage(ErrorCode.USER_ALREADY_EXISTS.getMessage());
+                .hasMessage(ErrorCode.EVENTUSER_ALREADY_EXISTS.getErrorCode());
     }
 
     @DisplayName("checkAuthCode: 유저가 전송한 인증번호를 Redis 상에서 확인하고 성공한다.")
@@ -188,7 +188,7 @@ class EventUserServiceTest {
         // when & then
         assertThatThrownBy(() -> eventUserService.checkAuthCode(requestAuthCodeDto, eventFrameId))
                 .isInstanceOf(EventUserException.class)
-                .hasMessage(ErrorCode.INVALID_AUTH_CODE.getMessage());
+                .hasMessage(ErrorCode.INVALID_AUTH_CODE.getErrorCode());
     }
 
     @DisplayName("checkAuthCode: Redis에 저장된 인증번호가 없어 예외가 발생한다.")
@@ -204,6 +204,6 @@ class EventUserServiceTest {
         // when & then
         assertThatThrownBy(() -> eventUserService.checkAuthCode(requestAuthCodeDto, eventFrameId))
                 .isInstanceOf(EventUserException.class)
-                .hasMessage(ErrorCode.AUTH_CODE_EXPIRED.getMessage());
+                .hasMessage(ErrorCode.AUTH_CODE_EXPIRED.getErrorCode());
     }
 }

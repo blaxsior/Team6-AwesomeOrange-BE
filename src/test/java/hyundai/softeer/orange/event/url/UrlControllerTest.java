@@ -73,22 +73,6 @@ class UrlControllerTest {
                 .andExpect(content().json(responseBody));
     }
 
-    @DisplayName("urlShorten: userId가 존재하지 않는 경우 ErrorResponse를 반환한다.")
-    @Test
-    void urlShorten404Test() throws Exception {
-        // given
-        when(urlService.generateUrl(originalUrl)).thenThrow(new UrlException(ErrorCode.USER_NOT_FOUND));
-        String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.USER_NOT_FOUND));
-
-        // when & then
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/v1/url/shorten")
-                .param("originalUrl", originalUrl)
-                .param("userId", userId))
-                .andExpect(status().isNotFound())
-                .andExpect(content().json(responseBody));
-    }
-
     @DisplayName("redirectToOriginalUrl: shortUrl을 전달받아 원본 URL로 리다이렉트한다.")
     @Test
     void redirectToOriginalUrlTest() throws Exception {

@@ -74,7 +74,7 @@ public class EventUserService {
 
         // 이미 해당 이벤트에 가입된 유저인 경우
         if(eventUserRepository.existsByPhoneNumberAndEventFrameFrameId(dto.getPhoneNumber(), eventFrameId)){
-            throw new EventUserException(ErrorCode.USER_ALREADY_EXISTS);
+            throw new EventUserException(ErrorCode.EVENTUSER_ALREADY_EXISTS);
         }
         smsService.sendSms(dto);
     }

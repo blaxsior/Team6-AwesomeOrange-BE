@@ -103,7 +103,7 @@ class EventUserControllerTest {
     void login404Test() throws Exception {
         // given
         String requestBody = mapper.writeValueAsString(requestUserDto);
-        when(eventUserService.login(any(RequestUserDto.class), anyString())).thenThrow(new EventUserException(ErrorCode.USER_NOT_FOUND));
+        when(eventUserService.login(any(RequestUserDto.class), anyString())).thenThrow(new EventUserException(ErrorCode.EVENT_USER_NOT_FOUND));
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/login/" + eventFrameId)
@@ -147,8 +147,8 @@ class EventUserControllerTest {
     void sendAuthCode409Test() throws Exception {
         // given
         String requestBody = mapper.writeValueAsString(requestUserDto);
-        String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.USER_ALREADY_EXISTS));
-        doThrow(new EventUserException(ErrorCode.USER_ALREADY_EXISTS)).when(eventUserService).sendAuthCode(any(RequestUserDto.class), anyString());
+        String responseBody = mapper.writeValueAsString(ErrorResponse.from(ErrorCode.EVENTUSER_ALREADY_EXISTS));
+        doThrow(new EventUserException(ErrorCode.EVENTUSER_ALREADY_EXISTS)).when(eventUserService).sendAuthCode(any(RequestUserDto.class), anyString());
 
         // when & then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/event-user/send-auth/" + eventFrameId)

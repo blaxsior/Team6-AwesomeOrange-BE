@@ -151,7 +151,7 @@ class CommentServiceTest {
         // when & then
         assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
                 .isInstanceOf(CommentException.class)
-                .hasMessage(ErrorCode.EVENT_NOT_PARTICIPATED.getMessage());
+                .hasMessage(ErrorCode.EVENT_NOT_PARTICIPATED.getErrorCode());
     }
 
     @DisplayName("createComment: 하루에 여러 번의 기대평을 작성하려 할 때 예외가 발생한다.")
@@ -167,7 +167,7 @@ class CommentServiceTest {
         // when
         assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
                 .isInstanceOf(CommentException.class)
-                .hasMessage(ErrorCode.COMMENT_ALREADY_EXISTS.getMessage());
+                .hasMessage(ErrorCode.COMMENT_ALREADY_EXISTS.getErrorCode());
     }
 
     @DisplayName("createComment: EventFrame을 찾을 수 없는 경우 예외가 발생한다.")
@@ -180,7 +180,7 @@ class CommentServiceTest {
         // when & then
         assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
                 .isInstanceOf(CommentException.class)
-                .hasMessage(ErrorCode.EVENT_FRAME_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_FRAME_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("createComment: EventUser을 찾을 수 없는 경우 예외가 발생한다.")
@@ -192,7 +192,7 @@ class CommentServiceTest {
         // when & then
         assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
                 .isInstanceOf(CommentException.class)
-                .hasMessage(ErrorCode.EVENT_USER_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_USER_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("createComment: DrawEvent를 찾을 수 없는 경우 예외가 발생한다.")
@@ -206,7 +206,7 @@ class CommentServiceTest {
         // when & then
         assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
                 .isInstanceOf(CommentException.class)
-                .hasMessage(ErrorCode.DRAW_EVENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.DRAW_EVENT_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("createComment: 기대평이 부정적인 경우 예외가 발생한다.")
@@ -222,7 +222,7 @@ class CommentServiceTest {
         // when & then
         assertThatThrownBy(() -> commentService.createComment(eventUser.getUserId(), eventFrameId, createCommentDto))
                 .isInstanceOf(CommentException.class)
-                .hasMessage(ErrorCode.INVALID_COMMENT.getMessage());
+                .hasMessage(ErrorCode.INVALID_COMMENT.getErrorCode());
     }
 
     @DisplayName("isCommentable: 오늘 이 유저가 기대평을 작성할 수 있는지 조회한다.")
@@ -265,7 +265,7 @@ class CommentServiceTest {
         // when & then
         assertThatThrownBy(() -> commentService.deleteComment(commentId))
                 .isInstanceOf(CommentException.class)
-                .hasMessage(ErrorCode.COMMENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.COMMENT_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("searchComments: eventId로 기대평 목록을 조회한다.")

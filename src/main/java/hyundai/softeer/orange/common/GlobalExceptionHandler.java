@@ -1,13 +1,5 @@
 package hyundai.softeer.orange.common;
 
-import hyundai.softeer.orange.admin.exception.AdminException;
-import hyundai.softeer.orange.comment.exception.CommentException;
-
-import hyundai.softeer.orange.common.exception.InternalServerException;
-import hyundai.softeer.orange.event.fcfs.exception.FcfsEventException;
-import hyundai.softeer.orange.event.url.exception.UrlException;
-import hyundai.softeer.orange.eventuser.exception.EventUserException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +61,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAllBaseException(BaseException e) {
         var code = e.getErrorCode();
         var status = code.getHttpStatus();
-        var message = code.getMessage();
+        var message = code.getErrorCode();
 
         Locale locale = LocaleContextHolder.getLocale(); // 현재 스레드의 로케일 정보를 가져온다.
         String errorMessage = messageSource.getMessage(message, null, message, locale); // 국제화 된 메시지를 가져온다.

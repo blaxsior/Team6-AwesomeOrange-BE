@@ -113,7 +113,7 @@ class FcfsEventFieldMapperTest {
         assertThatThrownBy(() -> {
             mapper.validateEventTimes(dtos, startTime, endTime);
         }).isInstanceOf(EventException.class)
-        .hasMessage(ErrorCode.INVALID_INPUT_EVENT_TIME.getMessage());
+        .hasMessage(ErrorCode.INVALID_INPUT_EVENT_TIME.getErrorCode());
     }
 
     @DisplayName("겹치는 시간대가 있다면 예외 반환")
@@ -136,7 +136,7 @@ class FcfsEventFieldMapperTest {
         assertThatThrownBy(() -> {
             mapper.validateEventTimes(dtos, startTime, endTime);
         }).isInstanceOf(EventException.class)
-                .hasMessage(ErrorCode.INVALID_INPUT_EVENT_TIME.getMessage());
+                .hasMessage(ErrorCode.INVALID_INPUT_EVENT_TIME.getErrorCode());
     }
 
     @DisplayName("겹치는 시간대가 없다면 정상적으로 실행")

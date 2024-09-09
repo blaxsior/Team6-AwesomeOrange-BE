@@ -14,7 +14,6 @@ import hyundai.softeer.orange.event.common.enums.EventType;
 import hyundai.softeer.orange.event.common.exception.EventException;
 import hyundai.softeer.orange.event.common.repository.EventFrameRepository;
 import hyundai.softeer.orange.event.common.repository.EventMetadataRepository;
-import hyundai.softeer.orange.event.common.repository.EventSpecification;
 import hyundai.softeer.orange.event.component.EventKeyGenerator;
 import hyundai.softeer.orange.event.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -241,14 +240,14 @@ public class EventService {
                 if (endTime.isAfter(now)) {
                     errorResponse.add(new DeleteEventNotAllowedReasonDto(
                             metadata.getEventId(),
-                            ErrorCode.CANNOT_DELETE_EVENT_RUNNING.getMessage())
+                            ErrorCode.CANNOT_DELETE_EVENT_RUNNING.getErrorCode())
                     );
                     continue;
                 }
                 else {
                     errorResponse.add(new DeleteEventNotAllowedReasonDto(
                             metadata.getEventId(),
-                            ErrorCode.CANNOT_DELETE_EVENT_ENDED.getMessage()
+                            ErrorCode.CANNOT_DELETE_EVENT_ENDED.getErrorCode()
                     ));
                     continue;
                 }

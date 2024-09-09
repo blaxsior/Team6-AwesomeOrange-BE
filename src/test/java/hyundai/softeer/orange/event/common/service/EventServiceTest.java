@@ -83,7 +83,7 @@ class EventServiceTest {
         assertThatThrownBy(() -> {
             eventService.createEvent(eventDto);
         }).isInstanceOf(EventException.class)
-                .hasMessage(ErrorCode.INVALID_EVENT_TYPE.getMessage());
+                .hasMessage(ErrorCode.INVALID_EVENT_TYPE.getErrorCode());
     }
 
     @DisplayName("이벤트 타입에 매칭되는 매퍼도 있다면 정상적으로 실행됨.")
@@ -131,7 +131,7 @@ class EventServiceTest {
         assertThatThrownBy(() -> {
             eventService.getTempEvent(adminId);
         }).isInstanceOf(EventException.class)
-        .hasMessage(ErrorCode.TEMP_EVENT_NOT_FOUND.getMessage());
+        .hasMessage(ErrorCode.TEMP_EVENT_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("이벤트를 임시 저장")
@@ -155,7 +155,7 @@ class EventServiceTest {
         assertThatThrownBy(() -> {
             eventService.deleteEvent(eventId);
         }).isInstanceOf(EventException.class)
-                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getMessage());
+                .hasMessage(ErrorCode.EVENT_NOT_FOUND.getErrorCode());
     }
 
     @DisplayName("이벤트가 진행 중이면 삭제 불가")
@@ -176,7 +176,7 @@ class EventServiceTest {
         assertThatThrownBy(() -> {
             eventService.deleteEvent(eventId);
         }).isInstanceOf(EventException.class)
-        .hasMessage(ErrorCode.CANNOT_DELETE_EVENT_RUNNING.getMessage());
+        .hasMessage(ErrorCode.CANNOT_DELETE_EVENT_RUNNING.getErrorCode());
     }
 
     @DisplayName("이벤트가 완료되었으면 삭제 불가")
@@ -196,7 +196,7 @@ class EventServiceTest {
         assertThatThrownBy(() -> {
             eventService.deleteEvent(eventId);
         }).isInstanceOf(EventException.class)
-        .hasMessage(ErrorCode.CANNOT_DELETE_EVENT_ENDED.getMessage());
+        .hasMessage(ErrorCode.CANNOT_DELETE_EVENT_ENDED.getErrorCode());
     }
 
     @DisplayName("이벤트가 시작되기 전이라면 삭제 가능")
